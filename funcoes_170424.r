@@ -28,6 +28,8 @@ gera_obs <- function(t_max, n_med, v, sigma, obj = 1) {
   return(df)
 }
 
+
+
 #' Gera dados de processo Wiener para vários objetos.
 #'
 #' Esta função gera dados de processo Wiener para vários objetos, utilizando os
@@ -494,24 +496,21 @@ mle_sigma1 <- function(data){
 }
 
 
-
-
 #################################
 
-gera_plot4 <- function(data) {
+gera_plot4 <- function(data,xlab,ylab) {
   p <- data %>%
     ggplot() +
     geom_line(aes(x = Time, y = Y, colour = "With Maintenance"), alpha = 0.5, linetype = "solid", linewidth = 1) +
     labs(
-      x = "Time",
-      y = "Degradation",
-      title = "Degradation Paths",
-      color = "Process"
+      x = xlab,
+      y = ylab
     ) +
-    theme(
-      legend.position = c(0.20, 0.85),
-      legend.background = element_rect(fill = "white", color = "black")
-    )
+    theme_classic() +							
+    theme(plot.title = element_blank(),
+          legend.position = "none") +							
+    scale_y_continuous(expand = c(0, 0)) +							
+    scale_x_continuous(expand = c(0, 0))
   
   k <- data$Time[duplicated(data$Time)]
   for (i in 1:length(k)) {
@@ -520,7 +519,7 @@ gera_plot4 <- function(data) {
     min_y <- min(data$Y[data$Time == ponto])
     p <- p +
       geom_segment(data = data.frame(x = ponto, xend = ponto, y = max_y, yend = min_y),
-                   aes(x = x, xend = xend, y = y, yend = yend), linetype = "dotted",
+                   aes(x = x, xend = xend, y = y, yend = yend), linetype = "solid",
                    color = "black", linewidth = 1)
   }
   return(p)

@@ -1,0 +1,119 @@
+####  simulação - cenário fixo da Figura 2
+#Parameter values are 𝜇 = 2, 𝜎2 = 2 and 𝜌 = 0.5. k = 3 maintenance actions
+#are performed, n = 24 observations of the degradation levels are made and
+#∀ j ∈ {0, 1, 2, 3}, nj = 4
+
+set.seed(111)
+
+# Definição dos parâmetros e medidas necessarias pro estudo
+mu <- 2  # média
+sigma2 <- 2  # variância
+rol<-0.5 #efeito de manutenção
+k<-3 # numero de ação de manutenção
+inter_estudo<-c(0,20) #intervalo de estudo 0 a 𝜏, isto é, 21 obs
+tempos_mudanca<-seq(inter_estudo[1], inter_estudo[2], inter_estudo[2]/(k+1))
+tempos_MP<-tempos_mudanca[-c(1,length(tempos_mudanca))] #tempos de MP
+nj<-4 #tamanhos de obs dentro dos intervalos de manutenção
+N<-nj*(k+1) #numero de observações entre ações
+n <- N+k+2 #numero de obs 0 a 𝜏 em X(t)
+unid<- 1 #espaçamento de unidade de tempo que coleta medições
+tempos_de_medicao<-seq(inter_estudo[1], inter_estudo[2], unid) #tempos de medicação
+
+
+# Geração do processo de wiener teorico X(t)
+# Inicializando o processo de Wiener com valor inicial zero
+wiener <- numeric(length(tempos_de_medicao))
+
+# Gerando o processo de Wiener
+for (i in 2:length(tempos_de_medicao)) {
+  wiener[i]  <- rnorm(1, mean = 2 * tempos_de_medicao[i], sd = sqrt(2 * tempos_de_medicao[i]))
+}
+
+X<-wiener
+
+# Plotando o processo de Wiener teorico
+plot(tempos_de_medicao, X, type = "l", main = "Processo de Wiener", xlab = "Tempo", ylab = "Valor")
+grid()
+
+length(X)
+
+
+#Geração do processo de wiener com efeito de manuteção Y(t)
+#observe que cada "pedaço" segue uma distribuição que depende de X(t)
+
+
+# antes da ∀t ∈ [0, 𝜏1[ temos que Y(t)=X(t)
+# Após jªMP, ∀t ∈ [𝜏j, 𝜏j+1[  temos que Y(t)= X(t) − 𝜌X(𝜏j)
+
+
+Y<- numeric(length(tempos_de_medicao)+k)
+length(Y)
+j<-length(Y)/(k+1)
+l<-(length(X)-1)/(k+1)
+for (i in 1:k) {
+  Y[1:j]<-X[1:(l+1)]
+  Y[(i*j+1):((i+1)*j)]<-X[(i*l+1):((i+1)*l+1)]-rol*X[(i*l+1)]
+}
+
+Y
+#Y[1:j]<-X[1:(l+1)]
+#Y[(j+1):(2*j)]<-X[(l+1):(2*l+1)]-rol*X[(l+1)]
+#Y[(2*j+1):(3*j)]<-X[(2*l+1):(3*l+1)]-rol*X[(2*l+1)]
+#Y[(3*j+1):(4*j)]<-X[(3*l+1):(4*l+1)]-rol*X[(3*l+1)]
+
+#prova real (mostrar que coincide com valores calculados com proporcionais da teorica)
+Y[7]
+Y[13]
+Y[19]
+Y_mais_1<-9.459643-rol*(9.459643-0)
+Y_mais_2<-13.061113-rol*(13.061113-Y_mais_1)
+Y_mais_3<-25.472777 -rol*(25.472777-Y_mais_2)
+
+#Para fazer o gráfico, nivelar tamanho dos vetores X e Y
+
+X1<-numeric(length(tempos_de_medicao)+k)
+
+for (i in 1:k) {
+  X1[1:j]<-X[1:(l+1)]
+  X1[(i*j+2):((i+1)*j)]<-X[(i*l+2):((i+1)*l+1)]
+}
+X1
+for (i in 1:k) {
+  X1[(i*j+1)]<-X[(i*l+1)]
+}
+#X1[1:6]<-X[1:6]
+#X1[8:12]<-X[7:11]
+#X1[14:18]<-X[12:16]
+#X1[20:24]<-X[17:21]
+
+
+#t<-c(0,  1,  2,  3,  4,  5, 5,  6,   7,  8,  9, 10, 10,11, 12, 13, 14, 15, 15, 16, 17, 18, 19, 20)
+
+t<-sort(c(tempos_de_medicao, tempos_MP))
+length(t)
+
+plot(t, X1, type = "l", main = "Processo de Wiener", xlab = "Tempo", ylab = "Valor", col="gray")
+grid()
+lines(t, Y, col = "red")
+
+
+
+
+# Plotando o gráfico de X1
+lines(t, Y, type = "l", main = "Processo de Wiener", xlab = "Tempo", ylab = "Valor", col = "red")
+grid()
+
+lines(t, Y, type = "l", main = "Processo de Wiener", xlab = "Tempo", ylab = "Valor", col = "red")
+grid()
+
+# Adicionando linhas tracejadas nos pontos 5, 10 e 15 respeitando os limites de X1
+pontos <- c(5, 10, 15)
+
+for (ponto in pontos) {
+  indice <- which(t == ponto)
+  janela <- 1  # janela de busca para os limites
+  valor_min <- min(Y[max(1, indice - janela):min(length(t), indice + janela)])
+  valor_max <- max(Y[max(1, indice - janela):min(length(t), indice + janela)])
+  segments(ponto, valor_min, ponto, valor_max, lty = 2)
+}
+

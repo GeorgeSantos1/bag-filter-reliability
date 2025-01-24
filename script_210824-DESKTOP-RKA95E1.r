@@ -7,6 +7,14 @@ library(gridExtra)
 library(viridisLite)
 library(SimDesign)
 library(ggh4x)
+library(latex2exp)
+library(scales)
+library(ggthemes)
+library(viridis)
+library(latex2exp)							
+library(ggrepel)
+library(readxl)
+library(lubridate)
 
 ## Carregamento de funções
 source("funcoes_170424.r")
@@ -165,7 +173,6 @@ z.CI <- function(dat,alpha = 0.95){
 aux <- rnorm(1000,2)
 z.CI(aux)
 
-
 Generate <- function(condition,fixed_objects){
   n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
   if (condition$n_main==3){
@@ -203,17 +210,15 @@ Summarise <- function(condition, results, fixed_objects) {
   ret
 }
 
-resultados <- runSimulation(design=Design, replications=1000,
-                     generate=Generate, analyse=Analyse, summarise=Summarise)
+# resultados <- runSimulation(design=Design, replications=1000,
+                     # generate=Generate, analyse=Analyse, summarise=Summarise)
 
 # saveRDS(resultados,file = "SimDesign2.rds")
 resultados <- readRDS("SimDesign2.rds")
+
 ####################################################
 ##################### Gráfico ######################
 ####################################################
-library(latex2exp)
-library(ggh4x)
-library(scales)
 
 mu.labs <- c(TeX("$mu$"),"mu=16")
 names(mu.labs) <- c("4","16")
@@ -295,9 +300,7 @@ resultados %>%
   #                    labels = c(TeX(" $mu$    "),TeX(" $sigma$"))) +
   scale_colour_viridis_d(labels = c(TeX(" $mu$    "),TeX(" $sigma$")),option = "viridis",end = 0.8)
 
-library(ggthemes)
 ####################################							
-library(viridis)							
 
 par(mfrow=c(1,31))							
 
@@ -356,8 +359,6 @@ data.frame(time = t,Unit1 = degrad1,Unit2 = degrad2,Unit3 = degrad3) %>%
   scale_color_viridis(discrete = TRUE, option = "D")							
 
 #######################							
-library(latex2exp)							
-library(ggrepel)							
 
 set.seed(1111)							
 rho<- c(0.6, 0.6)							
@@ -406,10 +407,6 @@ df_degradacao1 %>%
 ############### Dados - Banco Prof. Maria Luíza #######################
 #######################################################################
 
-library(readxl)
-library(dplyr)
-library(lubridate)
-
 df <- read_excel("Copy of Filtro Manga - Dados de processo.xlsx")
 df <- df[-1,]
 
@@ -437,9 +434,11 @@ x_1 <- df %>%
   pull() %>% min()
 
 
+# Corte do primeiro subset
 df_aux_1 <- df %>%
   filter(`Data Hora` >= x_0 & `Data Hora` < x_1)
 
+#  finning de 8 valores
 index <- seq(1,nrow(df_aux_1),by=8)
 df_thin_1 <- df_aux_1[index,]  
 
@@ -451,6 +450,7 @@ x_2 <- df_thin_1 %>%
 df_aux_2 <- df %>%
   filter(`Data Hora` >= x_2 & `Data Hora` < f_time)
 
+# retirando valores iguais a zero
 indaux <- c(3,142:873)
 df_aux_2 <- df_aux_2[indaux,]
 
@@ -468,7 +468,6 @@ index2 <- sort(index2)
 df_aux_2 <- df_aux_2[index2,]
 nrow(df_aux_2)/14
 
-
 s1 <- seq(1,14)
 for (i in 1:8) {
   s2 <- seq(max(s1),max(s1) + 13)
@@ -478,13 +477,11 @@ for (i in 1:8) {
 length(s1[15:(15+98)])
 length(s1)
 
-
 df_thin_1 <- df_thin_1 %>%
   mutate(Time = seq(1,nrow(df_thin_1)))
 
 df_aux_2 <- df_aux_2 %>%
   mutate(Time = s1[15:(15+98)])
-
 
 df_aux_maria <- rbind(df_thin_1,df_aux_2)
 sub_maria <- df_aux_maria[1:50,]
@@ -495,14 +492,14 @@ sub_maria <- sub_maria %>%
   mutate(Time = Time -1,
          Objeto = "OBJ_001")
 
-gera_plot4(sub_maria)
+gera_plot4(sub_maria,xlab="Time",ylab="Degradation")
 mle_drift1(sub_maria)
 mle_drift1_y(sub_maria)
 
 mle_sigma1(sub_maria)
 mle_sigma1_y(sub_maria)
 
-gera_plot4(sub_maria)
+gera_plot4(sub_maria,ylab="Degradation",xlab="Time")
 mle_drift1_y(sub_maria)
 mle_sigma1_y(sub_maria)
 
@@ -513,52 +510,85 @@ rho_hat(sub_maria)
 # df %>% filter(`Data Hora` %in% c(t_aux,t_aux - hms("00:00:26")))
 
 
-gera_plot4(sub_maria)
-mle_drft_y(sub_maria)
-
-
 #################
 ### Recorte 02 ##
 #################
 
-library(readxl)
-library(dplyr)
-library(lubridate)
-
+# Leitura dos dados
 df <- read_excel("Copy of Filtro Manga - Dados de processo.xlsx")
 df <- df[-1,]
 
-i_time <- ymd_hms("2024-05-04 14:40:34")
-f_time <- ymd_hms("2024-05-10 20:00:00")
+# Tempo inicial e tempo final
+i_time <- ymd_hms("2024-05-04 14:40:08")
+f_time <- ymd_hms("2024-05-05 00:00:00")
 
-plot(df$`Data Hora`,df$Diferencial_mmCa_800dPT8102,type = "l")
-
+# Filtrando banco considerando tempo inicial e tempo final
 df_aux <- df %>%
   filter(#Diferencial_mmCa_800dPT8102 == 0,
          `Data Hora` >= i_time & `Data Hora` < f_time)
 plot(df_aux$`Data Hora`,df_aux$Diferencial_mmCa_800dPT8102,type = "l")
 
-index <- seq(1,nrow(df_aux),by=24)
-df_thin <- df_aux[index,]
+# Definição de passos para finning e número de medidas entre ações de manutenção
+step = 30
+n_intra_manu = 13
 
-plot(df_thin$`Data Hora`,df_thin$Diferencial_mmCa_800dPT8102,type = "l")
+# verificando index de todas as medidas de degradação (sem ações após manuntenção)
+index <- seq(1,nrow(df_aux),by=step)
+index[seq(1,length(index),by=n_intra_manu)]
+
+# df_aux[c(781,783),c(1,5)]
+
+# Index de medidas exatamente antes e exatamente após ação de manutenção
+cx <- c(1,391,392,781,783,1171,1173)
+
+# Unindo index
+index <- c(index,cx)
+index <- unique(index)
+index <- sort(index)
+
+# filtrando base considerando index criado
+df_aux <- df_aux[index,]
+
+# Preparando tempos
+s1 <- seq(1,14)
+for (i in 1:3) {
+  s2 <- seq(max(s1),max(s1) + 13)
+  s1 <- c(s1,s2)
+}
+
+# Adicionando tempo a base de dados
+df_aux <- df_aux %>%
+  mutate(Time = s1[1:nrow(df_aux)])
+  
+# Modificando Base Criada
+sub_maria <- df_aux
+names(sub_maria)[5] <- "Y"
+sub_maria <- sub_maria %>%
+  mutate(Time = Time -1,
+         Objeto = "OBJ_001") %>%
+  select(Time,Y,Objeto)
+
+names(sub_maria)
+
+# gerando grafico e estimando parametros
+gera_plot4(sub_maria,ylab="Degradação/Diferencial",xlab="Tempo")
+mu <- mle_drift1_y(sub_maria)
+sigma <- mle_sigma1_y(sub_maria)
+rho_hat(sub_maria)
 
 
 
-f_time_0 <- ymd_hms("2024-05-04 13:00:00")
-x_0 <- df %>%
-  filter(Diferencial_mmCa_800dPT8102 == 0,
-         `Data Hora` >= i_time & `Data Hora` < f_time_0) %>% 
-  select(`Data Hora`) %>%
-  pull() %>% max()
-
-i_time_1 <- ymd_hms("2024-05-04 13:00:00")
-x_1 <- df %>%
-  filter(Diferencial_mmCa_800dPT8102 == 0,
-         `Data Hora` >= i_time_1 & `Data Hora` < f_time) %>% 
-  select(`Data Hora`) %>%
-  pull() %>% min()
 
 
-
-
+### Gerando valores considerando distribuição
+n_manu <- 3
+intra_manu <- 13
+n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)
+set.seed(321)
+df = gera_dados(t_max = n_med,n_obs = 1,n_med = n_med, sigma = sigma, v = mu)
+plot(df$Time,df$Wt,type="l")
+mle_drift(data=df)
+serie = ts(df$Wt,df$Time)
+plot.ts(serie)
+auzzz = stl(serie)
+pacf(serie)
