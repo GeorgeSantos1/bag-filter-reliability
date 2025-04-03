@@ -15,6 +15,8 @@ library(latex2exp)
 library(ggrepel)
 library(readxl)
 library(lubridate)
+library(statmod)
+library(tayloRswift)
 
 ## Carregamento de funções
 source("funcoes_170424.r")
@@ -356,7 +358,7 @@ data.frame(time = t,Unit1 = degrad1,Unit2 = degrad2,Unit3 = degrad3) %>%
   labs(x = "Time", y = "Degradation") +							
   scale_x_continuous(expand = c(0, 0),breaks = c(0,2,4,6,8,10),limits = c(0,11)) +							
   scale_y_continuous(expand = c(0, 0), limits = c(0,65)) +							
-  scale_color_viridis(discrete = TRUE, option = "D")							
+  tayloRswift::scale_color_taylor()							
 
 #######################							
 
@@ -492,18 +494,17 @@ sub_maria <- sub_maria %>%
   mutate(Time = Time -1,
          Objeto = "OBJ_001")
 
-gera_plot4(sub_maria,xlab="Time",ylab="Degradation")
-mle_drift1(sub_maria)
-mle_drift1_y(sub_maria)
-
-mle_sigma1(sub_maria)
-mle_sigma1_y(sub_maria)
-
 gera_plot4(sub_maria,ylab="Degradation",xlab="Time")
 mle_drift1_y(sub_maria)
 mle_sigma1_y(sub_maria)
-
 rho_hat(sub_maria)
+
+write.csv2(sub_maria %>%
+             select(-Objeto),"subsets/recorte_01_thetaneg.csv",
+           row.names = FALSE)
+
+# 3 minutos e meio entre cada medida (tempo original: 26 segundos)
+# numero de medidas entre ações de manutenção: 12
 
 # ##
 # t_aux <- ymd_hms("2024-05-04 15:29:27")
@@ -530,11 +531,11 @@ plot(df_aux$`Data Hora`,df_aux$Diferencial_mmCa_800dPT8102,type = "l")
 
 # Definição de passos para finning e número de medidas entre ações de manutenção
 step = 30
-n_intra_manu = 13
+n_intra_manu = 12
 
 # verificando index de todas as medidas de degradação (sem ações após manuntenção)
 index <- seq(1,nrow(df_aux),by=step)
-index[seq(1,length(index),by=n_intra_manu)]
+index[seq(1,length(index),by=n_intra_manu-1)]
 
 # df_aux[c(781,783),c(1,5)]
 
@@ -565,8 +566,7 @@ sub_maria <- df_aux
 names(sub_maria)[5] <- "Y"
 sub_maria <- sub_maria %>%
   mutate(Time = Time -1,
-         Objeto = "OBJ_001") %>%
-  select(Time,Y,Objeto)
+         Objeto = "OBJ_001")
 
 names(sub_maria)
 
@@ -576,11 +576,34 @@ mu <- mle_drift1_y(sub_maria)
 sigma <- mle_sigma1_y(sub_maria)
 rho_hat(sub_maria)
 
+sub_maria_1 <- sub_maria
+
+write.csv2(sub_maria_1 %>%
+             select(-Objeto),"subsets/recorte_02_thetaposi.csv",
+           row.names = FALSE)
+# 13 minutos (tempo original: 26 segundos)
+# numero de medidas entre ações de manutenção: 12
+
+##############################################
+###### Gerando Curvas de Confiabilidade ######
+##############################################
+
+# gera curvas de confiabilidade considerando fdp do first passage time (fpt) como gaussiana inversa
+
+# media: media
+# variancia: (media^3)/desvio
+
+gera_confiabilidade(mu=mu,sigma=sigma,
+                    alpha=c(40,50,60,70,80),
+                    t_max = 100,
+                    xlab = "Time",ylab = "Reliability")
 
 
 
+#################################################
+### Gerando valores considerando distribuição ###
+#################################################
 
-### Gerando valores considerando distribuição
 n_manu <- 3
 intra_manu <- 13
 n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)
@@ -588,7 +611,3 @@ set.seed(321)
 df = gera_dados(t_max = n_med,n_obs = 1,n_med = n_med, sigma = sigma, v = mu)
 plot(df$Time,df$Wt,type="l")
 mle_drift(data=df)
-serie = ts(df$Wt,df$Time)
-plot.ts(serie)
-auzzz = stl(serie)
-pacf(serie)

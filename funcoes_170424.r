@@ -606,4 +606,41 @@ mle_sigma1_y <- function(data){
   return(sqrt(sigma2_hat_biased))
 }
 
+###################################
+## Gera Curvas de Confiabilidade ##
+###################################
+
+gera_confiabilidade <- function(mu,sigma,alpha,t_max,xlab,ylab){
+  media <- alpha[1]/mu
+  desvio <- (alpha[1]/sigma)^2
+  
+  t = seq(0,t_max,by=0.1)
+  r_mean <- statmod::pinvgauss(t,mean=media,shape = desvio,lower.tail = FALSE)
+  
+  df_visu <- data.frame(time = t,r_mean=r_mean,threshold = alpha[1])
+  for (i in 2:length(alpha)) {
+    media <- alpha[i]/mu
+    desvio <- (alpha[i]/sigma)^2
+    
+    r_mean <- statmod::pinvgauss(t,mean=media,shape = desvio,lower.tail = FALSE)
+    
+    df_visu_aux <- data.frame(time = t,r_mean=r_mean,threshold = alpha[i])
+    df_visu <- rbind(df_visu,df_visu_aux)
+  }
+  
+  df_visu %>%
+    mutate(threshold = as.factor(threshold)) %>%
+    ggplot(aes(x=time,y=r_mean,colour = threshold)) +
+    scale_y_continuous(labels = scales::percent,limits=c(0,1)) +
+    geom_line(linewidth=1.5,alpha=0.7) +
+    theme_classic() +
+    theme(plot.title = element_blank(),							
+          legend.position = c(0.9,0.8)) +
+    labs(title = "Curva de Confiabilidade",
+         x = xlab,
+         y = ylab) +
+    coord_cartesian(expand = FALSE) +
+ #   scale_color_viridis(discrete = TRUE, option = "D")
+    tayloRswift::scale_color_taylor()
+}
 
