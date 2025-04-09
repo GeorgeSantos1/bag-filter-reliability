@@ -267,6 +267,7 @@ resultados %>%
   # scale_color_brewer(palette = "Set1",
   #                    labels = c(TeX(" $mu$    "),TeX(" $sigma$"))) +
   scale_colour_viridis_d(labels = c(TeX(" $mu$    "),TeX(" $sigma$")),option = "viridis",end = 0.8)
+  # tayloRswift::scale_color_taylor(labels = c(TeX(" $mu$    "),TeX(" $sigma$")))	
 
 # Bias
 resultados %>%
@@ -360,6 +361,10 @@ data.frame(time = t,Unit1 = degrad1,Unit2 = degrad2,Unit3 = degrad3) %>%
   scale_y_continuous(expand = c(0, 0), limits = c(0,65)) +							
   tayloRswift::scale_color_taylor()							
 
+png("figures/myplot.png",width = 9,height = 3.5,units = "in")
+print(g1)
+dev.off()
+ggsave("figures/test_001.png", width = 9, height = 3.5, units = "cm")
 #######################							
 
 set.seed(1111)							
@@ -499,9 +504,9 @@ mle_drift1_y(sub_maria)
 mle_sigma1_y(sub_maria)
 rho_hat(sub_maria)
 
-write.csv2(sub_maria %>%
-             select(-Objeto),"subsets/recorte_01_thetaneg.csv",
-           row.names = FALSE)
+# write.csv2(sub_maria %>%
+#              select(-Objeto),"subsets/recorte_01_thetaneg.csv",
+#            row.names = FALSE)
 
 # 3 minutos e meio entre cada medida (tempo original: 26 segundos)
 # numero de medidas entre ações de manutenção: 12
@@ -571,16 +576,17 @@ sub_maria <- sub_maria %>%
 names(sub_maria)
 
 # gerando grafico e estimando parametros
-gera_plot4(sub_maria,ylab="Degradação/Diferencial",xlab="Tempo")
+g1 <- gera_plot4(sub_maria,ylab="Degradation/Diferencial",xlab="Time")
 mu <- mle_drift1_y(sub_maria)
 sigma <- mle_sigma1_y(sub_maria)
 rho_hat(sub_maria)
 
 sub_maria_1 <- sub_maria
 
-write.csv2(sub_maria_1 %>%
-             select(-Objeto),"subsets/recorte_02_thetaposi.csv",
-           row.names = FALSE)
+# write.csv2(sub_maria_1 %>%
+#              select(-Objeto),"subsets/recorte_02_thetaposi.csv",
+#            row.names = FALSE)
+
 # 13 minutos (tempo original: 26 segundos)
 # numero de medidas entre ações de manutenção: 12
 
@@ -593,12 +599,13 @@ write.csv2(sub_maria_1 %>%
 # media: media
 # variancia: (media^3)/desvio
 
-gera_confiabilidade(mu=mu,sigma=sigma,
-                    alpha=c(40,50,60,70,80),
-                    t_max = 100,
-                    xlab = "Time",ylab = "Reliability")
+g2 <- gera_confiabilidade(mu=mu,sigma=sigma,
+                    alpha=c(45,55,65,75),
+                    t_max = 75,
+                    xlab = "Time",ylab = "R(t)",
+                    paleta = "taylor1989")
 
-
+grid.arrange(g1,g2,ncol=2)
 
 #################################################
 ### Gerando valores considerando distribuição ###

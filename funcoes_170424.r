@@ -497,18 +497,20 @@ mle_sigma1 <- function(data){
 
 
 #################################
-
-gera_plot4 <- function(data,xlab,ylab) {
+gera_plot4 <- function(data,xlab,ylab){
   p <- data %>%
     ggplot() +
     geom_line(aes(x = Time, y = Y, colour = "With Maintenance"), alpha = 0.5, linetype = "solid", linewidth = 1) +
     labs(
       x = xlab,
-      y = ylab
+      y = ylab,
+      title = "(I)"
     ) +
-    theme_classic() +							
-    theme(plot.title = element_blank(),
-          legend.position = "none") +							
+    theme_classic() +
+    tayloRswift::scale_color_taylor(palette="taylor1989",reverse = FALSE) +
+    theme(#plot.title = element_blank(),
+          legend.position = "none",
+          plot.title = element_text(face = "bold",hjust = 0.5)) +							
     scale_y_continuous(expand = c(0, 0)) +							
     scale_x_continuous(expand = c(0, 0))
   
@@ -610,37 +612,37 @@ mle_sigma1_y <- function(data){
 ## Gera Curvas de Confiabilidade ##
 ###################################
 
-gera_confiabilidade <- function(mu,sigma,alpha,t_max,xlab,ylab){
+gera_confiabilidade <- function(mu,sigma,alpha,t_max,xlab,ylab,paleta){
   media <- alpha[1]/mu
   desvio <- (alpha[1]/sigma)^2
   
   t = seq(0,t_max,by=0.1)
   r_mean <- statmod::pinvgauss(t,mean=media,shape = desvio,lower.tail = FALSE)
   
-  df_visu <- data.frame(time = t,r_mean=r_mean,threshold = alpha[1])
+  df_visu <- data.frame(time = t,r_mean=r_mean,Threshold = alpha[1])
   for (i in 2:length(alpha)) {
     media <- alpha[i]/mu
     desvio <- (alpha[i]/sigma)^2
     
     r_mean <- statmod::pinvgauss(t,mean=media,shape = desvio,lower.tail = FALSE)
     
-    df_visu_aux <- data.frame(time = t,r_mean=r_mean,threshold = alpha[i])
+    df_visu_aux <- data.frame(time = t,r_mean=r_mean,Threshold = alpha[i])
     df_visu <- rbind(df_visu,df_visu_aux)
   }
   
   df_visu %>%
-    mutate(threshold = as.factor(threshold)) %>%
-    ggplot(aes(x=time,y=r_mean,colour = threshold)) +
+    mutate(Threshold = as.factor(Threshold)) %>%
+    ggplot(aes(x=time,y=r_mean,colour = Threshold)) +
     scale_y_continuous(labels = scales::percent,limits=c(0,1)) +
     geom_line(linewidth=1.5,alpha=0.7) +
     theme_classic() +
-    theme(plot.title = element_blank(),							
-          legend.position = c(0.9,0.8)) +
-    labs(title = "Curva de Confiabilidade",
+    theme(#plot.title = element_blank(),
+          legend.position = c(0.9,0.8),
+          plot.title = element_text(hjust = 0.5,face = "bold")) +
+    labs(title = "(II)",
          x = xlab,
          y = ylab) +
     coord_cartesian(expand = FALSE) +
  #   scale_color_viridis(discrete = TRUE, option = "D")
-    tayloRswift::scale_color_taylor()
+    tayloRswift::scale_color_taylor(palette = paleta,reverse = TRUE)
 }
-
