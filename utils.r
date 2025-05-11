@@ -1,3 +1,16 @@
+# ---------------------------------------------------
+# Arquivo: utils.R
+# Descrição: Conjunto de funções úteis para análise
+# Autor: George Anderson A. dos Santos
+# Data: 17-04-2024
+# ---------------------------------------------------
+
+library(dplyr)
+library(ggplot2)
+library(tayloRswift)
+library(statmod)
+library(scales)
+
 #' Gera observações do processo Wiener para um objeto específico.
 #'
 #' Esta função gera observações de um processo Wiener para um objeto específico,
@@ -27,8 +40,6 @@ gera_obs <- function(t_max, n_med, v, sigma, obj = 1) {
   
   return(df)
 }
-
-
 
 #' Gera dados de processo Wiener para vários objetos.
 #'
@@ -430,7 +441,6 @@ mle_drift1 <- function(data){
   return(mu_hat)
 }
 
-
 #' Estima o desvio padrão para múltiplos sistemas.
 #'
 #' Esta função estima o desvio padrão para múltiplos sistemas, utilizando a média dos quadrados dos resíduos.
@@ -496,11 +506,24 @@ mle_sigma1 <- function(data){
 }
 
 
-#################################
-gera_plot4 <- function(data,xlab,ylab){
+#' Plota caminho de degradação considerando os efeitos de ação de manutenção ação (desatualizado).
+#' 
+#' @param data Base de dados utilizada
+#' @param xlab Rotulo do eixo X
+#' @param ylab Rotulo do eixo Y
+#'
+#' @return Visualização do caminho de degradação
+#'
+#' @examples
+#' # Exemplo de uso:
+#' # gera_plot3(df,"Time","Degradation")
+#'
+#' @export
+gera_plot3 <- function(data,xlab,ylab){
   p <- data %>%
     ggplot() +
-    geom_line(aes(x = Time, y = Y, colour = "With Maintenance"), alpha = 0.5, linetype = "solid", linewidth = 1) +
+    geom_line(aes(x = Time, y = Y, colour = "With Maintenance"),
+              alpha = 0.5, linetype = "solid", linewidth = 1) +
     labs(
       x = xlab,
       y = ylab,
@@ -508,9 +531,10 @@ gera_plot4 <- function(data,xlab,ylab){
     ) +
     theme_classic() +
     tayloRswift::scale_color_taylor(palette="taylor1989",reverse = FALSE) +
-    theme(#plot.title = element_blank(),
+    theme(plot.title = element_blank(),
           legend.position = "none",
-          plot.title = element_text(face = "bold",hjust = 0.5)) +							
+          # plot.title = element_text(face = "bold",hjust = 0.5)
+          ) +							
     scale_y_continuous(expand = c(0, 0)) +							
     scale_x_continuous(expand = c(0, 0))
   
@@ -527,9 +551,19 @@ gera_plot4 <- function(data,xlab,ylab){
   return(p)
 }
 
-###########
-#### Calcular Estimativa de \mu considerando Y_t em vez de X_t
 
+#' Calcula a estimativa do parâmetro de drift considerando Y_t (processo com acao de manutencao) 
+#' em vez de X_t (processo wiener original)
+#' 
+#' @param data Base de dados utilizada
+#'
+#' @return estimativa
+#'
+#' @examples
+#' # Exemplo de uso:
+#' # mle_drift1_y(df)
+#'
+#' @export
 mle_drift1_y <- function(data){
   k <- data$Time[duplicated(data$Time)]
   pass <- max(data$Time)/(length(unique(data$Time))-1)
@@ -554,11 +588,18 @@ mle_drift1_y <- function(data){
   return(result)
 }
 
-
-####
-#### Mle Sigma para Y_t em vez de X_t
-####
-
+#' Calcula a estimativa do parâmetro de difusão considerando Y_t (processo com acao de manutencao) 
+#' em vez de X_t (processo wiener original)
+#' 
+#' @param data Base de dados utilizada
+#'
+#' @return estimativa
+#'
+#' @examples
+#' # Exemplo de uso:
+#' # mle_drift1_y(df)
+#'
+#' @export
 mle_sigma1_y <- function(data){
   mu_hat <- mle_drift1_y(data)
   s <- unique(data$Objeto)
@@ -608,23 +649,44 @@ mle_sigma1_y <- function(data){
   return(sqrt(sigma2_hat_biased))
 }
 
-###################################
-## Gera Curvas de Confiabilidade ##
-###################################
-
-gera_confiabilidade <- function(mu,sigma,alpha,t_max,xlab,ylab,paleta){
-  media <- alpha[1]/mu
-  desvio <- (alpha[1]/sigma)^2
+#' Gera curvas de confiabilidade para diferentes limiares considerando o tempo inicial da 
+#' ultima ação de manutenção e a degradação acumulada.
+#' 
+#' @param mu estimativa do parametro de drift (tendência) considerando os dados utilizados.
+#' @param sigma estimativa do parâmetro de difusão (variância) considerando os dados utilizados.
+#' @param alpha vetor com limiares de degradação que são considerandos criticos.
+#' @param t0 Tempo em que a última ação de degradação foi realizada.
+#' @param x0 Degradação restante considerando a última ação de manutenção.
+#' @param t_max Tempo máximo para ser plotado no gráfico.
+#' @param xlab Rótulo do eixo X.
+#' @param ylab Rótulo do eixo Y.
+#' @param paleta paleta de cor para geração dos gráficos.
+#'
+#' @return Gráfico exibindo as curvas de confiabilidade para limiares de degração considerandos.
+#'
+#' @examples
+#' # Exemplo de uso:
+#' # mle_drift1_y(df)
+#'
+#' @export
+plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
+  media <- (alpha[1]-x0)/mu
+  desvio <- ((alpha[1]-x0)/sigma)^2
   
-  t = seq(0,t_max,by=0.1)
-  r_mean <- statmod::pinvgauss(t,mean=media,shape = desvio,lower.tail = FALSE)
+  # Tempo Absoluto
+  t = seq(t0,t_max,by=0.1) # Tempo absoluto
+  
+  # Tempo Relativo
+  tau <- t - t0
+  
+  r_mean <- statmod::pinvgauss(tau,mean=media,shape = desvio,lower.tail = FALSE)
   
   df_visu <- data.frame(time = t,r_mean=r_mean,Threshold = alpha[1])
   for (i in 2:length(alpha)) {
-    media <- alpha[i]/mu
-    desvio <- (alpha[i]/sigma)^2
+    media <- (alpha[i]-x0)/mu
+    desvio <- ((alpha[i]-x0)/sigma)^2
     
-    r_mean <- statmod::pinvgauss(t,mean=media,shape = desvio,lower.tail = FALSE)
+    r_mean <- statmod::pinvgauss(tau,mean=media,shape = desvio,lower.tail = FALSE)
     
     df_visu_aux <- data.frame(time = t,r_mean=r_mean,Threshold = alpha[i])
     df_visu <- rbind(df_visu,df_visu_aux)
@@ -635,14 +697,95 @@ gera_confiabilidade <- function(mu,sigma,alpha,t_max,xlab,ylab,paleta){
     ggplot(aes(x=time,y=r_mean,colour = Threshold)) +
     scale_y_continuous(labels = scales::percent,limits=c(0,1)) +
     geom_line(linewidth=1.5,alpha=0.7) +
+    geom_vline(xintercept = t0-2) +
+    geom_vline(xintercept = t0,
+               colour="black", linetype = "longdash") +
     theme_classic() +
-    theme(#plot.title = element_blank(),
+    theme(plot.title = element_blank(),
           legend.position = c(0.9,0.8),
-          plot.title = element_text(hjust = 0.5,face = "bold")) +
+          # plot.title = element_text(hjust = 0.5,face = "bold")
+          ) +
     labs(title = "(II)",
          x = xlab,
          y = ylab) +
     coord_cartesian(expand = FALSE) +
  #   scale_color_viridis(discrete = TRUE, option = "D")
     tayloRswift::scale_color_taylor(palette = paleta,reverse = TRUE)
+}
+
+#' Plota caminho de degradação considerando os efeitos de ação de manutenção ação (Atualizado).
+#' 
+#' @param data Base de dados utilizada
+#' @param xlab Rotulo do eixo X
+#' @param ylab Rotulo do eixo Y
+#'
+#' @return Visualização do caminho de degradação
+#'
+#' @examples
+#' # Exemplo de uso:
+#' # plot_maintanance(df,"Time","Degradation")
+#'
+#' @export
+plot_maintanance <- function(data, xlab, ylab) {
+  
+  # Ordena o data.frame por Time (e por outro critério se necessário)
+  data <- data %>% arrange(Time)
+  
+  # Cria lista de índices onde Time é duplicado (2ª ocorrência)
+  duplicated_times <- data$Time[duplicated(data$Time)]
+  
+  # Cria uma nova base com quebra usando NA logo após o primeiro ponto duplicado
+  data_na <- data.frame()
+  i <- 1
+  while (i <= nrow(data)) {
+    current_row <- data[i, ]
+    data_na <- bind_rows(data_na, current_row)
+    
+    # Se o próximo tiver o mesmo Time → insere linha NA
+    if (i < nrow(data) && data$Time[i] == data$Time[i + 1]) {
+      na_row <- current_row
+      na_row$Y <- NA
+      data_na <- bind_rows(data_na, na_row)
+    }
+    
+    i <- i + 1
+  }
+  
+  # Gera o gráfico com a linha quebrada
+  p <- ggplot() +
+    geom_line(
+      data = data_na,
+      aes(x = Time, y = Y, color = "Degradation Path"),
+      alpha = 0.5, linetype = "solid", linewidth = 1
+    )
+  
+  # Adiciona os segmentos verticais nos pontos duplicados
+  for (ponto in duplicated_times) {
+    y_vals <- data$Y[data$Time == ponto]
+    p <- p +
+      geom_segment(
+        data = data.frame(x = ponto, xend = ponto, y = max(y_vals), yend = min(y_vals)),
+        aes(x = x, xend = xend, y = y, yend = yend, color = "Maintenance Effect"),
+        linetype = "dotted", linewidth = 1
+      )
+  }
+  
+  p <- p +
+    scale_color_manual(
+      name = NULL,
+      values = c(
+        "Degradation Path" = tayloRswift::swift_palettes$taylor1989[1],
+        "Maintenance Effect" = "black"
+      )
+    ) +
+    theme_classic() +
+    theme(
+      legend.position = "top",
+      plot.title = element_blank()
+    ) +
+    labs(x = xlab, y = ylab, title = "(I)") +
+    scale_y_continuous(expand = c(0, 0)) +
+    scale_x_continuous(expand = c(0, 0))
+
+  return(p)
 }

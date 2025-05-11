@@ -1,26 +1,33 @@
 
-## Pacotes
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(gridExtra)
-library(viridisLite)
-library(SimDesign)
-library(ggh4x)
-library(latex2exp)
-library(scales)
-library(ggthemes)
-library(viridis)
-library(latex2exp)							
-library(ggrepel)
-library(readxl)
-library(lubridate)
-library(statmod)
-library(tayloRswift)
+# ---------------------------------------------------
+# Arquivo: script_210824-DESKTOP-RKA95E1.r
+# Descrição: Conjunto de funções úteis para análise
+# Autor: George Anderson A. dos Santos
+# Data: 17-04-2024
+# ---------------------------------------------------
+# ---------------------------------------------------
+# Carregamento de Pacotes
+pacotes <- c(
+  "dplyr", "tidyr", "ggplot2", "gridExtra", "viridisLite", "SimDesign", "ggh4x",
+  "latex2exp", "scales", "ggthemes", "viridis", "ggrepel", "readxl",
+  "lubridate", "statmod", "tayloRswift", "WriteXLS", "gt", "forcats"
+)
 
+# Instala apenas os pacotes que ainda não estão instalados
+pacotes_nao_instalados <- pacotes[!pacotes %in% installed.packages()[, "Package"]]
+
+if (length(pacotes_nao_instalados) > 0) {
+  install.packages(pacotes_nao_instalados)
+}
+
+# Carrega todos os pacotes
+invisible(lapply(pacotes, library, character.only = TRUE))
+
+# ---------------------------------------------------
 ## Carregamento de funções
-source("funcoes_170424.r")
+source("utils.r")
 
+# ---------------------------------------------------
 ## Gerando dados
 set.seed(111)
 df_degradacao1 <- gera_dados(n_obs=1,t_max=20,n_med=20,v=2,sigma = sqrt(2))
@@ -40,12 +47,11 @@ mle_drift(data=df_degradacao2)
 mle_drift(data=df_degradacao3)
 mle_drift(data=df_degradacao4)
 
-
-#################################################################################
+# --------------------------------------------------------------------------------
 # Caso 1 do Artigo:  Statistical inference for a Wiener-based degradation model
 # with imperfect maintenance actions under different
 # observation schemes
-#################################################################################
+# --------------------------------------------------------------------------------
 
 # rho=0.5
 set.seed(111)
@@ -78,11 +84,11 @@ df_degradacao1 <-  gera_dados1(t_max = 40,n_med=20,v=2,sigma=sqrt(2),
 rho_hat(df_degradacao1)
 gera_plot1(df_degradacao1)
 
-##############################################
+# ------------------------------------------------------------------------
 ### Different rho's per maintenance: 30-04-2024
 ### ARD1 (Arithmetic Reduction of Degradation)
 ### Usar funçao gera_dados2
-##############################################
+# ------------------------------------------------------------------------
 
 set.seed(111)
 n_manu <- 3
@@ -107,7 +113,6 @@ set.seed(111)
 df_degradacao1 <-  gera_dados2(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
                                rho=rho,n_manu=n_manu)
 rho_hat(df_degradacao1)
-rho
 gera_plot1(df_degradacao1)
 
 
@@ -125,11 +130,11 @@ df_degradacao2 <-  gera_dados2(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
                                rho=rho,n_manu=n_manu)
 gera_plot1(df_degradacao2)
 
-##############################################
+# -------------------------------------------------------------------------
 ### Multiple systems with Different rho's per maintenance: 10-05-2024
 ### ARD1 (Arithmetic Reduction of Degradation)
 ### Usar funçao: gera_dados3, gera_plot2, mle_drift1, mle_sigma1
-##############################################
+# -------------------------------------------------------------------------
 
 # Geraçao e estimativas dos parâmetros considerando 4 Sistemas (n_s)
 set.seed(111)
@@ -146,34 +151,29 @@ mle_sigma1(df_degradacao1)
 mle_drift1_y(df_degradacao1)
 mle_sigma1_y(df_degradacao1)
 rho_hat(df_degradacao1)
+
 # Geraçao e estimativas dos parâmetros considerando 1000 Sistemas (n_s)
 set.seed(111)
 df_degradacao1 <- gera_dados3(n_s=1000,t_max = 20,n_med=n_med,v=2,sigma=sqrt(2),rho=rho,n_manu=n_manu)
 mle_drift1(df_degradacao1)
 mle_sigma1(df_degradacao1) #  entre 1 e 2 minutos para rodar
 
-################################################
-################################################
-############### Estudo de Simulação ############
-################################################
-################################################
-
+# ---------------------------------------------------------------------
+#################### Estudo de Simulação #############################
+# ---------------------------------------------------------------------
 Design <- SimDesign::createDesign(n_system = c(10,50,100,200),
                                   mu = c(4,16),
                                   sigma = c(1,10),
                                   n_main = c(3,4,5),
                                   n_intra = c(0,2,4))
-
-z.CI <- function(dat,alpha = 0.95){
-  xbar <- mean(dat)
-  SE <- sd(dat)/sqrt(length(dat))
-  z <- c(qnorm(alpha/2))
-  CI <- c(xbar-z*SE, xbar + z*SE)
-  CI
-}
-
-aux <- rnorm(1000,2)
-z.CI(aux)
+                                  
+# z.CI <- function(dat,alpha = 0.95){
+#   xbar <- mean(dat)
+#   SE <- sd(dat)/sqrt(length(dat))
+#   z <- c(qnorm(alpha/2))
+#   CI <- c(xbar-z*SE, xbar + z*SE)
+#   CI
+# }
 
 Generate <- function(condition,fixed_objects){
   n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
@@ -218,9 +218,10 @@ Summarise <- function(condition, results, fixed_objects) {
 # saveRDS(resultados,file = "SimDesign2.rds")
 resultados <- readRDS("SimDesign2.rds")
 
-####################################################
-##################### Gráfico ######################
-####################################################
+# ------------------------------------------------------------------------
+############################# Gráfico ####################################
+# Grafico de Bias e RMSE
+# ------------------------------------------------------------------------
 
 mu.labs <- c(TeX("$mu$"),"mu=16")
 names(mu.labs) <- c("4","16")
@@ -302,10 +303,11 @@ resultados %>%
   # scale_color_brewer(palette = "Set1",
   #                    labels = c(TeX(" $mu$    "),TeX(" $sigma$"))) +
   scale_colour_viridis_d(labels = c(TeX(" $mu$    "),TeX(" $sigma$")),option = "viridis",end = 0.8)
-
-####################################							
-
-par(mfrow=c(1,31))							
+					
+# ---------------------------------------------------------------------
+############################ Graficos #################################
+# grafico: tipos de reparo
+# ---------------------------------------------------------------------
 
 aux <- data.frame(x= c(0,4,4,8),y=c(0,0.5,0.0,0.5))							
 g1 <- aux %>%							
@@ -340,7 +342,11 @@ g3 <- aux3 %>%
 
 grid.arrange(g1,g2,g3,ncol=3)							
 
-###################							
+# ---------------------------------------------------------------------
+############################ Graficos #################################
+# Grafico: Caminhos de degradação
+# ---------------------------------------------------------------------						
+
 t <- seq(0,10,by=2)							
 set.seed(12)							
 degrad1 <- c(0,cumsum(rexp(n=length(t)-1,1/3)))							
@@ -361,11 +367,15 @@ data.frame(time = t,Unit1 = degrad1,Unit2 = degrad2,Unit3 = degrad3) %>%
   scale_y_continuous(expand = c(0, 0), limits = c(0,65)) +							
   tayloRswift::scale_color_taylor()							
 
-png("figures/myplot.png",width = 9,height = 3.5,units = "in")
-print(g1)
-dev.off()
-ggsave("figures/test_001.png", width = 9, height = 3.5, units = "cm")
-#######################							
+# png("figures/myplot.png",width = 9,height = 3.5,units = "in")
+# print(g1)
+# dev.off()
+# ggsave("figures/test_001.png", width = 9, height = 3.5, units = "cm")
+
+# ---------------------------------------------------------------------
+############################ Graficos #################################
+# grafico: Caminho de degradação (gaudoin article)
+# ---------------------------------------------------------------------
 
 set.seed(1111)							
 rho<- c(0.6, 0.6)							
@@ -409,116 +419,130 @@ df_degradacao1 %>%
   scale_x_continuous(expand = c(0, 0), limits = c(0,16),breaks = c(5,10)) +							
   labs(x = "Time", y = "Degradation")							
 
-
-#######################################################################
+# ---------------------------------------------------------------------
 ############### Dados - Banco Prof. Maria Luíza #######################
-#######################################################################
+# Recorte 01
+# ---------------------------------------------------------------------
 
+# Leitura dos dados (omitindo a primeira linha, possivelmente cabeçalho repetido)
 df <- read_excel("Copy of Filtro Manga - Dados de processo.xlsx")
 df <- df[-1,]
 
+# Define intervalo de tempo total de interesse
 i_time <- ymd_hms("2024-05-04 10:50:00")
 f_time <- ymd_hms("2024-05-04 20:00:00")
 
-##
+# Subconjunto inicial: pontos com diferencial = 0 dentro do intervalo
 df_aux <- df %>%
   filter(Diferencial_mmCa_800dPT8102 == 0,
          `Data Hora` >= i_time & `Data Hora` < f_time)
+
+# Visualiza esses pontos
 plot(df_aux$`Data Hora`,df_aux$Diferencial_mmCa_800dPT8102)
 
+# Define tempos de corte intermediário
 f_time_0 <- ymd_hms("2024-05-04 13:00:00")
+
+# Último instante com pressão = 0 antes de f_time_0
 x_0 <- df %>%
   filter(Diferencial_mmCa_800dPT8102 == 0,
          `Data Hora` >= i_time & `Data Hora` < f_time_0) %>% 
   select(`Data Hora`) %>%
   pull() %>% max()
 
+# Primeiro instante com pressão = 0 após f_time_0
 i_time_1 <- ymd_hms("2024-05-04 13:00:00")
 x_1 <- df %>%
   filter(Diferencial_mmCa_800dPT8102 == 0,
          `Data Hora` >= i_time_1 & `Data Hora` < f_time) %>% 
   select(`Data Hora`) %>%
-  pull() %>% min()
+  pull() %>% 
+  min()
 
-
-# Corte do primeiro subset
+# Subconjunto entre dois instantes definidos
 df_aux_1 <- df %>%
   filter(`Data Hora` >= x_0 & `Data Hora` < x_1)
 
-#  finning de 8 valores
+# Finning (amostragem) a cada 8 observações
 index <- seq(1,nrow(df_aux_1),by=8)
 df_thin_1 <- df_aux_1[index,]  
 
+# Define nova fronteira temporal
 x_2 <- df_thin_1 %>%
   filter(`Data Hora` >= i_time_1 & `Data Hora` < f_time) %>% 
   select(`Data Hora`) %>%
-  pull() %>% max()
+  pull() %>% 
+  max()
 
+# Novo subconjunto após x_2 até o final
 df_aux_2 <- df %>%
   filter(`Data Hora` >= x_2 & `Data Hora` < f_time)
 
-# retirando valores iguais a zero
+# Retira valores iguais a zero com índice específico
 indaux <- c(3,142:873)
 df_aux_2 <- df_aux_2[indaux,]
 
+# Novo finning a cada 8 linhas, com alguns ajustes manuais
 index2 <- seq(1,nrow(df_aux_2),by=8)
-index2[seq(1,length(index2),by=13)]
-
-df_aux_2[730,]
-
+# index2[seq(1,length(index2),by=13)]
 cx <- c(1,105,106,209,210,313,314,417,418,520,521,625,626,729,730)
-
-index2 <- c(index2,cx)
-index2 <- unique(index2)
-index2 <- sort(index2)
-
+index2 <- c(index2,cx) |> unique() |> sort()
 df_aux_2 <- df_aux_2[index2,]
-nrow(df_aux_2)/14
 
+# Verifica número de blocos de 14 observações
+nrow(df_aux_2) / 14  # Deve dar 7
+
+# Cria vetor de tempos para df_aux_2
 s1 <- seq(1,14)
 for (i in 1:8) {
   s2 <- seq(max(s1),max(s1) + 13)
   s1 <- c(s1,s2)
 }
 
-length(s1[15:(15+98)])
-length(s1)
+# Garante que o vetor tenha o comprimento certo para o número de linhas
+length(s1[15:(15+98)])  # 99 valores
+length(s1)  # Total
 
+# Adiciona coluna de tempo
 df_thin_1 <- df_thin_1 %>%
   mutate(Time = seq(1,nrow(df_thin_1)))
 
 df_aux_2 <- df_aux_2 %>%
   mutate(Time = s1[15:(15+98)])
 
+# Junta os dois subconjuntos
 df_aux_maria <- rbind(df_thin_1,df_aux_2)
-sub_maria <- df_aux_maria[1:50,]
 
+# Recorte para análise de exemplo
+sub_maria <- df_aux_maria[1:50,]
 plot(sub_maria$Time,sub_maria$Diferencial_mmCa_800dPT8102,type = "l")
+
+# Renomeia variável e adiciona identificador de objeto
 names(sub_maria)[5] <- "Y"
 sub_maria <- sub_maria %>%
   mutate(Time = Time -1,
          Objeto = "OBJ_001")
 
-gera_plot4(sub_maria,ylab="Degradation",xlab="Time")
+# Visualização e estimação dos parâmetros de degradação
+plot_maintanance(sub_maria,ylab="Degradation",xlab="Time")
 mle_drift1_y(sub_maria)
 mle_sigma1_y(sub_maria)
 rho_hat(sub_maria)
 
-# write.csv2(sub_maria %>%
-#              select(-Objeto),"subsets/recorte_01_thetaneg.csv",
-#            row.names = FALSE)
+# Exportação opcional
+# write.csv2(
+#   sub_maria %>% dplyr::select(-Objeto),
+#   "subsets/recorte_01_thetaneg.csv",
+#   row.names = FALSE
+# )
 
-# 3 minutos e meio entre cada medida (tempo original: 26 segundos)
-# numero de medidas entre ações de manutenção: 12
+# Observação: tempo real entre observações é 3,5 minutos (original = 26s)
+# Número de observações entre manutenções: 12
 
-# ##
-# t_aux <- ymd_hms("2024-05-04 15:29:27")
-# df %>% filter(`Data Hora` %in% c(t_aux,t_aux - hms("00:00:26")))
-
-
-#################
-### Recorte 02 ##
-#################
+# ---------------------------------------------------------------------
+############### Dados - Banco Prof. Maria Luíza #######################
+# Recorte 02
+# ---------------------------------------------------------------------
 
 # Leitura dos dados
 df <- read_excel("Copy of Filtro Manga - Dados de processo.xlsx")
@@ -573,16 +597,13 @@ sub_maria <- sub_maria %>%
   mutate(Time = Time -1,
          Objeto = "OBJ_001")
 
-names(sub_maria)
-
 # gerando grafico e estimando parametros
-g1 <- gera_plot4(sub_maria,ylab="Degradation/Diferencial",xlab="Time")
+g1 <- plot_maintanance(sub_maria,ylab="Degradation/Diferencial",xlab="Time")
 mu <- mle_drift1_y(sub_maria)
 sigma <- mle_sigma1_y(sub_maria)
 rho_hat(sub_maria)
 
-sub_maria_1 <- sub_maria
-
+# sub_maria_1 <- sub_maria
 # write.csv2(sub_maria_1 %>%
 #              select(-Objeto),"subsets/recorte_02_thetaposi.csv",
 #            row.names = FALSE)
@@ -590,31 +611,49 @@ sub_maria_1 <- sub_maria
 # 13 minutos (tempo original: 26 segundos)
 # numero de medidas entre ações de manutenção: 12
 
-##############################################
-###### Gerando Curvas de Confiabilidade ######
-##############################################
+# ------------------------------------------------
+######## Gerando Curvas de Confiabilidade ########
+# ------------------------------------------------
 
 # gera curvas de confiabilidade considerando fdp do first passage time (fpt) como gaussiana inversa
-
 # media: media
 # variancia: (media^3)/desvio
 
-g2 <- gera_confiabilidade(mu=mu,sigma=sigma,
-                    alpha=c(45,55,65,75),
-                    t_max = 75,
-                    xlab = "Time",ylab = "R(t)",
+# t0: tempo inicial
+t0 = 39
+
+# x0: degradação para o tempo inicial
+x0 = sub_maria %>%
+  filter(Time == 39) %>%
+  filter(Y == min(Y)) %>%
+  select(Y) %>%
+  pull()
+
+g2 <- plot_reliability(mu=mu,sigma=sigma,
+                    alpha=c(70,75,80),
+                    t0 = t0,
+                    x0 = x0,
+                    t_max = 60,
+                    xlab = "Time",ylab = "Reliability = R(t)",
                     paleta = "taylor1989")
 
 grid.arrange(g1,g2,ncol=2)
 
-#################################################
-### Gerando valores considerando distribuição ###
-#################################################
+# --------------------------------------------------------
+########### Gera Tabela de Confiabilidade ################
+# --------------------------------------------------------
 
-n_manu <- 3
-intra_manu <- 13
-n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)
-set.seed(321)
-df = gera_dados(t_max = n_med,n_obs = 1,n_med = n_med, sigma = sigma, v = mu)
-plot(df$Time,df$Wt,type="l")
-mle_drift(data=df)
+# reliability = df_visu %>%
+#   mutate(r_mean = paste(round(r_mean,digits = 4)*100,"%")) %>%
+#   spread(key = "Threshold",value="r_mean")
+# saveRDS(reliability,"confiabilidade.dat")
+
+# Carrega os dados
+reliability = readRDS("confiabilidade.dat")
+
+# filtra para tempos 39:45
+reliability = reliability %>%
+  filter(time %in% 39:45)
+
+# salva os dados
+write.csv2(reliability,"confiabilidade.csv")
