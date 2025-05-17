@@ -670,6 +670,7 @@ mle_sigma1_y <- function(data){
 #'
 #' @export
 plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
+  library(ggtext)
   media <- (alpha[1]-x0)/mu
   desvio <- ((alpha[1]-x0)/sigma)^2
   
@@ -682,17 +683,19 @@ plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
   r_mean <- statmod::pinvgauss(tau,mean=media,shape = desvio,lower.tail = FALSE)
   
   df_visu <- data.frame(time = t,r_mean=r_mean,Threshold = alpha[1])
-  for (i in 2:length(alpha)) {
-    media <- (alpha[i]-x0)/mu
-    desvio <- ((alpha[i]-x0)/sigma)^2
-    
-    r_mean <- statmod::pinvgauss(tau,mean=media,shape = desvio,lower.tail = FALSE)
-    
-    df_visu_aux <- data.frame(time = t,r_mean=r_mean,Threshold = alpha[i])
-    df_visu <- rbind(df_visu,df_visu_aux)
+  if (length(alpha) > 1) {
+    for (i in 2:length(alpha)) {
+      media <- (alpha[i]-x0)/mu
+      desvio <- ((alpha[i]-x0)/sigma)^2
+      
+      r_mean <- statmod::pinvgauss(tau,mean=media,shape = desvio,lower.tail = FALSE)
+      
+      df_visu_aux <- data.frame(time = t,r_mean=r_mean,Threshold = alpha[i])
+      df_visu <- rbind(df_visu,df_visu_aux)
+    }
   }
   
-  df_visu %>%
+  p <- df_visu %>%
     mutate(Threshold = as.factor(Threshold)) %>%
     ggplot(aes(x=time,y=r_mean,colour = Threshold)) +
     scale_y_continuous(labels = scales::percent,limits=c(0,1)) +
@@ -703,6 +706,7 @@ plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
     theme_classic() +
     theme(plot.title = element_blank(),
           legend.position = c(0.9,0.8),
+          axis.text.y = ggtext::element_markdown()
           # plot.title = element_text(hjust = 0.5,face = "bold")
           ) +
     labs(title = "(II)",
@@ -710,7 +714,47 @@ plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
          y = ylab) +
     coord_cartesian(expand = FALSE) +
  #   scale_color_viridis(discrete = TRUE, option = "D")
-    tayloRswift::scale_color_taylor(palette = paleta,reverse = TRUE)
+    tayloRswift::scale_color_taylor(palette = paleta,reverse = FALSE) +
+    annotate("text",x=(t0 + 2.5), y= 0.08,							
+             label=paste("t=",t0),size = 3,colour="black")
+  
+  if (length(alpha) == 1){
+    times_aux = c(60,90,120)
+    conf_extract <- rep(NA,length(times_aux))
+    
+    for (k in 1:length(times_aux)) {
+      conf_extract[k] <- df_visu %>% 
+        filter(time == times_aux[k]) %>% 
+        select(r_mean) %>% pull() %>% round(2)
+    }
+    names(conf_extract) <- times_aux
+    y_breaks <- c(0,0.25,0.50,0.75,1,conf_extract)
+    
+    y_labels <- sapply(y_breaks, function(y) {
+      percent_label <- scales::percent(y)
+      if (y %in% conf_extract) {
+        paste0("<span style='color:red;'>", percent_label, "</span>")
+      } else {
+        percent_label
+      }
+    })
+    
+    p <- p + geom_segment(aes(x=60,xend=60,y=0,yend=conf_extract["60"]),
+                          linetype = "dotted",linewidth=0.1, alpha = 0.2,lineend = "round") +
+      geom_segment(aes(x=90,xend=90,y=0,yend=conf_extract["90"]),
+                   linetype = "dotted",linewidth=0.1,alpha=0.2) +
+      geom_segment(aes(x=120,xend=120,y=0,yend=conf_extract["120"]),
+                   linetype = "dotted",linewidth=0.1,alpha=0.2) +
+      geom_segment(aes(x=t0-2,xend=60,y=conf_extract["60"],yend=conf_extract["60"]),
+                   linetype = "dotted",linewidth=0.1,alpha=0.2) +
+      geom_segment(aes(x=t0-2,xend=90,y=conf_extract["90"],yend=conf_extract["90"]),
+                   linetype = "dotted",linewidth=0.1,alpha=0.2) +
+      geom_segment(aes(x=t0-2,xend=120,y=conf_extract["120"],yend=conf_extract["120"]),
+                   linetype = "dotted",linewidth=0.1,alpha=0.2) +
+      scale_y_continuous(breaks = y_breaks, labels = y_labels, limits = c(0, 1))
+  }
+  
+  return(p)
 }
 
 #' Plota caminho de degradação considerando os efeitos de ação de manutenção ação (Atualizado).
@@ -726,7 +770,7 @@ plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
 #' # plot_maintanance(df,"Time","Degradation")
 #'
 #' @export
-plot_maintanance <- function(data, xlab, ylab) {
+plot_maintanance <- function(data, xlab, ylab,time=FALSE) {
   
   # Ordena o data.frame por Time (e por outro critério se necessário)
   data <- data %>% arrange(Time)
@@ -786,6 +830,12 @@ plot_maintanance <- function(data, xlab, ylab) {
     labs(x = xlab, y = ylab, title = "(I)") +
     scale_y_continuous(expand = c(0, 0)) +
     scale_x_continuous(expand = c(0, 0))
-
+  
+  if (time == TRUE){
+    for (j in 1:length(duplicated_times)){
+      p <- p + annotate("text",x=duplicated_times[j], y= (data %>% filter(Time==duplicated_times[j]) %>% select(Y) %>% min())-1,							
+                        label=paste("t=",duplicated_times[j]),size = 3,colour="black")
+    }
+  }
   return(p)
 }

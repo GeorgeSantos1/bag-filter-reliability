@@ -524,7 +524,7 @@ sub_maria <- sub_maria %>%
          Objeto = "OBJ_001")
 
 # Visualização e estimação dos parâmetros de degradação
-plot_maintanance(sub_maria,ylab="Degradation",xlab="Time")
+plot_maintanance(sub_maria,ylab="Degradation",xlab="Time",time = TRUE)
 mle_drift1_y(sub_maria)
 mle_sigma1_y(sub_maria)
 rho_hat(sub_maria)
@@ -598,7 +598,8 @@ sub_maria <- sub_maria %>%
          Objeto = "OBJ_001")
 
 # gerando grafico e estimando parametros
-g1 <- plot_maintanance(sub_maria,ylab="Degradation/Diferencial",xlab="Time")
+plot_maintanance(sub_maria,ylab="Degradation/Diferencial",xlab="Time",time = TRUE)
+rsvg::rsvg_pdf('figures/RESULT_001.svg',"figures/RESULT_001.pdf")
 mu <- mle_drift1_y(sub_maria)
 sigma <- mle_sigma1_y(sub_maria)
 rho_hat(sub_maria)
@@ -629,15 +630,15 @@ x0 = sub_maria %>%
   select(Y) %>%
   pull()
 
-g2 <- plot_reliability(mu=mu,sigma=sigma,
-                    alpha=c(70,75,80),
+plot_reliability(mu=mu,sigma=sigma,
+                    alpha=150,
                     t0 = t0,
                     x0 = x0,
-                    t_max = 60,
+                    t_max = c(150+5),
                     xlab = "Time",ylab = "Reliability = R(t)",
                     paleta = "taylor1989")
 
-grid.arrange(g1,g2,ncol=2)
+rsvg::rsvg_pdf('figures/RESULT_002.svg',"figures/RESULT_002.pdf")
 
 # --------------------------------------------------------
 ########### Gera Tabela de Confiabilidade ################
