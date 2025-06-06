@@ -248,7 +248,7 @@ rho_hat <- function(data) {
   
   for (i in 2:length(k)) {
     Zj[1] <- -diff(data$Y[data$Time == k[1]])
-    yji[1] <- sum(aux[1:(k[1])])
+    yji[1] <- sum(aux[1:(k[1]/pass)])
     Zj[i] <- -diff(data$Y[data$Time == k[i]])
     yji[i] <- sum(aux[(k[i - 1]/pass + i):(k[i]/pass + (i - 1))]) 
   }
@@ -279,7 +279,7 @@ gera_plot1 <- function(data) {
     labs(
       x = "Time",
       y = "Degradation",
-      title = "Degradation Paths",
+      title = "Degradation Paths (100%,50%,100%)",
       color = "Process"
     ) +
     theme(
@@ -501,7 +501,6 @@ mle_sigma1 <- function(data){
     }
   }
   sigma2_hat_biased <- sum(y_aux)/(length(s)*(N+length(k)+1))
-  sigma2_hat_unbiased <- sigma2_hat_biased*(N+length(k)+1)/(N+length(k))
   return(sqrt(sigma2_hat_biased))
 }
 
@@ -839,3 +838,57 @@ plot_maintanance <- function(data, xlab, ylab,time=FALSE) {
   }
   return(p)
 }
+
+
+############
+## Design ##
+############
+
+Design <- SimDesign::createDesign(n_system = c(10,50),
+                                  mu = 4,
+                                  sigma = sqrt(1),
+                                  n_main = 3,
+                                  n_intra = 4)
+
+Generate <- function(condition,fixed_objects){
+  n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
+  rho = c(0.1,0.3,0.5)
+  
+  dat <- gera_dados3(n_s=condition$n_system,
+                     t_max = 20,n_med=n_med,
+                     v=condition$mu,sigma=condition$sigma,rho=rho,n_manu=condition$n_main)
+  dat
+}
+
+Analyse <- function(condition, dat, fixed_objects) {
+  n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
+  
+  mu_hat <- mle_drift1(dat)
+  sigma_hat <- mle_sigma1(dat)
+  erro_padrao <- sigma_hat / sqrt(condition$n_system * 20)
+  
+  t_crit <- qt(1 - 0.05/2, df = condition$n_system*(n_med+condition$n_main +1) - 1)
+  IC_mu_hat <- c(mu_hat - t_crit * erro_padrao, mu_hat + t_crit * erro_padrao)
+  CP_mu_hat <- ECR(IC_mu_hat, condition$mu)
+  
+  ret <- c(mu_hat = mu_hat, sigma_hat = sigma_hat,
+          CP_mu_hat = CP_mu_hat)
+  ret
+}
+
+Summarise <- function(condition, results, fixed_objects) {
+  obs_bias <- bias(results[, c("mu_hat", "sigma_hat")],
+                   parameter = c(condition$mu, condition$sigma))
+  obs_RMSE <- RMSE(results[, c("mu_hat", "sigma_hat")],
+                   parameter = c(condition$mu, condition$sigma))
+  obs_MAE <- SimDesign::MAE(results[, c("mu_hat", "sigma_hat")],
+                            parameter = c(condition$mu, condition$sigma))
+  obs_CP_mu_hat <- mean(results$CP_mu_hat)
+  
+  ret <- c(bias = obs_bias, RMSE = obs_RMSE, MAE = obs_MAE, 
+           CP_mu_hat = obs_CP_mu_hat)
+  ret
+}
+
+# resultados <- runSimulation(design=Design, replications=1000,
+#                              generate=Generate, analyse=Analyse,summarise = Summarise)

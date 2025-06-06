@@ -125,7 +125,7 @@ gera_plot1(df_degradacao1)
 
 
 set.seed(111)
-rho<- c(1, 0, 1)
+rho<- c(0.5, 0.5, 1)
 df_degradacao2 <-  gera_dados2(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
                                rho=rho,n_manu=n_manu)
 gera_plot1(df_degradacao2)
@@ -138,11 +138,11 @@ gera_plot1(df_degradacao2)
 
 # Geraçao e estimativas dos parâmetros considerando 4 Sistemas (n_s)
 set.seed(111)
-rho<- c(0.5, 1, 0)
+rho<- c(1, 0.5, 1)
 n_manu <- 3
 intra_manu <- 4
 n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)
-df_degradacao1 <- gera_dados3(n_s=1,t_max = 20,n_med=n_med,v=2,sigma=sqrt(2),rho=rho,n_manu=n_manu)
+df_degradacao1 <- gera_dados3(n_s=1,t_max = 20,n_med=n_med,v=3,sigma=sqrt(2),rho=rho,n_manu=n_manu)
 
 gera_plot2(df_degradacao1)
 mle_drift1(df_degradacao1)
@@ -154,7 +154,7 @@ rho_hat(df_degradacao1)
 
 # Geraçao e estimativas dos parâmetros considerando 1000 Sistemas (n_s)
 set.seed(111)
-df_degradacao1 <- gera_dados3(n_s=1000,t_max = 20,n_med=n_med,v=2,sigma=sqrt(2),rho=rho,n_manu=n_manu)
+df_degradacao1 <- gera_dados3(n_s=1000,t_max = 20,n_med=n_med,v=3,sigma=sqrt(2),rho=rho,n_manu=n_manu)
 mle_drift1(df_degradacao1)
 mle_sigma1(df_degradacao1) #  entre 1 e 2 minutos para rodar
 
@@ -333,8 +333,8 @@ line_data <- data.frame(x=c(4,4), y=c(0,0.2))
 
 g3 <- aux3 %>%							
   ggplot(aes(x=x, y=y)) +							
-  geom_line(linewidth=1.5) +							
-  geom_line(data = line_data, aes(x=x, y=y),linetype = 3,linewidth=1.5) +							
+  geom_line(linewidth=1) +							
+  geom_line(data = line_data, aes(x=x, y=y),linetype = 3,linewidth=1) +							
   theme_classic() +							
   labs(x = "Time", y = "Degradation", title = "Imperfect Repair") +							
   scale_x_continuous(expand = c(0, 0)) +							
@@ -356,8 +356,8 @@ degrad3 <- c(0,cumsum(rexp(n=length(t)-1,1/9)))
 data.frame(time = t,Unit1 = degrad1,Unit2 = degrad2,Unit3 = degrad3) %>%							
   tidyr::gather(key="unit",value="deg",-time) %>%							
   ggplot(aes(x=time,y=deg,group = unit,colour = unit)) +							
-  geom_point(size=3,colour="black") +							
-  geom_line(linewidth=1.5,alpha=0.7) +							
+  geom_point(size=1.5,colour="black") +							
+  geom_line(linewidth=1,alpha=0.7) +							
   theme_classic() +							
   theme(legend.title = element_blank(),							
         plot.title = element_blank(),							
@@ -631,7 +631,7 @@ x0 = sub_maria %>%
   pull()
 
 plot_reliability(mu=mu,sigma=sigma,
-                    alpha=150,
+                    alpha = 150,
                     t0 = t0,
                     x0 = x0,
                     t_max = c(150+5),
@@ -644,17 +644,323 @@ rsvg::rsvg_pdf('figures/RESULT_002.svg',"figures/RESULT_002.pdf")
 ########### Gera Tabela de Confiabilidade ################
 # --------------------------------------------------------
 
-# reliability = df_visu %>%
-#   mutate(r_mean = paste(round(r_mean,digits = 4)*100,"%")) %>%
-#   spread(key = "Threshold",value="r_mean")
-# saveRDS(reliability,"confiabilidade.dat")
+reliability = df_visu %>%
+  mutate(r_mean = paste(round(r_mean,digits = 4)*100,"%")) %>%
+  spread(key = "Threshold",value="r_mean")
+saveRDS(reliability,"confiabilidade.dat")
 
 # Carrega os dados
 reliability = readRDS("confiabilidade.dat")
 
 # filtra para tempos 39:45
 reliability = reliability %>%
-  filter(time %in% 39:45)
+  filter(time %in% c(39,50,70,90,110,130,150,170))
+
+library(grid)
+library(gridExtra)
+
+myTable <- tableGrob(reliability,
+                     rows = NULL)
+grid.draw(myTable)
 
 # salva os dados
-write.csv2(reliability,"confiabilidade.csv")
+write.csv2(reliability,"confiabilidade.xlsx")
+
+
+
+
+########################################
+########################################
+########################################
+
+
+library(patchwork) # Para combinar os gráficos
+
+gera_plot_exp <- function(){
+  # Parâmetros
+  tempos <- seq(0, 5, length.out = 100)
+  lambdas <- c(0.5, 1.0, 1.5)
+  
+  # Geração dos dados
+  dados <- expand.grid(tempo = tempos, lambda = lambdas) %>%
+    mutate(
+      R_t = exp(-lambda * tempo),
+      lambda_t = lambda,
+      ft_t = dexp(tempo,lambda)
+    )
+  
+  # Converter lambda em fator para legenda
+  dados$lambda_f <- factor(dados$lambda, labels = c("α = 0.5", "α = 1.0", "α = 1.5"))
+  
+  # Gráfico de Confiabilidade
+  g1 <- ggplot(dados, aes(x = tempo, y = ft_t, color = lambda_f, linetype = lambda_f)) +
+    geom_line(size = 1) +
+    labs(title = "Densidade", x = "Tempo", y = "f(t)", color = "", linetype = "") +
+    theme_classic() +
+    theme(legend.title = element_blank(),
+          legend.position = c(0.9,0.9),
+          plot.title = element_text(hjust = 0.5)) +
+    scale_x_continuous(expand = c(0, 0)) +							
+    scale_y_continuous(expand = c(0, 0)) +
+    tayloRswift::scale_color_taylor()
+  
+  # Gráfico de Taxa de Falha
+  g3 <- ggplot(dados, aes(x = tempo, y = lambda_t, color = lambda_f, linetype = lambda_f)) +
+    geom_line(size = 1) +
+    labs(title = "Taxa de Falha", x = "Tempo", y = "λ(t)", color = "", linetype = "") +
+    theme_classic() +
+    theme(legend.position="none",
+          plot.title = element_text(hjust = 0.5)) +
+    scale_x_continuous(expand = c(0, 0)) +							
+    scale_y_continuous(expand = c(0, 0),limits = c(0.4,1.6)) +
+    tayloRswift::scale_color_taylor()
+  
+  # Gráfico de Taxa de Falha Acumulada
+  g2 <- ggplot(dados, aes(x = tempo, y = R_t, color = lambda_f, linetype = lambda_f)) +
+    geom_line(size = 1) +
+    labs(title = "Confiabilidade", x = "Tempo", y = "R(t)", color = "", linetype = "") +
+    theme_classic() +
+    theme(legend.position="none",
+          plot.title = element_text(hjust = 0.5)) +
+    scale_x_continuous(expand = c(0, 0)) +							
+    scale_y_continuous(expand = c(0, 0)) +
+    tayloRswift::scale_color_taylor()
+  
+  # Combinar os gráficos lado a lado
+  layout <- "
+  AAAABBBB
+  ##CCCC##
+  "
+  g1+g2+g3 +
+    plot_layout(design = layout)
+}
+
+gera_plot_weibull <- function(){
+  tempos <- seq(0, 5, length.out = 100)
+  gammas <- c(0.5, 1.0, 1.5)
+  alpha <- 1
+  
+  dados <- expand.grid(t = tempos, gamma = gammas, alpha = alpha)
+  
+  # Compute R(t), lambda(t), and Lambda(t)
+  dados$R_t <- exp(-(dados$t/dados$alpha)^dados$gamma)  # Reliability function
+  dados$lambda_t <- (dados$gamma/(dados$alpha^dados$gamma)) * (dados$t)^(dados$gamma - 1)  # Instantaneous failure rate
+  dados$ft_t <- dweibull(dados$t,dados$gamma,dados$alpha)  # Cumulative failure rate
+  
+  # Replace Inf/NaN in lambda_t with 0 for t = 0 (for gamma < 1)
+  # dados$lambda_t[data$t == 0 & data$gamma < 1] <- 0
+  dados$lambda_f <- factor(dados$gamma, labels = c("γ = 0.5, α = 1", "γ = 1.0, α = 1", "γ = 1.5, α = 1"))
+  
+  
+  g1 <- ggplot(dados, aes(x = t, y = ft_t, color = lambda_f, linetype = lambda_f)) +
+    geom_line(size = 1) +
+    labs(title = "Densidade", x = "Tempo", y = "f(t)", color = "", linetype = "") +
+    theme_classic() +
+    theme(legend.title = element_blank(),
+          legend.position = c(0.85,0.85),
+          plot.title = element_text(hjust = 0.5)) +
+    scale_x_continuous(expand = c(0, 0)) +							
+    scale_y_continuous(expand = c(0, 0)) +
+    tayloRswift::scale_color_taylor()
+  
+  # Gráfico de Taxa de Falha
+  g3 <- ggplot(dados, aes(x = t, y = lambda_t, color = lambda_f, linetype = lambda_f)) +
+    geom_line(size = 1) +
+    labs(title = "Taxa de Falha", x = "Tempo", y = "λ(t)", color = "", linetype = "") +
+    theme_classic() +
+    theme(legend.position="none",
+          plot.title = element_text(hjust = 0.5)) +
+    scale_x_continuous(expand = c(0, 0)) +							
+    scale_y_continuous(expand = c(0, 0)) +
+    tayloRswift::scale_color_taylor()
+  
+  # Gráfico de Distribuição
+  g2 <- ggplot(dados, aes(x = t, y = R_t, color = lambda_f, linetype = lambda_f)) +
+    geom_line(size = 1) +
+    labs(title = "Confiabilidade", x = "Tempo", y = "R(t)", color = "", linetype = "") +
+    theme_classic() +
+    theme(legend.position="none",
+          plot.title = element_text(hjust = 0.5)) +
+    scale_x_continuous(expand = c(0, 0)) +							
+    scale_y_continuous(expand = c(0, 0)) +
+    tayloRswift::scale_color_taylor()
+  
+  
+  layout <- "
+  AAAABBBB
+  ##CCCC##
+  "
+  g1+g2+g3 +
+    plot_layout(design = layout)
+}
+
+gera_plot_lognormal <- function(){
+  tempos <- seq(0, 5, length.out = 100)
+  sigma <- c(0.5, 1.0, 1.5)
+  mu <- 0
+  
+  dados <- expand.grid(t = tempos, sigma = sigma, mu = mu)
+  
+  # Compute R(t), lambda(t), and Lambda(t)
+  dados$R_t <- stats::plnorm(dados$t, meanlog = dados$mu, sdlog = dados$sigma,lower.tail = FALSE)  # Reliability function
+  dados$ft_t <- stats::dlnorm(dados$t, meanlog = dados$mu, sdlog = dados$sigma)  # Cumulative failure rate
+  dados$lambda_t <- dados$ft_t/dados$R_t  # Instantaneous failure rate
+  
+  # Replace Inf/NaN in lambda_t with 0 for t = 0 (for gamma < 1)
+  # dados$lambda_t[data$t == 0 & data$gamma < 1] <- 0
+  dados$lambda_f <- factor(dados$sigma, labels = c("μ = 0, σ = 0.5", "μ = 0, σ = 1.0", "μ = 0, σ = 1.5"))
+  
+  
+  g1 <- ggplot(dados, aes(x = t, y = ft_t, color = lambda_f, linetype = lambda_f)) +
+    geom_line(size = 1) +
+    labs(title = "Densidade", x = "Tempo", y = "f(t)", color = "", linetype = "") +
+    theme_classic() +
+    theme(legend.title = element_blank(),
+          legend.position = c(0.85,0.85),
+          plot.title = element_text(hjust = 0.5)) +
+    scale_x_continuous(expand = c(0, 0)) +							
+    scale_y_continuous(expand = c(0, 0),limits = c(0,1)) +
+    tayloRswift::scale_color_taylor()
+  
+  # Gráfico de Taxa de Falha
+  g3 <- ggplot(dados, aes(x = t, y = lambda_t, color = lambda_f, linetype = lambda_f)) +
+    geom_line(size = 1) +
+    labs(title = "Taxa de Falha", x = "Tempo", y = "λ(t)", color = "", linetype = "") +
+    theme_classic() +
+    theme(legend.position="none",
+          plot.title = element_text(hjust = 0.5)) +
+    scale_x_continuous(expand = c(0, 0)) +							
+    scale_y_continuous(expand = c(0, 0),limits = c(0,2)) +
+    tayloRswift::scale_color_taylor()
+  
+  # Gráfico de Distribuição
+  g2 <- ggplot(dados, aes(x = t, y = R_t, color = lambda_f, linetype = lambda_f)) +
+    geom_line(size = 1) +
+    labs(title = "Confiabilidade", x = "Tempo", y = "R(t)", color = "", linetype = "") +
+    theme_classic() +
+    theme(legend.position="none",
+          plot.title = element_text(hjust = 0.5)) +
+    scale_x_continuous(expand = c(0, 0)) +							
+    scale_y_continuous(expand = c(0, 0)) +
+    tayloRswift::scale_color_taylor()
+  
+  
+  layout <- "
+  AAAABBBB
+  ##CCCC##
+  "
+  g1+g2+g3 +
+    plot_layout(design = layout)
+}
+
+plot_censura_all <- function(){
+  # Simulando dados base
+  dados <- tibble::tibble(
+    paciente = rep(1:6, 4),
+    tempo_inicial = 0,
+    tempo_final = c(6, 10, 14, 12, 16, 18,
+                    6, 20, 20, 12, 16, 20,
+                    6, 10, 20, 12, 20, 20,
+                    9, 20, 14, 12, 20, 7),
+    evento = c(1, 1, 1, 1, 1, 1,
+               1, 0, 0, 1, 1, 0,
+               1, 1, 1, 1, 0, 0,
+               1, 0, 1, 0, 0, 0),
+    tipo = rep(c(
+      "(a) Dados completos",
+      "(b) Dados com censura tipo I",
+      "(c) Dados com censura tipo II",
+      "(d) Dados com censura aleatória"
+    ), each = 6)
+  )
+  
+  # Gráfico base para cada cenário
+  plot_censura <- function(tipo_plot) {
+    df <- filter(dados, tipo == tipo_plot)
+    ggplot(df, aes(y = paciente)) +
+      geom_segment(aes(x = tempo_inicial, xend = tempo_final, yend = paciente), size = 0.6) +
+      geom_point(aes(x = tempo_final, shape = factor(evento)), size = 2) +
+      scale_shape_manual(values = c(`0` = 1, `1` = 16)) +
+      scale_y_reverse(breaks = 1:6) +
+      coord_cartesian(xlim = c(0, 22)) +
+      geom_vline(xintercept = 20, linetype = "dotted") +
+      annotate("text", x = 16, y = 1.5, label = "Final do Experimento", hjust = 0, size = 2) +
+      labs(x = "Tempos", y = "Equipamentos", title = tipo_plot) +
+      theme_classic() +
+      scale_x_continuous(expand = c(0.01, 0.01)) +
+      theme(plot.title = element_text(hjust = 0.5),
+            legend.position = "none")
+  }
+  
+  # Criar os 4 gráficos
+  g1 <- plot_censura("(a) Dados completos")
+  g2 <- plot_censura("(b) Dados com censura tipo I")
+  g3 <- plot_censura("(c) Dados com censura tipo II")
+  g4 <- plot_censura("(d) Dados com censura aleatória")
+  
+  # Combinar com patchwork
+  (g1 + g2) /
+    (g3 + g4)
+}
+
+gera_plot_exp()
+# Salvar em 900x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_EXP.svg',"figures/PLOT_EXP.pdf")
+
+gera_plot_weibull()
+# Salvar em 900x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_WEIBULL.svg',"figures/PLOT_WEIBULL.pdf")
+
+gera_plot_lognormal()
+# Salvar em 900x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_LOGNORMAL.svg',"figures/PLOT_LOGNORMAL.pdf")
+
+plot_censura_all()
+# Salvar em 1000x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_CENSURA.svg',"figures/PLOT_CENSURA.pdf")
+
+
+####################################
+####################################
+####################################
+
+library(ggplot2)
+library(dplyr)
+
+gera_plot_banheira <- function(){
+  # Domínio do tempo
+  t <- seq(0, 100, length.out = 500)
+  
+  # Parâmetros para simetria
+  a <- 0.025
+  b <- 1.8
+  
+  # Definir lambda(t)
+  lambda <- case_when(
+    t < 30 ~ 1 + a * (30 - t)^b,       # Mortalidade infantil (espelho)
+    t >= 30 & t <= 70 ~ 1,             # Vida operacional
+    t > 70 ~ 1 + a * (t - 70)^b        # Obsolescência
+  )
+  
+  df <- data.frame(t = t, lambda = lambda + 10)
+  
+  # Gráfico
+  ggplot(df, aes(x = t, y = lambda)) +
+    geom_line(color = tayloRswift::swift_palettes$taylor1989[6], linewidth = 1) +
+    geom_vline(xintercept = c(30, 70), linetype = "dashed") +
+    annotate("text", x = 14, y = 20, label = "Mortalidade\nInfantil", hjust = 0) +
+    annotate("text", x = 50, y = 14, label = "Vida Operacional", hjust = 0.5) +
+    annotate("text", x = 74, y = 20, label = "Obsolescência", hjust = 0) +
+    labs(
+      x = "Tempo",
+      y = expression(lambda(t))
+    ) +
+    theme_classic() +
+    scale_y_continuous(expand = c(0, 0),limits = c(5,25)) +
+    theme(axis.text = element_blank())
+}
+
+gera_plot_banheira()
+# Salvar em 600x350 em .svg
+rsvg::rsvg_pdf('figures/PLOT_BANHEIRA.svg',"figures/PLOT_BANHEIRA.pdf")
+
