@@ -149,37 +149,20 @@ mle_drift <- function(data) {
 #'
 #' @export
 mle_sigma <- function(data) {
-  n_med <- c(table(data$Objeto))
-  n_obs <- c(length(n_med))
-  last_index <- c(seq(1:n_obs) * n_med)
-  last_d <- data$Wt[last_index]
-  last_t <- data$Time[last_index]
+  # Calcula os incrementos
+  DeltaW <- diff(data$Wt)
+  DeltaT <- diff(data$Time)
   
-  first_index <- c(0, last_index[-n_obs]) + 2
-  first_d <- data$Wt[first_index]
-  first_t <- data$Time[first_index]
+  # Estimativa de mu
+  mu_hat <- sum(DeltaW) / sum(DeltaT)
   
-  m_bar <- mean(c(table(data$Objeto)))
+  # Estimativa de sigma^2
+  sigma2_hat <- sum((DeltaW - mu_hat * DeltaT)^2) / sum(DeltaT)
   
-  y_ij <- diff(data$Wt[(first_index)[1]:(n_med * seq(1:n_obs))[1]])
-  s_ij <- diff(data$Time[(first_index)[1]:(n_med * seq(1:n_obs))[1]])
-  for (i in 2:n_obs) {
-    aux <- diff(data$Wt[(first_index)[i]:(n_med * seq(1:n_obs))[i]])
-    y_ij <- c(y_ij, aux)
-    aux1 <- diff(data$Time[(first_index)[i]:(n_med * seq(1:n_obs))[i]])
-    s_ij <- c(s_ij, aux1)
-  }
+  # Estimativa de sigma
+  sigma_hat <- sqrt(sigma2_hat)
   
-  aux2 <- rep(NA, length(s_ij))
-  for (i in 1:length(s_ij)) {
-    aux2[i] <- (y_ij[i]^2) / s_ij[i]
-  }
-  aux3 <- 1 / (m_bar * (n_obs-1))
-  aux4 <- n_obs * ((mean(last_d) - mean(first_d))^2 / (mean(last_t) - mean(first_t)))
-  resultado <- aux3 * (sum(aux2) - aux4)
-  resultado <- sqrt(resultado)
-  
-  return(resultado)
+  return(sigma_hat)
 }
 
 #' Gera dados simulados de processo Wiener com intervenção de manutenção.
