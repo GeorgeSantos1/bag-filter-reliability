@@ -10,7 +10,8 @@
 pacotes <- c(
   "dplyr", "tidyr", "ggplot2", "gridExtra", "viridisLite", "SimDesign", "ggh4x",
   "latex2exp", "scales", "ggthemes", "viridis", "ggrepel", "readxl",
-  "lubridate", "statmod", "tayloRswift", "WriteXLS", "gt", "forcats"
+  "lubridate", "statmod", "tayloRswift", "WriteXLS", "gt", "forcats",
+  "patchwork", "grid"
 )
 
 # Instala apenas os pacotes que ainda não estão instalados
@@ -666,15 +667,9 @@ grid.draw(myTable)
 # salva os dados
 write.csv2(reliability,"confiabilidade.xlsx")
 
-
-
-
 ########################################
 ########################################
 ########################################
-
-
-library(patchwork) # Para combinar os gráficos
 
 gera_plot_exp <- function(){
   # Parâmetros
@@ -903,29 +898,58 @@ plot_censura_all <- function(){
     (g3 + g4)
 }
 
-gera_plot_exp()
-# Salvar em 900x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_EXP.svg',"figures/PLOT_EXP.pdf")
-
-gera_plot_weibull()
-# Salvar em 900x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_WEIBULL.svg',"figures/PLOT_WEIBULL.pdf")
-
-gera_plot_lognormal()
-# Salvar em 900x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_LOGNORMAL.svg',"figures/PLOT_LOGNORMAL.pdf")
-
-plot_censura_all()
-# Salvar em 1000x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_CENSURA.svg',"figures/PLOT_CENSURA.pdf")
-
-
-####################################
-####################################
-####################################
-
-library(ggplot2)
-library(dplyr)
+gera_plot_degrada <- function(){
+  set.seed(123)
+  time <- seq(0, 10, length.out = 100)
+  degradation <- cumsum(rnorm(100, mean = 0.2, sd = 0.5))
+  degradation <- degradation - min(degradation)  # garantir valores positivos
+  
+  # Definir threshold de falha
+  failure_threshold <- 20
+  
+  # Encontrar o primeiro índice onde ultrapassa o threshold
+  failure_index <- which(degradation >= failure_threshold)[1]
+  
+  # Interpolação linear entre os dois pontos vizinhos
+  if (failure_index > 1) {
+    x1 <- time[failure_index - 1]
+    x2 <- time[failure_index]
+    y1 <- degradation[failure_index - 1]
+    y2 <- degradation[failure_index]
+    
+    # fórmula da interpolação linear
+    failure_time <- x1 + (failure_threshold - y1) * (x2 - x1) / (y2 - y1)
+    failure_level <- failure_threshold
+  } else {
+    # Caso ultrapasse logo no primeiro ponto
+    failure_time <- time[failure_index]
+    failure_level <- degradation[failure_index]
+  }
+  
+  # Criar o data frame
+  df <- data.frame(time = time, degradation = degradation)
+  
+  # Gerar o gráfico
+  p <- ggplot(df, aes(x = time, y = degradation)) +
+    geom_line(color = tayloRswift::swift_palettes$taylor1989[1],size = 1) +
+    geom_hline(yintercept = failure_threshold, color = tayloRswift::swift_palettes$taylor1989[6], linetype = "dotdash", size = 1) +
+    geom_point(aes(x = failure_time, y = failure_level), color = "red", size = 3) +
+    annotate("text", x = 2, y = failure_threshold -5, label = "Limiar de Falha", hjust = 0, angle = 0) +
+    annotate("segment", x = 2.6, xend = 3, y = failure_threshold-4.5, yend = failure_threshold-0.5, 
+             arrow = arrow(length = unit(0.2,"cm")), color = "black",linewidth = 1) +
+    annotate("text", x = 6, y = 10, label = "Caminho de Degradação", hjust = 0, angle = 0) +
+    annotate("segment", x = 7, xend = 6.8, y = 10.5, yend = 14, 
+             arrow = arrow(length = unit(0.2,"cm")), color = "black",linewidth = 1) +
+    annotate("text", x = 7.5, y = failure_level + 2, label = "Tempo de Falha", hjust = 0, angle = 0) +
+    annotate("segment", x = 8.5, xend = failure_time-0.15, y = failure_level+1.5, yend = failure_level+0.5, 
+             arrow = arrow(length = unit(0.2,"cm")), color = "black",linewidth = 1) +
+    labs(x = "Tempo", y = "Nível de Degradação") +
+    scale_x_continuous(expand = c(0, 0),limits = c(0,10.2)) +							
+    scale_y_continuous(expand = c(0, 0),limits = c(0,25))+
+    theme_classic()+
+    tayloRswift::scale_color_taylor()
+  print(p)
+}
 
 gera_plot_banheira <- function(){
   # Domínio do tempo
@@ -960,7 +984,27 @@ gera_plot_banheira <- function(){
     theme(axis.text = element_blank())
 }
 
+gera_plot_exp()
+# Salvar em 900x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_EXP.svg',"figures/PLOT_EXP.pdf")
+
+gera_plot_weibull()
+# Salvar em 900x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_WEIBULL.svg',"figures/PLOT_WEIBULL.pdf")
+
+gera_plot_lognormal()
+# Salvar em 900x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_LOGNORMAL.svg',"figures/PLOT_LOGNORMAL.pdf")
+
+plot_censura_all()
+# Salvar em 1000x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_CENSURA.svg',"figures/PLOT_CENSURA.pdf")
+
 gera_plot_banheira()
 # Salvar em 600x350 em .svg
 rsvg::rsvg_pdf('figures/PLOT_BANHEIRA.svg',"figures/PLOT_BANHEIRA.pdf")
+
+gera_plot_degrada()
+#salvar em 800x400 em .svg
+rsvg::rsvg_pdf("figures/PLOT_DEGRADA001.svg","figures/PLOT_DEGRADA001.pdf")
 
