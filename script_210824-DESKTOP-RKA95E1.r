@@ -31,22 +31,26 @@ source("utils.r")
 # ---------------------------------------------------
 ## Gerando dados
 set.seed(111)
-df_degradacao1 <- gera_dados(n_obs=1,t_max=20,n_med=20,v=2,sigma = sqrt(2))
-df_degradacao2 <- gera_dados(n_obs=10,t_max=20,n_med=200,v=3.5,sigma = 1)
+df_degradacao1 <- gera_dados(n_obs=1,t_max=20,n_med=100,v=2,sigma = sqrt(2))
+df_degradacao2 <- gera_dados(n_obs=1,t_max=20,n_med=100,v=0,sigma = 4)
 df_degradacao3 <- gera_dados(n_obs=10,t_max=20,n_med=200,v=10,sigma = 3)
 df_degradacao4 <- gera_dados(n_obs=10,t_max=20,n_med=200,v=10,sigma = 1)
+
+aux <- diff(df_degradacao2$Wt)
+mean(aux)
+var(aux)
 
 ## Plotando curvas de degradação
 gera_plot(df_degradacao1)
 gera_plot(df_degradacao2)
-gera_plot(df_degradacao3)
-gera_plot(df_degradacao4)
 
 ## EMV: Drift
 mle_drift(data=df_degradacao1)
 mle_drift(data=df_degradacao2)
-mle_drift(data=df_degradacao3)
-mle_drift(data=df_degradacao4)
+
+## EMV: Sigma
+mle_sigma(data=df_degradacao1)
+mle_sigma(data=df_degradacao2)
 
 # --------------------------------------------------------------------------------
 # Caso 1 do Artigo:  Statistical inference for a Wiener-based degradation model
@@ -984,6 +988,29 @@ gera_plot_banheira <- function(){
     theme(axis.text = element_blank())
 }
 
+gera_plot_wiener <- function(){
+  set.seed(123)
+  df_aux <- gera_dados(n_obs=1,t_max=20,n_med=100,v=0,sigma = 4)
+  df_aux1 <- gera_dados(n_obs=1,t_max=20,n_med=100,v=5,sigma = 4)
+  
+  df_aux$v <- "0"
+  df_aux1$v <- "5"
+  
+  df<- rbind(df_aux,df_aux1)
+  df$v <- factor(df$v,labels = c("μ = 0, σ = 4", "μ = 5, σ = 4"))
+  
+  g1 <- ggplot(df,aes(x=Time,y=Wt,colour = v)) +
+    geom_line(size=1,alpha=0.9) +
+    labs(x = "Tempo", y = "Degradação", color = "") +
+    theme_classic() +
+    theme(legend.title = element_blank(),
+          legend.position = c(0.15,0.85)) +
+    tayloRswift::scale_color_taylor() +
+    scale_x_continuous(expand = c(0, 0),limits = c(0,20.5))
+  
+  print(g1)
+}
+
 gera_plot_exp()
 # Salvar em 900x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_EXP.svg',"figures/PLOT_EXP.pdf")
@@ -1005,6 +1032,11 @@ gera_plot_banheira()
 rsvg::rsvg_pdf('figures/PLOT_BANHEIRA.svg',"figures/PLOT_BANHEIRA.pdf")
 
 gera_plot_degrada()
-#salvar em 800x400 em .svg
+# Salvar em 800x400 em .svg
 rsvg::rsvg_pdf("figures/PLOT_DEGRADA001.svg","figures/PLOT_DEGRADA001.pdf")
+
+gera_plot_wiener()
+# Salvar em 600x350 em m.svg
+rsvg::rsvg_pdf("figures/PLOT_WIENER.svg","figures/PLOT_WIENER.pdf")
+
 
