@@ -314,38 +314,6 @@ resultados %>%
 # grafico: tipos de reparo
 # ---------------------------------------------------------------------
 
-aux <- data.frame(x= c(0,4,4,8),y=c(0,0.5,0.0,0.5))							
-g1 <- aux %>%							
-  ggplot(aes(x=x,y=y)) +							
-  geom_line(linewidth=1.5) +							
-  theme_classic() +							
-  labs(x = "Time",y="Degradation",title = "Perfect Repair") +							
-  scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0),limits = c(0, 1))							
-
-
-aux2 <- data.frame(x= c(0,8),y=c(0,1))							
-g2 <- aux2 %>%							
-  ggplot(aes(x=x,y=y)) +							
-  geom_line(linewidth=1.5) +							
-  theme_classic() +							
-  labs(x = "Time",y="Degradation",title = "Minimal Repair") +							
-  scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0),limits = c(0, 1)) +							
-  geom_line(aes(x=c(4,4),y=c(0,0.5)),linetype = 3,linewidth=1.5)							
-
-
-aux3 <- data.frame(x= c(0,4,4,8),y=c(0,0.5,0.2,0.7))							
-line_data <- data.frame(x=c(4,4), y=c(0,0.2))							
-
-g3 <- aux3 %>%							
-  ggplot(aes(x=x, y=y)) +							
-  geom_line(linewidth=1) +							
-  geom_line(data = line_data, aes(x=x, y=y),linetype = 3,linewidth=1) +							
-  theme_classic() +							
-  labs(x = "Time", y = "Degradation", title = "Imperfect Repair") +							
-  scale_x_continuous(expand = c(0, 0)) +							
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 1))							
-
-grid.arrange(g1,g2,g3,ncol=3)							
 
 # ---------------------------------------------------------------------
 ############################ Graficos #################################
@@ -1011,6 +979,58 @@ gera_plot_wiener <- function(){
   print(g1)
 }
 
+gera_plot_reparos <- function(){
+  aux <- data.frame(x= c(0,4,4,8),y=c(0,0.5,0.0,0.5))							
+  g1 <- aux %>%							
+    ggplot(aes(x=x,y=y)) +							
+    geom_line(color = tayloRswift::swift_palettes$taylor1989[6],size = 1) +							
+    theme_classic() +
+    theme(legend.position="none",
+          plot.title = element_text(hjust = 0.5)) +
+    labs(x = "Tempo",y="Degradação",title = "Reparo Perfeito") +							
+    scale_x_continuous(expand = c(0, 0)) + 
+    scale_y_continuous(expand = c(0, 0),limits = c(0, 1))
+  
+  
+  aux2 <- data.frame(x= c(0,8),y=c(0,1))							
+  g2 <- aux2 %>%							
+    ggplot(aes(x=x,y=y)) +							
+    geom_line(color = tayloRswift::swift_palettes$taylor1989[6],size = 1) +							
+    theme_classic() +
+    theme(legend.position="none",
+          plot.title = element_text(hjust = 0.5)) +
+    labs(x = "Tempo",y="Degradação",title = "Reparo Mínimo") +							
+    scale_x_continuous(expand = c(0, 0)) + 
+    scale_y_continuous(expand = c(0, 0),limits = c(0, 1)) +							
+    geom_line(aes(x=c(4,4),y=c(0,0.5)),linetype = 3,linewidth=1,
+              color = tayloRswift::swift_palettes$taylor1989[3]) +
+    tayloRswift::scale_color_taylor()
+  
+  
+  aux3 <- data.frame(x= c(0,4,4,8),y=c(0,0.5,0.2,0.7))							
+  line_data <- data.frame(x=c(4,4), y=c(0,0.2))							
+  
+  g3 <- aux3 %>%							
+    ggplot(aes(x=x, y=y)) +							
+    geom_line(color = tayloRswift::swift_palettes$taylor1989[6],size = 1) +							
+    geom_line(data = line_data, aes(x=x, y=y),linetype = 3,linewidth=1,
+              color = tayloRswift::swift_palettes$taylor1989[3]) +							
+    theme_classic() +
+    theme(legend.position="none",
+          plot.title = element_text(hjust = 0.5)) +
+    labs(x = "Tempo", y = "Degradação", title = "Reparo Imperfeito") +							
+    scale_x_continuous(expand = c(0, 0)) +							
+    scale_y_continuous(expand = c(0, 0), limits = c(0, 1)) +
+    tayloRswift::scale_color_taylor()
+  
+  layout <- "
+  AAAABBBB
+  ##CCCC##
+  "
+  g1+g2+g3 +
+    plot_layout(design = layout)
+}
+
 gera_plot_exp()
 # Salvar em 900x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_EXP.svg',"figures/PLOT_EXP.pdf")
@@ -1038,5 +1058,9 @@ rsvg::rsvg_pdf("figures/PLOT_DEGRADA001.svg","figures/PLOT_DEGRADA001.pdf")
 gera_plot_wiener()
 # Salvar em 600x350 em m.svg
 rsvg::rsvg_pdf("figures/PLOT_WIENER.svg","figures/PLOT_WIENER.pdf")
+
+gera_plot_reparos()
+# Salvar em 900x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_REPARO.svg',"figures/PLOT_REPARO.pdf")
 
 
