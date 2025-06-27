@@ -346,53 +346,6 @@ data.frame(time = t,Unit1 = degrad1,Unit2 = degrad2,Unit3 = degrad3) %>%
 # ggsave("figures/test_001.png", width = 9, height = 3.5, units = "cm")
 
 # ---------------------------------------------------------------------
-############################ Graficos #################################
-# grafico: Caminho de degradação (gaudoin article)
-# ---------------------------------------------------------------------
-
-set.seed(1111)							
-rho<- c(0.6, 0.6)							
-n_manu <- 2							
-intra_manu <- 4							
-n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)							
-df_degradacao1 <- gera_dados3(n_s=1,t_max = 15,n_med=n_med,v=2,sigma=sqrt(2),rho=rho,n_manu=n_manu)							
-df_degradacao1 %>%							
-  ggplot(aes(x=Time,y=Y)) +							
-  geom_point(size=3,colour="black") +							
-  geom_line(linewidth=1.5,alpha=0.7) +							
-  geom_text(x=(1+0.5), y= (df_degradacao1 %>% filter(Time==1) %>% select(Y) %>% min())-0.5,							
-            label=TeX("$\\Delta Y_{0,1}$"),size = 5,colour="red")+							
-  geom_text(x=(2+0.5), y= (df_degradacao1 %>% filter(Time==2) %>% select(Y) %>% min())-0.5,							
-            label=TeX("$\\Delta Y_{0,2}$"),size = 5,colour="red")+							
-  geom_text(x=(4-0.3), y= (df_degradacao1 %>% filter(Time==4) %>% select(Y) %>% min())+1,							
-            label=TeX("$\\Delta Y_{0,n_0 + 1}$"),size = 5,colour="red")+							
-  geom_text(x=(5-0.5), y= (df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% min())-0.5,							
-            label=TeX("$Y(\\tau_{1}^{+})$"),size=5,colour="red") +							
-  geom_text(x=(5+0.6), y= df_degradacao1 %>% filter(Time==5) %>% summarise(y_mean = mean(Y)) %>% pull(),							
-            label=TeX("$Z_1$"),size=5,colour="red") +							
-  geom_text(x=(5-0.5), y= (df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% max()) + 0.5,							
-            label=TeX("$Y(\\tau_{1}^{-})$"),size=5,colour="red") +							
-  geom_text(x=10, y= (df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% min())-0.7,							
-            label=TeX("$Y(\\tau_{2}^{+})$"),size=5,colour="red") +							
-  geom_text(x=(10+0.6), y= df_degradacao1 %>% filter(Time==10) %>% summarise(y_mean = mean(Y)) %>% pull(),							
-            label=TeX("$Z_2$"),size=5,colour="red") +							
-  geom_text(x=10, y= (df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% max())+0.7,							
-            label=TeX("$Y(\\tau_{2}^{-})$"),size=5,colour="red") +							
-  geom_text(x=(15-0.7), y= (df_degradacao1 %>% filter(Time==15) %>% select(Y)) %>% pull(),							
-            label=TeX("$Y(\\tau_{3}^{-})$"),size=5,colour="red") +							
-  annotate("segment", x = (5+0.3), y = df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% min(),							
-           xend = (5+0.3), yend = df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% max(), size = 1, ,colour="red",							
-           arrow = arrow(type = "open", ends = "both", angle = 20, length = unit(0.4, "cm"))) +							
-  annotate("segment", x = (10+0.3), y = df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% min(),							
-           xend = (10+0.3), yend = df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% max(), size = 1,colour="red",							
-           arrow = arrow(type = "open", ends = "both", angle = 20, length = unit(0.4, "cm"))) +							
-  theme_classic() +							
-  theme(plot.title = element_blank()) +							
-  scale_y_continuous(expand = c(0, 0), limits = c(0,20)) +							
-  scale_x_continuous(expand = c(0, 0), limits = c(0,16),breaks = c(5,10)) +							
-  labs(x = "Time", y = "Degradation")							
-
-# ---------------------------------------------------------------------
 ############### Dados - Banco Prof. Maria Luíza #######################
 # Recorte 01
 # ---------------------------------------------------------------------
@@ -1031,6 +984,50 @@ gera_plot_reparos <- function(){
     plot_layout(design = layout)
 }
 
+gera_plot_scheme <- function(){
+  set.seed(1111)							
+  rho<- c(0.6, 0.6)							
+  n_manu <- 2							
+  intra_manu <- 4							
+  n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)							
+  df_degradacao1 <- gera_dados3(n_s=1,t_max = 15,n_med=n_med,v=2,sigma=sqrt(2),rho=rho,n_manu=n_manu)							
+  df_degradacao1 %>%							
+    ggplot(aes(x=Time,y=Y)) +							
+    geom_point(size=2,colour=tayloRswift::swift_palettes$taylor1989[6]) +							
+    geom_line(linewidth=1,colour=tayloRswift::swift_palettes$taylor1989[6]) +							
+    geom_text(x=(1+0.5), y= (df_degradacao1 %>% filter(Time==1) %>% select(Y) %>% min())-0.5,							
+              label=TeX("$\\Delta Y_{0,1}$"),size = 4,colour="red")+							
+    geom_text(x=(2+0.5), y= (df_degradacao1 %>% filter(Time==2) %>% select(Y) %>% min())-0.5,							
+              label=TeX("$\\Delta Y_{0,2}$"),size = 4,colour="red")+							
+    geom_text(x=(4-0.3), y= (df_degradacao1 %>% filter(Time==4) %>% select(Y) %>% min())+1,							
+              label=TeX("$\\Delta Y_{0,n_0 + 1}$"),size = 4,colour="red")+							
+    geom_text(x=(5-0.5), y= (df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% min())-0.5,							
+              label=TeX("$Y(\\tau_{1}^{+})$"),size=4,colour="red") +							
+    geom_text(x=(5+0.6), y= df_degradacao1 %>% filter(Time==5) %>% summarise(y_mean = mean(Y)) %>% pull(),							
+              label=TeX("$Z_1$"),size=4,colour="red") +							
+    geom_text(x=(5-0.5), y= (df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% max()) + 0.5,							
+              label=TeX("$Y(\\tau_{1}^{-})$"),size=4,colour="red") +							
+    geom_text(x=10, y= (df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% min())-0.7,							
+              label=TeX("$Y(\\tau_{2}^{+})$"),size=4,colour="red") +							
+    geom_text(x=(10+0.6), y= df_degradacao1 %>% filter(Time==10) %>% summarise(y_mean = mean(Y)) %>% pull(),							
+              label=TeX("$Z_2$"),size=4,colour="red") +							
+    geom_text(x=10, y= (df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% max())+0.7,							
+              label=TeX("$Y(\\tau_{2}^{-})$"),size=4,colour="red") +							
+    geom_text(x=(15-0.7), y= (df_degradacao1 %>% filter(Time==15) %>% select(Y)) %>% pull(),							
+              label=TeX("$Y(\\tau_{3}^{-})$"),size=4,colour="red") +							
+    annotate("segment", x = (5+0.3), y = df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% min(),							
+             xend = (5+0.3), yend = df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% max(), size = 1, ,colour="red",							
+             arrow = arrow(type = "open", ends = "both", angle = 20, length = unit(0.4, "cm"))) +							
+    annotate("segment", x = (10+0.3), y = df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% min(),							
+             xend = (10+0.3), yend = df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% max(), size = 1,colour="red",							
+             arrow = arrow(type = "open", ends = "both", angle = 20, length = unit(0.4, "cm"))) +							
+    theme_classic() +							
+    theme(plot.title = element_blank()) +							
+    scale_y_continuous(expand = c(0, 0), limits = c(0,20)) +							
+    scale_x_continuous(expand = c(0, 0), limits = c(0,16),breaks = c(5,10)) +							
+    labs(x = "Tempo", y = "Degradação")
+}
+
 gera_plot_exp()
 # Salvar em 900x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_EXP.svg',"figures/PLOT_EXP.pdf")
@@ -1063,4 +1060,6 @@ gera_plot_reparos()
 # Salvar em 900x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_REPARO.svg',"figures/PLOT_REPARO.pdf")
 
-
+gera_plot_scheme()
+# Salvar em 800x400 em .svg
+rsvg::rsvg_pdf('figures/PLOT_SCHEMA.svg',"figures/PLOT_SCHEMA.pdf")
