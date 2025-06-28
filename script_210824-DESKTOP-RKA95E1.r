@@ -170,7 +170,8 @@ Design <- SimDesign::createDesign(n_system = c(10,50,100,200),
                                   mu = c(4,16),
                                   sigma = c(1,10),
                                   n_main = c(3,4,5),
-                                  n_intra = c(0,2,4))
+                                  n_intra = c(0,2,4),
+                                  tau = 20)
                                   
 # z.CI <- function(dat,alpha = 0.95){
 #   xbar <- mean(dat)
@@ -192,36 +193,63 @@ Generate <- function(condition,fixed_objects){
     rho = c(0.1,0.3,0.5,0.7,0.9)
   }
   dat <- gera_dados3(n_s=condition$n_system,
-              t_max = 20,n_med=n_med,
+              t_max = condition$tau,n_med=n_med,
               v=condition$mu,sigma=condition$sigma,rho=rho,n_manu=condition$n_main)
   dat
 }
 
 Analyse <- function(condition, dat, fixed_objects) {
-  mu_hat = mle_drift1(dat)
-  sigma_hat = mle_sigma1(dat)
-#  z_ciMU <- z.CI(mu_hat)
-#  z_ciSigma <- z.CI(sigma)
-  ret <- c(mu_hat = mu_hat, sigma_hat = sigma_hat)
+  n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
+  
+  mu_hat <- mle_drift1(dat)
+  sigma_hat <- mle_sigma1(dat)
+  erro_padrao <- sigma_hat / sqrt(condition$n_system * condition$tau)
+  
+  t_crit <- qt(1 - 0.05/2, df = condition$n_system*(n_med+condition$n_main +1) - 1)
+  IC_mu_hat <- c(mu_hat - t_crit * erro_padrao, mu_hat + t_crit * erro_padrao)
+  CP_mu_hat <- ECR(IC_mu_hat, condition$mu)
+  
+  
+  s <- unique(dat$Objeto)
+  k <- dat %>% filter(Objeto == s[1], duplicated(Time)) %>% pull(Time)
+  nj <- dat %>% filter(Objeto == s[1], Time > k[1], Time < k[2]) %>% nrow()
+  N <- nj * (length(k) + 1)
+  df <- length(s) * (N + length(k) + 1) - 1
+  
+  chi_low <- qchisq(1 - 0.05/2, df)
+  chi_up <- qchisq(0.05/2, df)
+  
+  IC_sigma_hat <- c(
+    sqrt(df * sigma_hat^2 / chi_low),
+    sqrt(df * sigma_hat^2 / chi_up)
+  )
+  CP_sigma_hat <- ECR(IC_sigma_hat, condition$sigma)
+  
+  ret <- c(mu_hat = mu_hat, sigma_hat = sigma_hat,
+           cp_mu_hat = CP_mu_hat, cp_sigma_hat = CP_sigma_hat)
   ret
 }
 
 Summarise <- function(condition, results, fixed_objects) {
-  # mean and SD summary of the sample means
-  obs_bias <- bias(results,parameter = c(condition$mu,condition$sigma))
-  obs_RMSE <- RMSE(results,parameter = c(condition$mu,condition$sigma))
-  obs_MAE <- SimDesign::MAE(results,parameter = c(condition$mu,condition$sigma))
-#  obs_ci_mu <- SimDesign::ECR(results$ci_mu,parameter = condition$mu)
-#  obs_ci_sigma <- SimDesign::ECR(results$ci_sigma,parameter = condition$sigma)
-  ret <- c(bias=obs_bias, RMSE=obs_RMSE, MAE=obs_MAE)
+  obs_bias <- bias(results[, c("mu_hat", "sigma_hat")],
+                   parameter = c(condition$mu, condition$sigma))
+  obs_RMSE <- RMSE(results[, c("mu_hat", "sigma_hat")],
+                   parameter = c(condition$mu, condition$sigma))
+  obs_MAE <- SimDesign::MAE(results[, c("mu_hat", "sigma_hat")],
+                            parameter = c(condition$mu, condition$sigma))
+  obs_CP_mu_hat <- mean(results$cp_mu_hat)
+  obs_cp_sigma_hat <- mean(results$cp_sigma_hat)
+  
+  ret <- c(bias = obs_bias, RMSE = obs_RMSE, MAE = obs_MAE, 
+           CP_mu_hat = obs_CP_mu_hat, CP_sigma_hat = obs_cp_sigma_hat)
   ret
 }
 
 # resultados <- runSimulation(design=Design, replications=1000,
-                     # generate=Generate, analyse=Analyse, summarise=Summarise)
+#                             generate=Generate, analyse=Analyse, summarise=Summarise)
 
 # saveRDS(resultados,file = "SimDesign2.rds")
-resultados <- readRDS("SimDesign2.rds")
+# resultados <- readRDS("SimDesign2.rds")
 
 # ------------------------------------------------------------------------
 ############################# Gráfico ####################################

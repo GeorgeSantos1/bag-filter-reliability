@@ -484,7 +484,8 @@ mle_sigma1 <- function(data){
     }
   }
   sigma2_hat_biased <- sum(y_aux)/(length(s)*(N+length(k)+1))
-  return(sqrt(sigma2_hat_biased))
+  sigma2_hat_unbiased <- sigma2_hat_biased*(length(s)*(N+length(k)+1))/(length(s)*(N+length(k)+1)-1)
+  return(sqrt(sigma2_hat_unbiased))
 }
 
 
@@ -627,8 +628,8 @@ mle_sigma1_y <- function(data){
     }
   }
   sigma2_hat_biased <- sum(y_aux)/(length(s)*(N+length(k)+1))
-  sigma2_hat_unbiased <- sigma2_hat_biased*(N+length(k)+1)/(N+length(k))
-  return(sqrt(sigma2_hat_biased))
+  sigma2_hat_unbiased <- sigma2_hat_biased*(length(s)*(N+length(k)+1))/(length(s)*(N+length(k)+1)-1)
+  return(sqrt(sigma2_hat_unbiased))
 }
 
 #' Gera curvas de confiabilidade para diferentes limiares considerando o tempo inicial da 
@@ -827,18 +828,19 @@ plot_maintanance <- function(data, xlab, ylab,time=FALSE) {
 ## Design ##
 ############
 
-Design <- SimDesign::createDesign(n_system = c(10,50),
+Design <- SimDesign::createDesign(n_system = c(5,10,50,100),
                                   mu = 4,
                                   sigma = sqrt(1),
                                   n_main = 3,
-                                  n_intra = 4)
+                                  n_intra = 4,
+                                  tau =20)
 
 Generate <- function(condition,fixed_objects){
   n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
   rho = c(0.1,0.3,0.5)
   
   dat <- gera_dados3(n_s=condition$n_system,
-                     t_max = 20,n_med=n_med,
+                     t_max = condition$tau,n_med=n_med,
                      v=condition$mu,sigma=condition$sigma,rho=rho,n_manu=condition$n_main)
   dat
 }
@@ -848,15 +850,32 @@ Analyse <- function(condition, dat, fixed_objects) {
   
   mu_hat <- mle_drift1(dat)
   sigma_hat <- mle_sigma1(dat)
-  erro_padrao <- sigma_hat / sqrt(condition$n_system * 20)
+  erro_padrao <- sigma_hat / sqrt(condition$n_system * condition$tau)
   
   t_crit <- qt(1 - 0.05/2, df = condition$n_system*(n_med+condition$n_main +1) - 1)
   IC_mu_hat <- c(mu_hat - t_crit * erro_padrao, mu_hat + t_crit * erro_padrao)
   CP_mu_hat <- ECR(IC_mu_hat, condition$mu)
   
+  
+  s <- unique(dat$Objeto)
+  k <- dat %>% filter(Objeto == s[1], duplicated(Time)) %>% pull(Time)
+  nj <- dat %>% filter(Objeto == s[1], Time > k[1], Time < k[2]) %>% nrow()
+  N <- nj * (length(k) + 1)
+  df <- length(s) * (N + length(k) + 1) - 1
+  
+  chi_low <- qchisq(1 - 0.05/2, df)
+  chi_up <- qchisq(0.05/2, df)
+  
+  IC_sigma_hat <- c(
+    sqrt(df * sigma_hat^2 / chi_low),
+    sqrt(df * sigma_hat^2 / chi_up)
+  )
+  CP_sigma_hat <- ECR(IC_sigma_hat, condition$sigma)
+  
   ret <- c(mu_hat = mu_hat, sigma_hat = sigma_hat,
-          CP_mu_hat = CP_mu_hat)
-  ret
+           cp_mu_hat = CP_mu_hat, cp_sigma_hat = CP_sigma_hat)
+  
+  return(ret)
 }
 
 Summarise <- function(condition, results, fixed_objects) {
@@ -866,12 +885,13 @@ Summarise <- function(condition, results, fixed_objects) {
                    parameter = c(condition$mu, condition$sigma))
   obs_MAE <- SimDesign::MAE(results[, c("mu_hat", "sigma_hat")],
                             parameter = c(condition$mu, condition$sigma))
-  obs_CP_mu_hat <- mean(results$CP_mu_hat)
+  obs_CP_mu_hat <- mean(results$cp_mu_hat)
+  obs_cp_sigma_hat <- mean(results$cp_sigma_hat)
   
   ret <- c(bias = obs_bias, RMSE = obs_RMSE, MAE = obs_MAE, 
-           CP_mu_hat = obs_CP_mu_hat)
+           CP_mu_hat = obs_CP_mu_hat, CP_sigma_hat = obs_cp_sigma_hat)
   ret
 }
 
-# resultados <- runSimulation(design=Design, replications=1000,
+# resultados <- runSimulation(design=Design, replications=100,
 #                              generate=Generate, analyse=Analyse,summarise = Summarise)
