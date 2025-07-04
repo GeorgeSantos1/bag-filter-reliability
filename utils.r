@@ -25,7 +25,7 @@ library(scales)
 #' @return Um data frame contendo observações do processo Wiener para o objeto especificado.
 #'
 #' @export
-gera_obs <- function(t_max, n_med, v, sigma, obj = 1) {
+gera_obs <- function(t_max, n_med, v, sigma2, obj = 1) {
   time <- seq(0, t_max, length.out = n_med)
   # Bt <- 0
   # for (i in 2:n_med) {
@@ -33,7 +33,7 @@ gera_obs <- function(t_max, n_med, v, sigma, obj = 1) {
   #   Bt <- c(Bt, aux)
   # }
   Bt <- c(0,sqrt(t_max/(n_med-1))*cumsum(rnorm(n_med-1)))
-  wt <- v*time + sigma*Bt
+  wt <- v*time + sqrt(sigma2)*Bt
   df <- data.frame( Objeto = rep(paste("OBJ_0", obj, sep = "")),
              Wt = wt,
              Time = time)
@@ -55,13 +55,13 @@ gera_obs <- function(t_max, n_med, v, sigma, obj = 1) {
 #' @return Um data frame contendo dados de processo Wiener para os objetos especificados.
 #'
 #' @export
-gera_dados <- function(n_obs, t_max, n_med, v, sigma) {
+gera_dados <- function(n_obs, t_max, n_med, v, sigma2) {
   n_med <- n_med+1
-  df <- gera_obs(t_max, n_med, v, sigma)
+  df <- gera_obs(t_max, n_med, v, sigma2)
   if (n_obs>1){
     i <- 2
     for (i in 2:n_obs) {
-      aux <- gera_obs(t_max, n_med, v, sigma, obj = i)
+      aux <- gera_obs(t_max, n_med, v, sigma2, obj = i)
       df <- rbind(df, aux)
     }
   }
@@ -160,7 +160,7 @@ mle_sigma <- function(data) {
   sigma2_hat <- sum((DeltaW - mu_hat * DeltaT)^2) / sum(DeltaT)
   
   # Estimativa de sigma
-  sigma_hat <- sqrt(sigma2_hat)
+  sigma_hat <- (sigma2_hat)
   
   return(sigma_hat)
 }
@@ -186,8 +186,8 @@ mle_sigma <- function(data) {
 #' # print(dados)
 #'
 #' @export
-gera_dados1 <- function(t_max, n_med, v, sigma, rho, n_manu) {
-  df <- gera_obs(t_max, n_med + 1, v, sigma)
+gera_dados1 <- function(t_max, n_med, v, sigma2, rho, n_manu) {
+  df <- gera_obs(t_max, n_med + 1, v, sigma2)
   time_MP <- seq(0, t_max, t_max / (n_manu + 1))
   time_MP <- time_MP[-c(1, length(time_MP))]
   Y <- n_med + 1 + n_manu
@@ -303,8 +303,8 @@ gera_plot1 <- function(data) {
 #' # print(dados)
 #'
 #' @export
-gera_dados2 <- function(t_max, n_med, v, sigma, rho, n_manu,obj = 1) {
-  df <- gera_obs(t_max, n_med + 1, v, sigma, obj)
+gera_dados2 <- function(t_max, n_med, v, sigma2, rho, n_manu,obj = 1) {
+  df <- gera_obs(t_max, n_med + 1, v, sigma2, obj)
   time_MP <- seq(0, t_max, t_max / (n_manu + 1))
   time_MP <- time_MP[-c(1, length(time_MP))]
   Y <- n_med + 1 + n_manu
@@ -359,12 +359,12 @@ gera_dados2 <- function(t_max, n_med, v, sigma, rho, n_manu,obj = 1) {
 #' # print(dados)
 #'
 #' @export
-gera_dados3 <- function(n_s, t_max, n_med, v, sigma, rho, n_manu){
-  df <- gera_dados2(t_max,n_med,v,sigma,rho,n_manu)
+gera_dados3 <- function(n_s, t_max, n_med, v, sigma2, rho, n_manu){
+  df <- gera_dados2(t_max,n_med,v,sigma2,rho,n_manu)
   if (n_s>1){
     i <- 2
     for (i in 2:n_s) {
-      aux <- gera_dados2(t_max,n_med,v,sigma,rho,n_manu,obj = i)
+      aux <- gera_dados2(t_max,n_med,v,sigma2,rho,n_manu,obj = i)
       df <- rbind(df, aux)
     }
   }
@@ -485,7 +485,7 @@ mle_sigma1 <- function(data){
   }
   sigma2_hat_biased <- sum(y_aux)/(length(s)*(N+length(k)+1))
   sigma2_hat_unbiased <- sigma2_hat_biased*(length(s)*(N+length(k)+1))/(length(s)*(N+length(k)+1)-1)
-  return(sqrt(sigma2_hat_unbiased))
+  return(sigma2_hat_unbiased)
 }
 
 
@@ -629,7 +629,7 @@ mle_sigma1_y <- function(data){
   }
   sigma2_hat_biased <- sum(y_aux)/(length(s)*(N+length(k)+1))
   sigma2_hat_unbiased <- sigma2_hat_biased*(length(s)*(N+length(k)+1))/(length(s)*(N+length(k)+1)-1)
-  return(sqrt(sigma2_hat_unbiased))
+  return(sigma2_hat_unbiased)
 }
 
 #' Gera curvas de confiabilidade para diferentes limiares considerando o tempo inicial da 
@@ -828,9 +828,9 @@ plot_maintanance <- function(data, xlab, ylab,time=FALSE) {
 ## Design ##
 ############
 
-Design <- SimDesign::createDesign(n_system = c(5,10,50,100),
+Design <- SimDesign::createDesign(n_system = c(5,10),
                                   mu = 4,
-                                  sigma = sqrt(1),
+                                  sigma2 = c(1,25),
                                   n_main = 3,
                                   n_intra = 4,
                                   tau =20)
@@ -841,7 +841,7 @@ Generate <- function(condition,fixed_objects){
   
   dat <- gera_dados3(n_s=condition$n_system,
                      t_max = condition$tau,n_med=n_med,
-                     v=condition$mu,sigma=condition$sigma,rho=rho,n_manu=condition$n_main)
+                     v=condition$mu,sigma2=condition$sigma2,rho=rho,n_manu=condition$n_main)
   dat
 }
 
@@ -849,14 +849,15 @@ Analyse <- function(condition, dat, fixed_objects) {
   n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
   
   mu_hat <- mle_drift1(dat)
-  sigma_hat <- mle_sigma1(dat)
-  erro_padrao <- sigma_hat / sqrt(condition$n_system * condition$tau)
+  sigma2_hat <- (mle_sigma1(dat))
   
+  # CP95% mu
+  erro_padrao <- sqrt(sigma2_hat) / sqrt(condition$n_system * condition$tau)
   t_crit <- qt(1 - 0.05/2, df = condition$n_system*(n_med+condition$n_main +1) - 1)
   IC_mu_hat <- c(mu_hat - t_crit * erro_padrao, mu_hat + t_crit * erro_padrao)
   CP_mu_hat <- ECR(IC_mu_hat, condition$mu)
   
-  
+  # CP95% sigma^2
   s <- unique(dat$Objeto)
   k <- dat %>% filter(Objeto == s[1], duplicated(Time)) %>% pull(Time)
   nj <- dat %>% filter(Objeto == s[1], Time > k[1], Time < k[2]) %>% nrow()
@@ -867,31 +868,51 @@ Analyse <- function(condition, dat, fixed_objects) {
   chi_up <- qchisq(0.05/2, df)
   
   IC_sigma_hat <- c(
-    sqrt(df * sigma_hat^2 / chi_low),
-    sqrt(df * sigma_hat^2 / chi_up)
+    (df * sigma2_hat / chi_low),
+    (df * sigma2_hat / chi_up)
   )
-  CP_sigma_hat <- ECR(IC_sigma_hat, condition$sigma)
+  CP_sigma_hat <- ECR(IC_sigma_hat, condition$sigma2)
   
-  ret <- c(mu_hat = mu_hat, sigma_hat = sigma_hat,
-           cp_mu_hat = CP_mu_hat, cp_sigma_hat = CP_sigma_hat)
+  # Estimativa media da variancia
+  mod_var_mu <- erro_padrao^2
+  mod_var_sigma2 <- (2*sigma2_hat^2)/df
+  
+  
+  ret <- c(mu_hat = mu_hat, sigma_hat = sigma2_hat,
+           cp_mu_hat = CP_mu_hat, cp_sigma_hat = CP_sigma_hat,
+           mod_var_mu = mod_var_mu, mod_var_sigma2 = mod_var_sigma2)
   
   return(ret)
 }
 
 Summarise <- function(condition, results, fixed_objects) {
   obs_bias <- bias(results[, c("mu_hat", "sigma_hat")],
-                   parameter = c(condition$mu, condition$sigma))
+                   parameter = c(condition$mu, condition$sigma2))
   obs_RMSE <- RMSE(results[, c("mu_hat", "sigma_hat")],
-                   parameter = c(condition$mu, condition$sigma))
+                   parameter = c(condition$mu, condition$sigma2))
   obs_MAE <- SimDesign::MAE(results[, c("mu_hat", "sigma_hat")],
-                            parameter = c(condition$mu, condition$sigma))
+                            parameter = c(condition$mu, condition$sigma2))
   obs_CP_mu_hat <- mean(results$cp_mu_hat)
   obs_cp_sigma_hat <- mean(results$cp_sigma_hat)
   
+  obs_EmpVar_mu <- var(results$mu_hat)
+  obs_EmpVar_sigma2 <- var(results$sigma_hat)
+  
+  obs_ModVar_mu <- mean(results$mod_var_mu)
+  obs_ModVar_sigma2 <- mean(results$mod_var_sigma2)
+  
+  # obs_MSRSE <- MSRSE(obs_ModVar_mu,obs_EmpVar_mu)
+  
+  
   ret <- c(bias = obs_bias, RMSE = obs_RMSE, MAE = obs_MAE, 
-           CP_mu_hat = obs_CP_mu_hat, CP_sigma_hat = obs_cp_sigma_hat)
+           CP_mu_hat = obs_CP_mu_hat, CP_sigma2_hat = obs_cp_sigma_hat,
+           obs_EmpVar_mu = obs_EmpVar_mu, obs_EmpVar_sigma2 = obs_EmpVar_sigma2,
+           obs_ModVar_mu = obs_ModVar_mu, obs_ModVar_sigma2 = obs_ModVar_sigma2)
   ret
 }
 
-# resultados <- runSimulation(design=Design, replications=100,
-#                              generate=Generate, analyse=Analyse,summarise = Summarise)
+# resultados <- runSimulation(design=Design, replications=1000,
+#                               generate=Generate, analyse=Analyse,summarise = Summarise)
+# 
+# resultados$obs_ModVar_sigma2/resultados$obs_EmpVar_sigma2
+# resultados$obs_ModVar_mu/resultados$obs_EmpVar_mu

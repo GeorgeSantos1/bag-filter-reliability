@@ -143,7 +143,7 @@ gera_plot1(df_degradacao2)
 
 # Geraçao e estimativas dos parâmetros considerando 4 Sistemas (n_s)
 set.seed(111)
-rho<- c(1, 0.5, 1)
+rho<- c(0.1, 0.3, 0.5)
 n_manu <- 3
 intra_manu <- 4
 n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)
@@ -159,7 +159,7 @@ rho_hat(df_degradacao1)
 
 # Geraçao e estimativas dos parâmetros considerando 1000 Sistemas (n_s)
 set.seed(111)
-df_degradacao1 <- gera_dados3(n_s=1000,t_max = 20,n_med=n_med,v=3,sigma=sqrt(2),rho=rho,n_manu=n_manu)
+df_degradacao1 <- gera_dados3(n_s=10,t_max = 20,n_med=n_med,v=4,sigma2 = 4,rho=rho,n_manu=n_manu)
 mle_drift1(df_degradacao1)
 mle_sigma1(df_degradacao1) #  entre 1 e 2 minutos para rodar
 
@@ -168,18 +168,11 @@ mle_sigma1(df_degradacao1) #  entre 1 e 2 minutos para rodar
 # ---------------------------------------------------------------------
 Design <- SimDesign::createDesign(n_system = c(10,50,100,200),
                                   mu = c(4,16),
-                                  sigma = c(1,10),
+                                  sigma = c(1,25),
                                   n_main = c(3,4,5),
                                   n_intra = c(0,2,4),
                                   tau = 20)
-                                  
-# z.CI <- function(dat,alpha = 0.95){
-#   xbar <- mean(dat)
-#   SE <- sd(dat)/sqrt(length(dat))
-#   z <- c(qnorm(alpha/2))
-#   CI <- c(xbar-z*SE, xbar + z*SE)
-#   CI
-# }
+
 
 Generate <- function(condition,fixed_objects){
   n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
@@ -193,8 +186,8 @@ Generate <- function(condition,fixed_objects){
     rho = c(0.1,0.3,0.5,0.7,0.9)
   }
   dat <- gera_dados3(n_s=condition$n_system,
-              t_max = condition$tau,n_med=n_med,
-              v=condition$mu,sigma=condition$sigma,rho=rho,n_manu=condition$n_main)
+                     t_max = condition$tau,n_med=n_med,
+                     v=condition$mu,sigma2=condition$sigma2,rho=rho,n_manu=condition$n_main)
   dat
 }
 
@@ -202,14 +195,15 @@ Analyse <- function(condition, dat, fixed_objects) {
   n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
   
   mu_hat <- mle_drift1(dat)
-  sigma_hat <- mle_sigma1(dat)
-  erro_padrao <- sigma_hat / sqrt(condition$n_system * condition$tau)
+  sigma2_hat <- (mle_sigma1(dat))
   
+  # CP95% mu
+  erro_padrao <- sqrt(sigma2_hat) / sqrt(condition$n_system * condition$tau)
   t_crit <- qt(1 - 0.05/2, df = condition$n_system*(n_med+condition$n_main +1) - 1)
   IC_mu_hat <- c(mu_hat - t_crit * erro_padrao, mu_hat + t_crit * erro_padrao)
   CP_mu_hat <- ECR(IC_mu_hat, condition$mu)
   
-  
+  # CP95% sigma^2
   s <- unique(dat$Objeto)
   k <- dat %>% filter(Objeto == s[1], duplicated(Time)) %>% pull(Time)
   nj <- dat %>% filter(Objeto == s[1], Time > k[1], Time < k[2]) %>% nrow()
@@ -220,28 +214,46 @@ Analyse <- function(condition, dat, fixed_objects) {
   chi_up <- qchisq(0.05/2, df)
   
   IC_sigma_hat <- c(
-    sqrt(df * sigma_hat^2 / chi_low),
-    sqrt(df * sigma_hat^2 / chi_up)
+    (df * sigma2_hat / chi_low),
+    (df * sigma2_hat / chi_up)
   )
-  CP_sigma_hat <- ECR(IC_sigma_hat, condition$sigma)
+  CP_sigma_hat <- ECR(IC_sigma_hat, condition$sigma2)
   
-  ret <- c(mu_hat = mu_hat, sigma_hat = sigma_hat,
-           cp_mu_hat = CP_mu_hat, cp_sigma_hat = CP_sigma_hat)
-  ret
+  # Estimativa media da variancia
+  mod_var_mu <- erro_padrao^2
+  mod_var_sigma2 <- (2*sigma2_hat^2)/df
+  
+  
+  ret <- c(mu_hat = mu_hat, sigma_hat = sigma2_hat,
+           cp_mu_hat = CP_mu_hat, cp_sigma_hat = CP_sigma_hat,
+           mod_var_mu = mod_var_mu, mod_var_sigma2 = mod_var_sigma2)
+  
+  return(ret)
 }
 
 Summarise <- function(condition, results, fixed_objects) {
   obs_bias <- bias(results[, c("mu_hat", "sigma_hat")],
-                   parameter = c(condition$mu, condition$sigma))
+                   parameter = c(condition$mu, condition$sigma2))
   obs_RMSE <- RMSE(results[, c("mu_hat", "sigma_hat")],
-                   parameter = c(condition$mu, condition$sigma))
+                   parameter = c(condition$mu, condition$sigma2))
   obs_MAE <- SimDesign::MAE(results[, c("mu_hat", "sigma_hat")],
-                            parameter = c(condition$mu, condition$sigma))
+                            parameter = c(condition$mu, condition$sigma2))
   obs_CP_mu_hat <- mean(results$cp_mu_hat)
   obs_cp_sigma_hat <- mean(results$cp_sigma_hat)
   
+  obs_EmpVar_mu <- var(results$mu_hat)
+  obs_EmpVar_sigma2 <- var(results$sigma_hat)
+  
+  obs_ModVar_mu <- mean(results$mod_var_mu)
+  obs_ModVar_sigma2 <- mean(results$mod_var_sigma2)
+  
+  # obs_MSRSE <- MSRSE(obs_ModVar_mu,obs_EmpVar_mu)
+  
+  
   ret <- c(bias = obs_bias, RMSE = obs_RMSE, MAE = obs_MAE, 
-           CP_mu_hat = obs_CP_mu_hat, CP_sigma_hat = obs_cp_sigma_hat)
+           CP_mu_hat = obs_CP_mu_hat, CP_sigma2_hat = obs_cp_sigma_hat,
+           obs_EmpVar_mu = obs_EmpVar_mu, obs_EmpVar_sigma2 = obs_EmpVar_sigma2,
+           obs_ModVar_mu = obs_ModVar_mu, obs_ModVar_sigma2 = obs_ModVar_sigma2)
   ret
 }
 
