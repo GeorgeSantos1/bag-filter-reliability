@@ -168,7 +168,7 @@ mle_sigma1(df_degradacao1) #  entre 1 e 2 minutos para rodar
 # ---------------------------------------------------------------------
 Design <- SimDesign::createDesign(n_system = c(10,50,100,200),
                                   mu = c(4,16),
-                                  sigma = c(1,25),
+                                  sigma2 = c(1,25),
                                   n_main = c(3,4,5),
                                   n_intra = c(0,2,4),
                                   tau = 20)
@@ -257,11 +257,11 @@ Summarise <- function(condition, results, fixed_objects) {
   ret
 }
 
-# resultados <- runSimulation(design=Design, replications=1000,
-#                             generate=Generate, analyse=Analyse, summarise=Summarise)
+resultados <- runSimulation(design=Design, replications=1000,
+                            generate=Generate, analyse=Analyse, summarise=Summarise)
 
-# saveRDS(resultados,file = "SimDesign2.rds")
-# resultados <- readRDS("SimDesign2.rds")
+saveRDS(resultados,file = "SimDesign3.rds")
+resultados <- readRDS("SimDesign3.rds")
 
 # ------------------------------------------------------------------------
 ############################# Gráfico ####################################
