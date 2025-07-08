@@ -147,7 +147,7 @@ rho<- c(0.1, 0.3, 0.5)
 n_manu <- 3
 intra_manu <- 4
 n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)
-df_degradacao1 <- gera_dados3(n_s=1,t_max = 20,n_med=n_med,v=3,sigma=sqrt(2),rho=rho,n_manu=n_manu)
+df_degradacao1 <- gera_dados3(n_s=1,t_max = 20,n_med=n_med,v=3,sigma2=2,rho=rho,n_manu=n_manu)
 
 gera_plot2(df_degradacao1)
 mle_drift1(df_degradacao1)
@@ -257,102 +257,11 @@ Summarise <- function(condition, results, fixed_objects) {
   ret
 }
 
-resultados <- runSimulation(design=Design, replications=1000,
-                            generate=Generate, analyse=Analyse, summarise=Summarise)
-
-saveRDS(resultados,file = "SimDesign3.rds")
+# resultados <- runSimulation(design=Design, replications=1000,
+#                             generate=Generate, analyse=Analyse, summarise=Summarise)
+# 
+# saveRDS(resultados,file = "SimDesign3.rds")
 resultados <- readRDS("SimDesign3.rds")
-
-# ------------------------------------------------------------------------
-############################# Gráfico ####################################
-# Grafico de Bias e RMSE
-# ------------------------------------------------------------------------
-
-mu.labs <- c(TeX("$mu$"),"mu=16")
-names(mu.labs) <- c("4","16")
-
-sigma.labs <- c("Sigma = 1","Sigma = 10")
-names(sigma.labs) <- c("1","10")
-
-n_main.labs <- c("k=3","k=4","k=5")
-names(n_main.labs) <- c("3","4","5")
-
-n_intra.labs <- c("nj=0","nj=2","nj=4")
-names(n_intra.labs) <- c("0","2","4")
-
-# RMSE
-resultados %>%
-  select(n_system:n_intra,RMSE.mu_hat,RMSE.sigma_hat) %>%
-  tidyr::gather(rmse,value,RMSE.mu_hat,RMSE.sigma_hat) %>%
-  mutate(mu = as.factor(mu) %>% recode_factor("4" = "mu : 4" ,"16" = "mu : 16"),
-         sigma = as.factor(sigma) %>% forcats::fct_recode("sigma : 1" = "1" ,"sigma : 10" = "10"),
-         n_main = as.factor(n_main) %>% forcats::fct_recode("k : 3" = "3" ,"k : 4" = "4", "k : 5" = "5"),
-         n_intra = as.factor(n_intra) %>% forcats::fct_recode("n[j] : 0" = "0" ,"n[j] : 2" = "2", "n[j] : 4" = "4")) %>%
-  ggplot(aes(x=n_system,y=value,color = rmse)) +
-  # facet_nested(n_main+n_intra ~ mu+sigma,
-  #              labeller = labeller(mu=mu.labs,
-  #                                  sigma = sigma.labs,
-  #                                  n_main = n_main.labs,
-  #                                  n_intra = n_intra.labs)) +
-  facet_nested(mu+sigma ~n_main+n_intra,
-               labeller = label_parsed) +
-  geom_line(linewidth=0.8,alpha=1) +
-  geom_point(alpha=0.7) +
-  labs(x = "Number of Systems",
-       y = "RMSE") +
-  theme(legend.position = "bottom",
-        legend.title = element_blank(),
-        legend.text = element_text(colour="black", size = 14),
-        legend.key = element_rect(colour = NA, fill = NA),
-        panel.background = element_blank(),
-        panel.border = element_rect(fill = "transparent",
-                                    color = "black", linewidth = 0.5),
-        strip.background = element_rect(linetype = "solid",
-                                        color = "black", linewidth = 0.5),
-        strip.text.y = ggplot2::element_text(angle=0)) +
-  # scale_color_brewer(palette = "Set1",
-  #                    labels = c(TeX(" $mu$    "),TeX(" $sigma$"))) +
-  scale_colour_viridis_d(labels = c(TeX(" $mu$    "),TeX(" $sigma$")),option = "viridis",end = 0.8)
-  # tayloRswift::scale_color_taylor(labels = c(TeX(" $mu$    "),TeX(" $sigma$")))	
-
-# Bias
-resultados %>%
-  select(n_system:bias.sigma_hat) %>%
-  tidyr::gather(bias,value,bias.mu_hat,bias.sigma_hat) %>%
-  mutate(mu = as.factor(mu) %>% recode_factor("4" = "mu : 4" ,"16" = "mu : 16"),
-         sigma = as.factor(sigma) %>% forcats::fct_recode("sigma : 1" = "1" ,"sigma : 10" = "10"),
-         n_main = as.factor(n_main) %>% forcats::fct_recode("k : 3" = "3" ,"k : 4" = "4", "k : 5" = "5"),
-         n_intra = as.factor(n_intra) %>% forcats::fct_recode("n[j] : 0" = "0" ,"n[j] : 2" = "2", "n[j] : 4" = "4")) %>%
-  ggplot(aes(x=n_system,y=value,color = bias)) +
-  # facet_nested(n_main+n_intra ~ mu+sigma,
-  #              labeller = labeller(mu=mu.labs,
-  #                                  sigma = sigma.labs,
-  #                                  n_main = n_main.labs,
-  #                                  n_intra = n_intra.labs)) +
-  facet_nested(mu+sigma ~n_main+n_intra,
-               labeller = label_parsed) +
-  geom_line(linewidth=0.8,alpha=1) +
-  geom_point(alpha=0.7) +
-  labs(x = "Number of Systems",
-       y = "Bias") +
-  theme(legend.position = "bottom",
-        legend.title = element_blank(),
-        legend.text = element_text(colour="black", size = 14),
-        legend.key = element_rect(colour = NA, fill = NA),
-        panel.background = element_blank(),
-        panel.border = element_rect(fill = "transparent",
-                                    color = "black", linewidth = 0.5),
-        strip.background = element_rect(linetype = "solid",
-                                        color = "black", linewidth = 0.5),
-        strip.text.y = ggplot2::element_text(angle=0)) +
-  # scale_color_brewer(palette = "Set1",
-  #                    labels = c(TeX(" $mu$    "),TeX(" $sigma$"))) +
-  scale_colour_viridis_d(labels = c(TeX(" $mu$    "),TeX(" $sigma$")),option = "viridis",end = 0.8)
-					
-# ---------------------------------------------------------------------
-############################ Graficos #################################
-# grafico: tipos de reparo
-# ---------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------
@@ -1068,6 +977,250 @@ gera_plot_scheme <- function(){
     labs(x = "Tempo", y = "Degradação")
 }
 
+gera_plot_bias <- function(resultados){
+  mu.labs <- c(TeX("$mu$"),"mu=16")
+  names(mu.labs) <- c("4","16")
+  
+  sigma2.labs <- c("Sigma = 1","Sigma = 25")
+  names(sigma2.labs) <- c("1","25")
+  
+  n_main.labs <- c("k=3","k=4","k=5")
+  names(n_main.labs) <- c("3","4","5")
+  
+  n_intra.labs <- c("nj=0","nj=2","nj=4")
+  names(n_intra.labs) <- c("0","2","4")
+  
+  # Bias
+  resultados %>%
+    select(n_system:bias.sigma_hat) %>%
+    tidyr::gather(bias,value,bias.mu_hat,bias.sigma_hat) %>%
+    mutate(mu = as.factor(mu) %>% recode_factor("4" = "mu : 4" ,"16" = "mu : 16"),
+           sigma = as.factor(sigma2) %>% forcats::fct_recode("sigma^2 : 1" = "1" ,"sigma^2 : 25" = "25"),
+           n_main = as.factor(n_main) %>% forcats::fct_recode("k : 3" = "3" ,"k : 4" = "4", "k : 5" = "5"),
+           n_intra = as.factor(n_intra) %>% forcats::fct_recode("n[j] : 0" = "0" ,"n[j] : 2" = "2", "n[j] : 4" = "4")) %>%
+    ggplot(aes(x=n_system,y=value,color = bias)) +
+    facet_nested(mu+sigma ~n_main+n_intra,
+                 labeller = label_parsed) +
+    geom_line(linewidth=0.8,alpha=0.6) +
+    geom_point(alpha=0.7) +
+    labs(x = "Número de Sistemas",
+         y = "Viés") +
+    tayloRswift::scale_color_taylor(labels = c(TeX(" $mu$    "),TeX(" $sigma^2$")))	+
+    theme(legend.position = "bottom",
+          legend.title = element_blank(),
+          legend.text = element_text(colour="black", size = 20),
+          legend.key = element_rect(colour = NA, fill = NA),
+          panel.background = element_blank(),
+          panel.border = element_rect(fill = "transparent",
+                                      color = "black", linewidth = 0.5),
+          strip.background = element_rect(linetype = "solid",
+                                          color = "black", linewidth = 0.5),
+          strip.text.y = ggplot2::element_text(angle=0))
+  
+}
+
+gera_plot_xtyt <- function(){
+  set.seed(111)
+  rho<- c(1, 0.3, 0.5)
+  n_manu <- 3
+  intra_manu <- 4
+  n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)
+  data <- gera_dados3(n_s=1,t_max = 20,n_med=n_med,v=3,sigma2=2,rho=rho,n_manu=n_manu)
+  
+  # Ordena o data.frame por Time (e por outro critério se necessário)
+  data <- data %>% arrange(Time)
+  
+  # Cria lista de índices onde Time é duplicado (2ª ocorrência)
+  duplicated_times <- data$Time[duplicated(data$Time)]
+  
+  # Cria uma nova base com quebra usando NA logo após o primeiro ponto duplicado
+  data_na <- data.frame()
+  i <- 1
+  while (i <= nrow(data)) {
+    current_row <- data[i, ]
+    data_na <- bind_rows(data_na, current_row)
+    
+    # Se o próximo tiver o mesmo Time → insere linha NA
+    if (i < nrow(data) && data$Time[i] == data$Time[i + 1]) {
+      na_row <- current_row
+      na_row$Y <- NA
+      data_na <- bind_rows(data_na, na_row)
+    }
+    
+    i <- i + 1
+  }
+  
+  # Gera o gráfico com a linha quebrada
+  p <- ggplot() +
+    geom_line(
+      data = data_na,
+      aes(x = Time, y = Y, color = "Degradation Path"),
+      alpha = 0.5, linetype = "solid", linewidth = 1
+    ) + 
+    geom_line(data = data, aes(x = Time, y = Wt, colour = "Standard"),
+              alpha = 0.5, linetype = "solid", linewidth = 1)
+  
+  # Adiciona os segmentos verticais nos pontos duplicados
+  for (ponto in duplicated_times) {
+    y_vals <- data$Y[data$Time == ponto]
+    p <- p +
+      geom_segment(
+        data = data.frame(x = ponto, xend = ponto, y = max(y_vals), yend = min(y_vals)),
+        aes(x = x, xend = xend, y = y, yend = yend),
+        linetype = "dotted", linewidth = 1, colour = tayloRswift::swift_palettes$taylor1989[4],
+      )
+  }
+  
+  p <- p +
+    scale_color_manual(
+      name = NULL,
+      values = c(
+        "Degradation Path" = tayloRswift::swift_palettes$taylor1989[1],
+        "Standard" = tayloRswift::swift_palettes$taylor1989[6]
+      ),
+      labels = c("Y(t) - Processo de degradação com ações de manutenção", "X(t) - Processo de degradação natural")
+    ) +
+    theme_classic() +
+    theme(
+      legend.position = "top",
+      plot.title = element_blank()
+    ) +
+    labs(x = "Tempo", y = "Degradação", title = "(I)") +
+    scale_y_continuous(expand = c(0, 0)) +
+    scale_x_continuous(expand = c(0, 0))
+  
+  return(p)
+}
+
+gera_plot_rmse <- function(resultados){
+  mu.labs <- c(TeX("$mu$"),"mu=16")
+  names(mu.labs) <- c("4","16")
+  
+  sigma2.labs <- c("Sigma = 1","Sigma = 25")
+  names(sigma2.labs) <- c("1","25")
+  
+  n_main.labs <- c("k=3","k=4","k=5")
+  names(n_main.labs) <- c("3","4","5")
+  
+  n_intra.labs <- c("nj=0","nj=2","nj=4")
+  names(n_intra.labs) <- c("0","2","4")
+  
+  # RMSE
+  resultados %>%
+    select(n_system:n_intra,RMSE.mu_hat,RMSE.sigma_hat) %>%
+    tidyr::gather(rmse,value,RMSE.mu_hat,RMSE.sigma_hat) %>%
+    mutate(mu = as.factor(mu) %>% recode_factor("4" = "mu : 4" ,"16" = "mu : 16"),
+           sigma = as.factor(sigma2) %>% forcats::fct_recode("sigma^2 : 1" = "1" ,"sigma^2 : 25" = "25"),
+           n_main = as.factor(n_main) %>% forcats::fct_recode("k : 3" = "3" ,"k : 4" = "4", "k : 5" = "5"),
+           n_intra = as.factor(n_intra) %>% forcats::fct_recode("n[j] : 0" = "0" ,"n[j] : 2" = "2", "n[j] : 4" = "4")) %>%
+    ggplot(aes(x=n_system,y=value,color = rmse)) +
+    facet_nested(mu+sigma ~n_main+n_intra,
+                 labeller = label_parsed) +
+    geom_line(linewidth=0.8,alpha=0.6) +
+    geom_point(alpha=0.7) +
+    labs(x = "Número de Sistemas",
+         y = "RMSE") +
+    tayloRswift::scale_color_taylor(labels = c(TeX(" $mu$    "),TeX(" $sigma^2$")))	+
+    theme(legend.position = "bottom",
+          legend.title = element_blank(),
+          legend.text = element_text(colour="black", size = 20),
+          legend.key = element_rect(colour = NA, fill = NA),
+          panel.background = element_blank(),
+          panel.border = element_rect(fill = "transparent",
+                                      color = "black", linewidth = 0.5),
+          strip.background = element_rect(linetype = "solid",# fill = tayloRswift::swift_palettes$taylor1989[],
+                                          color = "black", linewidth = 0.5),
+          strip.text.y = ggplot2::element_text(angle=0))
+}
+
+gera_plot_coveragep <- function(resultados){
+  mu.labs <- c(TeX("$mu$"),"mu=16")
+  names(mu.labs) <- c("4","16")
+  
+  sigma2.labs <- c("Sigma = 1","Sigma = 25")
+  names(sigma2.labs) <- c("1","25")
+  
+  n_main.labs <- c("k=3","k=4","k=5")
+  names(n_main.labs) <- c("3","4","5")
+  
+  n_intra.labs <- c("nj=0","nj=2","nj=4")
+  names(n_intra.labs) <- c("0","2","4")
+  
+  resultados %>%
+    select(n_system:n_intra,CP_mu_hat,CP_sigma2_hat) %>%
+    tidyr::gather(CP,value,CP_mu_hat,CP_sigma2_hat) %>%
+    mutate(mu = as.factor(mu) %>% recode_factor("4" = "mu : 4" ,"16" = "mu : 16"),
+           sigma = as.factor(sigma2) %>% forcats::fct_recode("sigma^2 : 1" = "1" ,"sigma^2 : 25" = "25"),
+           n_main = as.factor(n_main) %>% forcats::fct_recode("k : 3" = "3" ,"k : 4" = "4", "k : 5" = "5"),
+           n_intra = as.factor(n_intra) %>% forcats::fct_recode("n[j] : 0" = "0" ,"n[j] : 2" = "2", "n[j] : 4" = "4")) %>%
+    ggplot(aes(x=n_system,y=value,color = CP)) +
+    facet_nested(mu+sigma ~n_main+n_intra,
+                 labeller = label_parsed) +
+    geom_hline(yintercept = 0.95, linetype = "dashed", color = "red", linewidth = 0.5) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    
+    geom_line(linewidth=0.8,alpha=0.6) +
+    geom_point(alpha=0.7) +
+    labs(x = "Número de Sistemas",
+         y = "Probabilidade de Cobertura (95%)") +
+    tayloRswift::scale_color_taylor(labels = c(TeX(" $mu$   "),TeX(" $sigma^2$"))) +
+    theme(legend.position = "bottom",
+          legend.title = element_blank(),
+          legend.text = element_text(colour="black", size = 20),
+          legend.key = element_rect(colour = NA, fill = NA),
+          panel.background = element_blank(),
+          panel.border = element_rect(fill = "transparent",
+                                      color = "black", linewidth = 0.5),
+          strip.background = element_rect(linetype = "solid",
+                                          color = "black", linewidth = 0.5),
+          strip.text.y = ggplot2::element_text(angle=0))
+}
+
+gera_plot_ratiovar <- function(resultados){
+  mu.labs <- c(TeX("$mu$"),"mu=16")
+  names(mu.labs) <- c("4","16")
+  
+  sigma2.labs <- c("Sigma = 1","Sigma = 25")
+  names(sigma2.labs) <- c("1","25")
+  
+  n_main.labs <- c("k=3","k=4","k=5")
+  names(n_main.labs) <- c("3","4","5")
+  
+  n_intra.labs <- c("nj=0","nj=2","nj=4")
+  names(n_intra.labs) <- c("0","2","4")
+  
+  resultados %>%
+    select(n_system:n_intra,obs_ModVar_mu,obs_ModVar_sigma2,obs_EmpVar_mu,obs_EmpVar_sigma2) %>%
+    mutate(ratiovar_mu = obs_ModVar_mu/obs_EmpVar_mu,
+           ratiovar_sigma2 = obs_ModVar_sigma2/obs_EmpVar_sigma2) %>%
+    tidyr::gather(ratio_var,value,ratiovar_mu,ratiovar_sigma2) %>%
+    mutate(mu = as.factor(mu) %>% recode_factor("4" = "mu : 4" ,"16" = "mu : 16"),
+           sigma = as.factor(sigma2) %>% forcats::fct_recode("sigma^2 : 1" = "1" ,"sigma^2 : 25" = "25"),
+           n_main = as.factor(n_main) %>% forcats::fct_recode("k : 3" = "3" ,"k : 4" = "4", "k : 5" = "5"),
+           n_intra = as.factor(n_intra) %>% forcats::fct_recode("n[j] : 0" = "0" ,"n[j] : 2" = "2", "n[j] : 4" = "4")) %>%
+    ggplot(aes(x=n_system,y=value,color = ratio_var)) +
+    facet_nested(mu+sigma ~n_main+n_intra,
+                 labeller = label_parsed) +
+    geom_line(linewidth=0.8,alpha=0.6) +
+    geom_point(alpha=0.7) +
+    geom_hline(yintercept = 1, linetype = "dashed", color = "red", linewidth = 0.5) +
+    labs(x = "Número de Sistemas",
+         y = "Razão de Variâncias") +
+    tayloRswift::scale_color_taylor(labels = c(TeX(" $mu$   "),TeX(" $sigma^2$"))) +
+    theme(legend.position = "bottom",
+          legend.title = element_blank(),
+          legend.text = element_text(colour="black", size = 20),
+          legend.key = element_rect(colour = NA, fill = NA),
+          panel.background = element_blank(),
+          panel.border = element_rect(fill = "transparent",
+                                      color = "black", linewidth = 0.5),
+          strip.background = element_rect(linetype = "solid",
+                                          color = "black", linewidth = 0.5),
+          strip.text.y = ggplot2::element_text(angle=0))
+}
+
+
+
 gera_plot_exp()
 # Salvar em 900x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_EXP.svg',"figures/PLOT_EXP.pdf")
@@ -1103,3 +1256,28 @@ rsvg::rsvg_pdf('figures/PLOT_REPARO.svg',"figures/PLOT_REPARO.pdf")
 gera_plot_scheme()
 # Salvar em 800x400 em .svg
 rsvg::rsvg_pdf('figures/PLOT_SCHEMA.svg',"figures/PLOT_SCHEMA.pdf")
+
+resultados <- readRDS("SimDesign3.rds")
+gera_plot_rmse(resultados)
+# Salvar em 1100x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_RMSE.svg',"figures/PLOT_RMSE.pdf")
+
+resultados <- readRDS("SimDesign3.rds")
+gera_plot_bias(resultados)
+# Salvar em 1100x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_BIAS.svg',"figures/PLOT_BIAS.pdf")
+
+resultados <- readRDS("SimDesign3.rds")
+gera_plot_coveragep(resultados)
+# Salvar em 1100x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_CP.svg',"figures/PLOT_CP.pdf")
+
+resultados <- readRDS("SimDesign3.rds")
+gera_plot_ratiovar(resultados)
+# Salvar em 1100x600 em .svg
+rsvg::rsvg_pdf('figures/PLOT_RATIOVAR.svg',"figures/PLOT_RATIOVAR.pdf")
+
+gera_plot_xtyt()
+# Salvar em 800x400 em .svg
+rsvg::rsvg_pdf('figures/PLOT_XTYT.svg',"figures/PLOT_XTYT.pdf")
+

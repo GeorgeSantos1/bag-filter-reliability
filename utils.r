@@ -824,95 +824,72 @@ plot_maintanance <- function(data, xlab, ylab,time=FALSE) {
 }
 
 
-############
-## Design ##
-############
 
-Design <- SimDesign::createDesign(n_system = c(5,10),
-                                  mu = 4,
-                                  sigma2 = c(1,25),
-                                  n_main = 3,
-                                  n_intra = 4,
-                                  tau =20)
 
-Generate <- function(condition,fixed_objects){
-  n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
-  rho = c(0.1,0.3,0.5)
+
+
+plot_aux <- function(data, xlab, ylab,time=FALSE){
+  # Ordena o data.frame por Time (e por outro critério se necessário)
+  data <- data %>% arrange(Time)
   
-  dat <- gera_dados3(n_s=condition$n_system,
-                     t_max = condition$tau,n_med=n_med,
-                     v=condition$mu,sigma2=condition$sigma2,rho=rho,n_manu=condition$n_main)
-  dat
+  # Cria lista de índices onde Time é duplicado (2ª ocorrência)
+  duplicated_times <- data$Time[duplicated(data$Time)]
+  
+  # Cria uma nova base com quebra usando NA logo após o primeiro ponto duplicado
+  data_na <- data.frame()
+  i <- 1
+  while (i <= nrow(data)) {
+    current_row <- data[i, ]
+    data_na <- bind_rows(data_na, current_row)
+    
+    # Se o próximo tiver o mesmo Time → insere linha NA
+    if (i < nrow(data) && data$Time[i] == data$Time[i + 1]) {
+      na_row <- current_row
+      na_row$Y <- NA
+      data_na <- bind_rows(data_na, na_row)
+    }
+    
+    i <- i + 1
+  }
+  
+  # Gera o gráfico com a linha quebrada
+  p <- ggplot() +
+    geom_line(
+      data = data_na,
+      aes(x = Time, y = Y, color = "Degradation Path"),
+      alpha = 0.5, linetype = "solid", linewidth = 1
+    ) + 
+    geom_line(data = data, aes(x = Time, y = Wt, colour = "Standard"),
+                  alpha = 0.5, linetype = "solid", linewidth = 1)
+  
+  # Adiciona os segmentos verticais nos pontos duplicados
+  for (ponto in duplicated_times) {
+    y_vals <- data$Y[data$Time == ponto]
+    p <- p +
+      geom_segment(
+        data = data.frame(x = ponto, xend = ponto, y = max(y_vals), yend = min(y_vals)),
+        aes(x = x, xend = xend, y = y, yend = yend),
+        linetype = "dotted", linewidth = 1, colour = tayloRswift::swift_palettes$taylor1989[2],
+      )
+  }
+  
+  p <- p +
+    scale_color_manual(
+      name = NULL,
+      values = c(
+        "Degradation Path" = tayloRswift::swift_palettes$taylor1989[1],
+        "Standard" = tayloRswift::swift_palettes$taylor1989[6]
+      ),
+      labels = c("Y(t) - Processo de degradação com ações de manutenção", "X(t) - Processo de degradação natural")
+    ) +
+    theme_classic() +
+    theme(
+      legend.position = "top",
+      plot.title = element_blank()
+    ) +
+    labs(x = xlab, y = ylab, title = "(I)") +
+    scale_y_continuous(expand = c(0, 0)) +
+    scale_x_continuous(expand = c(0, 0))
+  
+  return(p)
 }
-
-Analyse <- function(condition, dat, fixed_objects) {
-  n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
-  
-  mu_hat <- mle_drift1(dat)
-  sigma2_hat <- (mle_sigma1(dat))
-  
-  # CP95% mu
-  erro_padrao <- sqrt(sigma2_hat) / sqrt(condition$n_system * condition$tau)
-  t_crit <- qt(1 - 0.05/2, df = condition$n_system*(n_med+condition$n_main +1) - 1)
-  IC_mu_hat <- c(mu_hat - t_crit * erro_padrao, mu_hat + t_crit * erro_padrao)
-  CP_mu_hat <- ECR(IC_mu_hat, condition$mu)
-  
-  # CP95% sigma^2
-  s <- unique(dat$Objeto)
-  k <- dat %>% filter(Objeto == s[1], duplicated(Time)) %>% pull(Time)
-  nj <- dat %>% filter(Objeto == s[1], Time > k[1], Time < k[2]) %>% nrow()
-  N <- nj * (length(k) + 1)
-  df <- length(s) * (N + length(k) + 1) - 1
-  
-  chi_low <- qchisq(1 - 0.05/2, df)
-  chi_up <- qchisq(0.05/2, df)
-  
-  IC_sigma_hat <- c(
-    (df * sigma2_hat / chi_low),
-    (df * sigma2_hat / chi_up)
-  )
-  CP_sigma_hat <- ECR(IC_sigma_hat, condition$sigma2)
-  
-  # Estimativa media da variancia
-  mod_var_mu <- erro_padrao^2
-  mod_var_sigma2 <- (2*sigma2_hat^2)/df
-  
-  
-  ret <- c(mu_hat = mu_hat, sigma_hat = sigma2_hat,
-           cp_mu_hat = CP_mu_hat, cp_sigma_hat = CP_sigma_hat,
-           mod_var_mu = mod_var_mu, mod_var_sigma2 = mod_var_sigma2)
-  
-  return(ret)
-}
-
-Summarise <- function(condition, results, fixed_objects) {
-  obs_bias <- bias(results[, c("mu_hat", "sigma_hat")],
-                   parameter = c(condition$mu, condition$sigma2))
-  obs_RMSE <- RMSE(results[, c("mu_hat", "sigma_hat")],
-                   parameter = c(condition$mu, condition$sigma2))
-  obs_MAE <- SimDesign::MAE(results[, c("mu_hat", "sigma_hat")],
-                            parameter = c(condition$mu, condition$sigma2))
-  obs_CP_mu_hat <- mean(results$cp_mu_hat)
-  obs_cp_sigma_hat <- mean(results$cp_sigma_hat)
-  
-  obs_EmpVar_mu <- var(results$mu_hat)
-  obs_EmpVar_sigma2 <- var(results$sigma_hat)
-  
-  obs_ModVar_mu <- mean(results$mod_var_mu)
-  obs_ModVar_sigma2 <- mean(results$mod_var_sigma2)
-  
-  # obs_MSRSE <- MSRSE(obs_ModVar_mu,obs_EmpVar_mu)
-  
-  
-  ret <- c(bias = obs_bias, RMSE = obs_RMSE, MAE = obs_MAE, 
-           CP_mu_hat = obs_CP_mu_hat, CP_sigma2_hat = obs_cp_sigma_hat,
-           obs_EmpVar_mu = obs_EmpVar_mu, obs_EmpVar_sigma2 = obs_EmpVar_sigma2,
-           obs_ModVar_mu = obs_ModVar_mu, obs_ModVar_sigma2 = obs_ModVar_sigma2)
-  ret
-}
-
-# resultados <- runSimulation(design=Design, replications=1000,
-#                               generate=Generate, analyse=Analyse,summarise = Summarise)
-# 
-# resultados$obs_ModVar_sigma2/resultados$obs_EmpVar_sigma2
-# resultados$obs_ModVar_mu/resultados$obs_EmpVar_mu
