@@ -166,7 +166,7 @@ mle_sigma1(df_degradacao1) #  entre 1 e 2 minutos para rodar
 # ---------------------------------------------------------------------
 #################### Estudo de Simulação #############################
 # ---------------------------------------------------------------------
-Design <- SimDesign::createDesign(n_system = c(10,50,100,200),
+Design <- SimDesign::createDesign(n_system = c(1,10,20,50),
                                   mu = c(4,16),
                                   sigma2 = c(1,25),
                                   n_main = c(3,4,5),
