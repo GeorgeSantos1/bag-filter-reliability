@@ -1003,6 +1003,7 @@ gera_plot_bias <- function(resultados){
                  labeller = label_parsed) +
     geom_line(linewidth=0.8,alpha=0.6) +
     geom_point(alpha=0.7) +
+    scale_x_continuous(breaks = c(1,10,20,30,40,50)) +
     labs(x = "Número de Sistemas",
          y = "Viés") +
     tayloRswift::scale_color_taylor(labels = c(TeX(" $mu$    "),TeX(" $sigma^2$")))	+
@@ -1118,6 +1119,7 @@ gera_plot_rmse <- function(resultados){
                  labeller = label_parsed) +
     geom_line(linewidth=0.8,alpha=0.6) +
     geom_point(alpha=0.7) +
+    scale_x_continuous(breaks = c(1,10,20,30,40,50)) +
     labs(x = "Número de Sistemas",
          y = "RMSE") +
     tayloRswift::scale_color_taylor(labels = c(TeX(" $mu$    "),TeX(" $sigma^2$")))	+
@@ -1161,6 +1163,7 @@ gera_plot_coveragep <- function(resultados){
     
     geom_line(linewidth=0.8,alpha=0.6) +
     geom_point(alpha=0.7) +
+    scale_x_continuous(breaks = c(1,10,20,30,40,50)) +
     labs(x = "Número de Sistemas",
          y = "Probabilidade de Cobertura (95%)") +
     tayloRswift::scale_color_taylor(labels = c(TeX(" $mu$   "),TeX(" $sigma^2$"))) +
@@ -1203,6 +1206,7 @@ gera_plot_ratiovar <- function(resultados){
                  labeller = label_parsed) +
     geom_line(linewidth=0.8,alpha=0.6) +
     geom_point(alpha=0.7) +
+    scale_x_continuous(breaks = c(1,10,20,30,40,50)) +
     geom_hline(yintercept = 1, linetype = "dashed", color = "red", linewidth = 0.5) +
     labs(x = "Número de Sistemas",
          y = "Razão de Variâncias") +
@@ -1257,22 +1261,22 @@ gera_plot_scheme()
 # Salvar em 800x400 em .svg
 rsvg::rsvg_pdf('figures/PLOT_SCHEMA.svg',"figures/PLOT_SCHEMA.pdf")
 
-resultados <- readRDS("SimDesign3.rds")
+resultados <- readRDS("SimDesign4.rds")
 gera_plot_rmse(resultados)
 # Salvar em 1100x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_RMSE.svg',"figures/PLOT_RMSE.pdf")
 
-resultados <- readRDS("SimDesign3.rds")
+resultados <- readRDS("SimDesign4.rds")
 gera_plot_bias(resultados)
 # Salvar em 1100x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_BIAS.svg',"figures/PLOT_BIAS.pdf")
 
-resultados <- readRDS("SimDesign3.rds")
+resultados <- readRDS("SimDesign4.rds")
 gera_plot_coveragep(resultados)
 # Salvar em 1100x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_CP.svg',"figures/PLOT_CP.pdf")
 
-resultados <- readRDS("SimDesign3.rds")
+resultados <- readRDS("SimDesign4.rds")
 gera_plot_ratiovar(resultados)
 # Salvar em 1100x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_RATIOVAR.svg',"figures/PLOT_RATIOVAR.pdf")
