@@ -257,11 +257,11 @@ Summarise <- function(condition, results, fixed_objects) {
   ret
 }
 
-# resultados <- runSimulation(design=Design, replications=1000,
-#                             generate=Generate, analyse=Analyse, summarise=Summarise)
-# 
-# saveRDS(resultados,file = "SimDesign3.rds")
-resultados <- readRDS("SimDesign3.rds")
+resultados <- runSimulation(design=Design, replications=1000,
+                            generate=Generate, analyse=Analyse, summarise=Summarise)
+
+saveRDS(resultados,file = "SimDesign4.rds")
+# resultados <- readRDS("SimDesign3.rds")
 
 
 # ---------------------------------------------------------------------
