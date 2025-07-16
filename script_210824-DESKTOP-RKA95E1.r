@@ -7,11 +7,10 @@
 # ---------------------------------------------------
 # ---------------------------------------------------
 # Carregamento de Pacotes
-pacotes <- c(
-  "dplyr", "tidyr", "ggplot2", "gridExtra", "viridisLite", "SimDesign", "ggh4x",
+pacotes <- c("tidyr", "ggplot2", "gridExtra", "viridisLite", "SimDesign", "ggh4x",
   "latex2exp", "scales", "ggthemes", "viridis", "ggrepel", "readxl",
   "lubridate", "statmod", "tayloRswift", "WriteXLS", "gt", "forcats",
-  "patchwork", "grid"
+  "patchwork", "grid","fitdistrplus","dplyr"
 )
 
 # Instala apenas os pacotes que ainda não estão instalados
@@ -479,6 +478,40 @@ mu <- mle_drift1_y(sub_maria)
 sigma <- mle_sigma1_y(sub_maria)
 rho_hat(sub_maria)
 
+
+#################
+#################
+#################
+
+mu_hat <- mle_drift1_y(sub_maria)
+sigma2_hat <- mle_sigma1_y(sub_maria)
+# CP95% sigma^2
+dat = sub_maria
+s <- 1
+k <- dat %>% filter(duplicated(Time)) %>% pull(Time)
+nj <- dat %>% filter(Time > k[1], Time < k[2]) %>% nrow()
+N <- nj * (length(k) + 1)
+N <- 38
+df <- length(s) * (N + length(k) + 1) - 1
+
+# CP95% mu
+erro_padrao <- sqrt(sigma2_hat) / sqrt(42)
+t_crit <- qt(1 - 0.05/2, df = df)
+IC_mu_hat <- c(mu_hat - t_crit * erro_padrao, mu_hat + t_crit * erro_padrao)
+dat = sub_maria
+
+
+chi_low <- qchisq(1 - 0.05/2, df)
+chi_up <- qchisq(0.05/2, df)
+
+IC_sigma_hat <- c(
+  (df * sigma2_hat / chi_low),
+  (df * sigma2_hat / chi_up)
+)
+
+sqrt((sigma2_hat^2)*2/df)
+
+
 # sub_maria_1 <- sub_maria
 # write.csv2(sub_maria_1 %>%
 #              select(-Objeto),"subsets/recorte_02_thetaposi.csv",
@@ -495,25 +528,6 @@ rho_hat(sub_maria)
 # media: media
 # variancia: (media^3)/desvio
 
-# t0: tempo inicial
-t0 = 39
-
-# x0: degradação para o tempo inicial
-x0 = sub_maria %>%
-  filter(Time == 39) %>%
-  filter(Y == min(Y)) %>%
-  select(Y) %>%
-  pull()
-
-plot_reliability(mu=mu,sigma=sigma,
-                    alpha = 150,
-                    t0 = t0,
-                    x0 = x0,
-                    t_max = c(150+5),
-                    xlab = "Time",ylab = "Reliability = R(t)",
-                    paleta = "taylor1989")
-
-rsvg::rsvg_pdf('figures/RESULT_002.svg',"figures/RESULT_002.pdf")
 
 # --------------------------------------------------------
 ########### Gera Tabela de Confiabilidade ################
@@ -540,6 +554,58 @@ grid.draw(myTable)
 
 # salva os dados
 write.csv2(reliability,"confiabilidade.xlsx")
+
+
+#--------------------------------------
+########## Anderson-Darling ###########
+#--------------------------------------
+
+gera_plot_qqplot <- function(sub_maria){
+  
+  mu_hat <- mle_drift1_y(sub_maria)
+  sigma2_hat <- mle_sigma1_y(sub_maria)
+  incrementos = diff(sub_maria$Y)[-c(14,28,42)]
+  
+  
+  anderson_d <- ADGofTest::ad.test(incrementos, pnorm, mu_hat, sqrt(sigma2_hat))
+  estatistica_ad <- anderson_d$statistic
+  p_valor <- anderson_d$p.value
+  
+  
+  e1 <- fitdist(incrementos, "norm", start = list(mean = mu_hat, sd = sqrt(sigma2_hat)))
+  
+  
+  pp_data <- data.frame(
+    x = pnorm(sort(incrementos), mean = mu_hat, sd = sqrt(sigma2_hat)),
+    y = ecdf(incrementos)(sort(incrementos))
+  )
+  
+  pp_plot <- ggplot(pp_data, aes(x = x, y = y)) +
+    geom_point(color=tayloRswift::swift_palettes$taylor1989[6]) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+    labs(x = "Distribuição Cumulativa Teórica", y = "Distribuição Cumulativa Empirica", title = "P-P Plot") +
+    theme_classic() +
+    theme(plot.title = element_text(hjust = 0.5))
+  
+  # Criando o Q-Q Plot
+  qq_plot <- ggplot(data.frame(sample = incrementos), aes(sample = sample)) +
+    stat_qq(distribution = qnorm, dparams = list(mean = mu_hat, sd = sqrt(sigma2_hat)),
+            color=tayloRswift::swift_palettes$taylor1989[6]) +
+    stat_qq_line(distribution = qnorm, dparams = list(mean = mu_hat, sd = sqrt(sigma2_hat)),
+                 color = "red", linetype = "dashed") +
+    labs(x = "Quantis Teóricos", y = "Quantis Empiricos", title = "Q-Q Plot") +
+    theme_classic() +
+    theme(plot.title = element_text(hjust = 0.5))
+  
+  
+  # Exibir os gráficos lado a lado com legenda do p-valor do AD Test
+  graf_diag<-pp_plot + qq_plot + 
+    plot_annotation(title = sprintf("AD Test: %.4f, p-valor = %.4f", estatistica_ad, p_valor))
+  
+  return(graf_diag)
+}
+
+gera_plot_qqplot(sub_maria)
 
 ########################################
 ########################################
@@ -1223,6 +1289,64 @@ gera_plot_ratiovar <- function(resultados){
           strip.text.y = ggplot2::element_text(angle=0))
 }
 
+gera_plot_merito <- function(mu,sigma,alpha,t0,x0,t_max){
+  media <- (alpha[1]-x0)/mu
+  desvio <- ((alpha[1]-x0)^2)/sigma
+  t = seq(t0,t_max,by=0.1) # Tempo absoluto
+  # Tempo Relativo
+  tau <- t - t0
+  aux <- statmod::dinvgauss(tau,mean=media,shape = desvio)
+  df_visu <- data.frame(time = t,r_mean=aux)
+  
+  g1 <- df_visu %>%
+    ggplot(aes(x=time,y=r_mean)) +
+    geom_line(linewidth=1,alpha=0.7,color=tayloRswift::swift_palettes$taylor1989[1]) +
+    geom_vline(xintercept = t0-2) +
+    geom_vline(xintercept = t0,
+               colour="black", linetype = "longdash") +
+    theme_classic() +
+    theme(legend.position = c(0.9,0.8),
+          axis.text.y = ggtext::element_markdown(),
+          plot.title = element_text(hjust = 0.5)
+    ) +
+    labs(title = "Densidade",
+         x = "Tempo",
+         y = "f(t)") +
+    coord_cartesian(ylim=c(0,0.022),expand = FALSE) +
+    #   scale_color_viridis(discrete = TRUE, option = "D")
+    tayloRswift::scale_color_taylor(palette = "taylor1989",reverse = FALSE) +
+    annotate("text",x=(t0 + 5.0), y= 0.005,							
+             label=paste("t=",t0),size = 3,colour="black")
+  
+  aux <- statmod::pinvgauss(tau,mean=media,shape = desvio)
+  plot(t,aux)
+  df_visu <- data.frame(time = t,r_mean=aux)
+  g2 <- df_visu %>%
+    ggplot(aes(x=time,y=r_mean)) +
+    geom_line(linewidth=1,alpha=0.7,color=tayloRswift::swift_palettes$taylor1989[1]) +
+    geom_vline(xintercept = t0-2) +
+    geom_vline(xintercept = t0,
+               colour="black", linetype = "longdash") +
+    theme_classic() +
+    theme(legend.position = c(0.9,0.8),
+          axis.text.y = ggtext::element_markdown(),
+          plot.title = element_text(hjust = 0.5)
+    ) +
+    labs(title = "Acumulada",
+         x = "Tempo",
+         y = "F(t)") +
+    coord_cartesian(ylim=c(0,1),expand = FALSE) +
+    #   scale_color_viridis(discrete = TRUE, option = "D")
+    tayloRswift::scale_color_taylor(palette = "taylor1989",reverse = FALSE) +
+    annotate("text",x=(t0 + 5), y= 0.25,							
+             label=paste("t=",t0),size = 3,colour="black")
+  
+  layout <- "
+  AB
+  "
+  g1+g2 +
+    plot_layout(design = layout)
+}
 
 
 gera_plot_exp()
@@ -1284,4 +1408,47 @@ rsvg::rsvg_pdf('figures/PLOT_RATIOVAR.svg',"figures/PLOT_RATIOVAR.pdf")
 gera_plot_xtyt()
 # Salvar em 800x400 em .svg
 rsvg::rsvg_pdf('figures/PLOT_XTYT.svg',"figures/PLOT_XTYT.pdf")
+
+gera_plot_merito(mu=mu,sigma=sigma,
+                 alpha = 150,
+                 t0 = t0,
+                 x0 = x0,
+                 t_max = c(150+5))
+# Salvar em 800x400 em .svg
+rsvg::rsvg_pdf('figures/PLOT_MERITO.svg',"figures/PLOT_MERITO.pdf")
+
+gera_plot_qqplot(sub_maria)
+# Salvar em 800x400 em .svg
+rsvg::rsvg_pdf('figures/PLOT_QQPLOT.svg',"figures/PLOT_QQPLOT.pdf")
+
+
+# ------------------------------------------------
+######## Gerando Curvas de Confiabilidade ########
+# ------------------------------------------------
+
+# gera curvas de confiabilidade considerando fdp do first passage time (fpt) como gaussiana inversa
+# media: media
+# variancia: (media^3)/desvio
+
+# t0: tempo inicial
+t0 = 39
+
+# x0: degradação para o tempo inicial
+x0 = sub_maria %>%
+  filter(Time == 39) %>%
+  filter(Y == min(Y)) %>%
+  select(Y) %>%
+  pull()
+
+plot_reliability(mu=mu,sigma=sigma,
+                 alpha = 150,
+                 t0 = t0,
+                 x0 = x0,
+                 t_max = c(150+5),
+                 xlab = "Tempo",ylab = "Confiabilidade = R(t)",
+                 paleta = "taylor1989")
+
+# Salvar em 1100x500 em .svg
+rsvg::rsvg_pdf('figures/RESULT_002.svg',"figures/RESULT_002.pdf")
+
 

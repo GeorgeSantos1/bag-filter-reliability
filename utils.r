@@ -655,7 +655,7 @@ mle_sigma1_y <- function(data){
 plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
   library(ggtext)
   media <- (alpha[1]-x0)/mu
-  desvio <- ((alpha[1]-x0)/sigma)^2
+  desvio <- ((alpha[1]-x0)^2)/sigma
   
   # Tempo Absoluto
   t = seq(t0,t_max,by=0.1) # Tempo absoluto
@@ -669,7 +669,7 @@ plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
   if (length(alpha) > 1) {
     for (i in 2:length(alpha)) {
       media <- (alpha[i]-x0)/mu
-      desvio <- ((alpha[i]-x0)/sigma)^2
+      desvio <- ((alpha[i]-x0))^2/sigma
       
       r_mean <- statmod::pinvgauss(tau,mean=media,shape = desvio,lower.tail = FALSE)
       
@@ -682,7 +682,7 @@ plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
     mutate(Threshold = as.factor(Threshold)) %>%
     ggplot(aes(x=time,y=r_mean,colour = Threshold)) +
     scale_y_continuous(labels = scales::percent,limits=c(0,1)) +
-    geom_line(linewidth=1.5,alpha=0.7) +
+    geom_line(linewidth=1,alpha=0.7) +
     geom_vline(xintercept = t0-2) +
     geom_vline(xintercept = t0,
                colour="black", linetype = "longdash") +
@@ -723,17 +723,23 @@ plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
     })
     
     p <- p + geom_segment(aes(x=60,xend=60,y=0,yend=conf_extract["60"]),
-                          linetype = "dotted",linewidth=0.1, alpha = 0.2,lineend = "round") +
+                          linetype = "8f",linewidth=0.1, alpha = 0.2,lineend = "round",
+                          colour=tayloRswift::swift_palettes$taylor1989[4]) +
       geom_segment(aes(x=90,xend=90,y=0,yend=conf_extract["90"]),
-                   linetype = "dotted",linewidth=0.1,alpha=0.2) +
+                   linetype = "8f",linewidth=0.1,alpha=0.2,
+                   colour=tayloRswift::swift_palettes$taylor1989[4]) +
       geom_segment(aes(x=120,xend=120,y=0,yend=conf_extract["120"]),
-                   linetype = "dotted",linewidth=0.1,alpha=0.2) +
+                   linetype = "8f",linewidth=0.1,alpha=0.2,
+                   colour=tayloRswift::swift_palettes$taylor1989[4]) +
       geom_segment(aes(x=t0-2,xend=60,y=conf_extract["60"],yend=conf_extract["60"]),
-                   linetype = "dotted",linewidth=0.1,alpha=0.2) +
+                   linetype = "8f",linewidth=0.1,alpha=0.2,
+                   colour=tayloRswift::swift_palettes$taylor1989[4]) +
       geom_segment(aes(x=t0-2,xend=90,y=conf_extract["90"],yend=conf_extract["90"]),
-                   linetype = "dotted",linewidth=0.1,alpha=0.2) +
+                   linetype = "8f",linewidth=0.1,alpha=0.2,
+                   colour=tayloRswift::swift_palettes$taylor1989[4]) +
       geom_segment(aes(x=t0-2,xend=120,y=conf_extract["120"],yend=conf_extract["120"]),
-                   linetype = "dotted",linewidth=0.1,alpha=0.2) +
+                   linetype = "8f",linewidth=0.1,alpha=0.2,
+                   colour=tayloRswift::swift_palettes$taylor1989[4]) +
       scale_y_continuous(breaks = y_breaks, labels = y_labels, limits = c(0, 1))
   }
   
@@ -824,10 +830,6 @@ plot_maintanance <- function(data, xlab, ylab,time=FALSE) {
 }
 
 
-
-
-
-
 plot_aux <- function(data, xlab, ylab,time=FALSE){
   # Ordena o data.frame por Time (e por outro critério se necessário)
   data <- data %>% arrange(Time)
@@ -893,3 +895,42 @@ plot_aux <- function(data, xlab, ylab,time=FALSE){
   
   return(p)
 }
+
+funcao_teste <- function(tempo){
+  mu_hat <- 1.85
+  sigma_hat <- 52.84
+  se_mu <- 1.122
+  se_sigma <- 11.671
+  t0 = 39
+  tau <- tempo[1] - t0
+  
+  # Covariância
+  Sigma <- matrix(c(se_mu^2, 0, 0, se_sigma^2), ncol=2)
+  
+  # Simulação paramétrica
+  B <- 100000
+  params <- MASS::mvrnorm(B, mu = c(mu_hat, sigma_hat), Sigma = Sigma)
+  
+  R_tau <- numeric(B)
+  alpha = 150
+  
+  for (b in 1:B) {
+    mu_b <- params[b, 1]
+    sigma_b <- params[b, 2]
+    
+    if (mu_b <= 0 || sigma_b <= 0) {
+      R_tau[b] <- NA
+      next
+    }
+    
+    media <- (alpha[1]-x0)/mu_b
+    desvio <- ((alpha[1]-x0)^2)/sigma_b
+    
+    # R(tau) = 1 - P(T < tau)
+    R_tau[b] <- statmod::pinvgauss(tau,mean=media,shape = desvio,lower.tail = FALSE)
+  }
+  
+  IC <- quantile(R_tau, c(0.025, 0.975), na.rm = TRUE)
+  R_point <- mean(R_tau, na.rm = TRUE)
+}
+
