@@ -6,7 +6,7 @@
 
 This repository contains the R code and data necessary to reproduce the analyses and results presented in the academic paper:
 
-> **Reliability Analysis of Repairable Systems Using the Arithmetic Reduction of Degradation with Memory One (ARD$_1$) Model: An Application to Industrial Bag Filter Data**
+> **Reliability Analysis of Repairable Systems Using the Arithmetic Reduction of Degradation with Memory One $\text{ARD}_1$ Model: An Application to Industrial Bag Filter Data**
 
 
 The codebase provides a framework for modeling system degradation using **Wiener Processes** under a scheme of **imperfect maintenance**. The primary functionalities include:
@@ -37,7 +37,7 @@ The repository is organized as follows:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/GeorgeSantos1/bag-filter-reliability.git](https://github.com/GeorgeSantos1/bag-filter-reliability.git)
+    git clone https://github.com/GeorgeSantos1/bag-filter-reliability.git
     cd bag-filter-reliability
     ```
 
