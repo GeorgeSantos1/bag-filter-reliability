@@ -26,6 +26,7 @@ library(scales)
 #'
 #' @export
 gera_obs <- function(t_max, n_med, v, sigma2, obj = 1) {
+  n_med <- n_med + 1
   time <- seq(0, t_max, length.out = n_med)
   # Bt <- 0
   # for (i in 2:n_med) {
@@ -56,7 +57,6 @@ gera_obs <- function(t_max, n_med, v, sigma2, obj = 1) {
 #'
 #' @export
 gera_dados <- function(n_obs, t_max, n_med, v, sigma2) {
-  n_med <- n_med+1
   df <- gera_obs(t_max, n_med, v, sigma2)
   if (n_obs>1){
     i <- 2
@@ -187,7 +187,7 @@ mle_sigma <- function(data) {
 #'
 #' @export
 gera_dados1 <- function(t_max, n_med, v, sigma2, rho, n_manu) {
-  df <- gera_obs(t_max, n_med + 1, v, sigma2)
+  df <- gera_obs(t_max, n_med, v, sigma2)
   time_MP <- seq(0, t_max, t_max / (n_manu + 1))
   time_MP <- time_MP[-c(1, length(time_MP))]
   Y <- n_med + 1 + n_manu
@@ -304,7 +304,7 @@ gera_plot1 <- function(data) {
 #'
 #' @export
 gera_dados2 <- function(t_max, n_med, v, sigma2, rho, n_manu,obj = 1) {
-  df <- gera_obs(t_max, n_med + 1, v, sigma2, obj)
+  df <- gera_obs(t_max, n_med, v, sigma2, obj)
   time_MP <- seq(0, t_max, t_max / (n_manu + 1))
   time_MP <- time_MP[-c(1, length(time_MP))]
   Y <- n_med + 1 + n_manu
@@ -548,27 +548,26 @@ gera_plot3 <- function(data,xlab,ylab){
 #'
 #' @export
 mle_drift1_y <- function(data){
-  k <- data$Time[duplicated(data$Time)]
+  s <- unique(data$Objeto)
+  k <- data %>% filter(Objeto == s[1],duplicated(Time)) %>% select(Time) %>% pull()
   pass <- max(data$Time)/(length(unique(data$Time))-1)
   tau <- max(data$Time)
   Zj <- NA
-  yji <- NA
   
-  y_rho <- data %>% filter(Time == max(Time)) %>% select(Y) %>%
-    pull()
-  
-  for (i in 1:length(k)) {
-    Zj[i] <- diff(data %>% filter(Time == k[i]) %>% select(Y) %>% pull())
+  ytau_zlj <- lapply(1:length(s), function(current_id) {
+    y_tau <- data %>% filter(s[current_id] == Objeto,Time == max(Time)) %>% select(Y) %>%
+      pull()
     
-  }
+    for (i in 1:length(k)) {
+      Zj[i] <- diff(data %>% filter(s[current_id] == Objeto,Time == k[i]) %>% select(Y) %>% pull())
+    }
+    
+    return(as_tibble(y_tau-sum(Zj)))
+  })
   
-  # sum(diff(data[1:6,4]))+         # calculo do delta_y (não somar z_j)
-  # sum(diff(data[7:12,4]))+
-  # sum(diff(data[13:18,4]))+
-  # sum(diff(data[19:24,4]))
-  result <-  (y_rho-sum(Zj))/tau
-  
-  return(result)
+  suppressMessages({
+    (dplyr::bind_cols(ytau_zlj)%>% t() %>% colSums())/(length(s)*tau)
+  })
 }
 
 #' Calcula a estimativa do parâmetro de difusão considerando Y_t (processo com acao de manutencao) 
@@ -589,7 +588,6 @@ mle_sigma1_y <- function(data){
   k <- data %>% filter(Objeto == s[1],duplicated(Time)) %>% select(Time) %>% pull()
   nj <- data %>% filter(Objeto == s[1],Time > k[1],Time<k[2]) %>% nrow()
   N<- nj*(length(k)+1)
-  pass <- max(data$Time)/(length(unique(data$Time))-1)
   y_aux <- matrix(NA,nrow=length(s),ncol=(length(k)+1))
   yji<-NA
   tji<-NA
@@ -643,7 +641,6 @@ mle_sigma1_y <- function(data){
 #' @param t_max Tempo máximo para ser plotado no gráfico.
 #' @param xlab Rótulo do eixo X.
 #' @param ylab Rótulo do eixo Y.
-#' @param paleta paleta de cor para geração dos gráficos.
 #'
 #' @return Gráfico exibindo as curvas de confiabilidade para limiares de degração considerandos.
 #'
@@ -652,10 +649,10 @@ mle_sigma1_y <- function(data){
 #' # mle_drift1_y(df)
 #'
 #' @export
-plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
+plot_reliability <- function(mu,sigma2,alpha,t0,x0,t_max,xlab,ylab,paleta = "taylor1989"){
   library(ggtext)
   media <- (alpha[1]-x0)/mu
-  desvio <- ((alpha[1]-x0)^2)/sigma
+  desvio <- ((alpha[1]-x0)^2)/sigma2
   
   # Tempo Absoluto
   t = seq(t0,t_max,by=0.1) # Tempo absoluto
@@ -669,7 +666,7 @@ plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
   if (length(alpha) > 1) {
     for (i in 2:length(alpha)) {
       media <- (alpha[i]-x0)/mu
-      desvio <- ((alpha[i]-x0))^2/sigma
+      desvio <- ((alpha[i]-x0))^2/sigma2
       
       r_mean <- statmod::pinvgauss(tau,mean=media,shape = desvio,lower.tail = FALSE)
       
@@ -688,20 +685,18 @@ plot_reliability <- function(mu,sigma,alpha,t0,x0,t_max,xlab,ylab,paleta){
                colour="black", linetype = "longdash") +
     theme_classic() +
     theme(plot.title = element_blank(),
-          legend.position = c(0.9,0.8),
+          legend.position = "none",
           axis.text.y = ggtext::element_markdown()
-          # plot.title = element_text(hjust = 0.5,face = "bold")
           ) +
     labs(title = "(II)",
          x = xlab,
          y = ylab) +
     coord_cartesian(expand = FALSE) +
- #   scale_color_viridis(discrete = TRUE, option = "D")
     tayloRswift::scale_color_taylor(palette = paleta,reverse = FALSE) +
     annotate("text",x=(t0 + 2.5), y= 0.08,							
              label=paste("t=",t0),size = 3,colour="black")
   
-  if (length(alpha) == 1){
+  if (length(alpha) == 10){
     times_aux = c(60,90,120)
     conf_extract <- rep(NA,length(times_aux))
     
@@ -787,7 +782,7 @@ plot_maintanance <- function(data, xlab, ylab,time=FALSE) {
   p <- ggplot() +
     geom_line(
       data = data_na,
-      aes(x = Time, y = Y, color = "Caminho de Degradação"),
+      aes(x = Time, y = Y, color = "Degradation Path"),
       alpha = 0.5, linetype = "solid", linewidth = 1
     )
   
@@ -797,7 +792,7 @@ plot_maintanance <- function(data, xlab, ylab,time=FALSE) {
     p <- p +
       geom_segment(
         data = data.frame(x = ponto, xend = ponto, y = max(y_vals), yend = min(y_vals)),
-        aes(x = x, xend = xend, y = y, yend = yend, color = "Efeito de Manutenção"),
+        aes(x = x, xend = xend, y = y, yend = yend, color = "Maintenance Effect"),
         linetype = "dotted", linewidth = 1
       )
   }
@@ -806,8 +801,8 @@ plot_maintanance <- function(data, xlab, ylab,time=FALSE) {
     scale_color_manual(
       name = NULL,
       values = c(
-        "Caminho de Degradação" = tayloRswift::swift_palettes$taylor1989[1],
-        "Efeito de Manutenção" = "black"
+        "Degradation Path" = tayloRswift::swift_palettes$taylor1989[1],
+        "Maintenance Effect" = "black"
       )
     ) +
     theme_classic() +
@@ -1631,5 +1626,33 @@ gera_plot_degrada01 <- function(labs_degrada01){
     scale_x_continuous(expand = c(0, 0),breaks = c(0,2,4,6,8,10),limits = c(0,11)) +							
     scale_y_continuous(expand = c(0, 0), limits = c(0,65)) +							
     tayloRswift::scale_color_taylor()
+}
+
+gera_plot_confiabilidade <- function(){
+  lambda <- 100
+  tempos <- seq(0, 405, length.out = 10000)
+  prob <- pexp(tempos,rate = 1/lambda,lower.tail = FALSE)
+  tmedio <- qexp(0.5,rate=1/lambda)
+  df <- tibble(tempos,prob)
+  ggplot(df,aes(x = tempos, y = prob,)) +
+    labs(x = "Tempo", y = "R(t)") +
+    geom_line(color = tayloRswift::swift_palettes$taylor1989[6], linewidth = 1) +
+    theme_classic() +
+    theme(
+      legend.position = "none",
+      plot.title = element_text(hjust = 0.5),
+      # Use element_markdown() para interpretar a cor no rótulo do eixo x
+      axis.text.x = element_markdown() 
+    ) +
+    scale_x_continuous(expand = c(0, 0),breaks = c(0,69,100,200,300,400),
+                       labels = c(0,paste0("<span style='color:red;'>", "69", "</span>"), 100 , 200 , 300 ,400)) +
+    scale_y_continuous(expand = c(0, 0)) +
+    tayloRswift::scale_color_taylor() +
+    geom_segment(aes(x=69,xend=69,y=0,yend=0.5),
+                 linetype = "8f",linewidth=0.1, alpha = 0.2,lineend = "round",
+                 colour=tayloRswift::swift_palettes$taylor1989[4]) +
+    geom_segment(aes(x=0,xend=69,y=0.5,yend=0.5),
+                 linetype = "8f",linewidth=0.1, alpha = 0.2,lineend = "round",
+                 colour=tayloRswift::swift_palettes$taylor1989[4])
 }
 

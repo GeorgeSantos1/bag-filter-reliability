@@ -30,7 +30,7 @@ source("utils.r")
 # ---------------------------------------------------
 ## Gerando dados
 set.seed(111)
-df_degradacao1 <- gera_dados(n_obs=1,t_max=20,n_med=100,v=2,sigma = sqrt(2))
+df_degradacao1 <- gera_dados(n_obs=1,t_max=20,n_med=20,v=2,sigma = sqrt(2))
 df_degradacao2 <- gera_dados(n_obs=1,t_max=20,n_med=100,v=0,sigma = 4)
 df_degradacao3 <- gera_dados(n_obs=10,t_max=20,n_med=200,v=10,sigma = 3)
 df_degradacao4 <- gera_dados(n_obs=10,t_max=20,n_med=200,v=10,sigma = 1)
@@ -59,7 +59,7 @@ mle_sigma(data=df_degradacao2)
 
 # rho=0.5
 set.seed(111)
-df_degradacao1 <-  gera_dados1(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
+df_degradacao1 <-  gera_dados1(t_max = 20,n_med=20,v=2,sigma2=(2),
             rho=0.5,n_manu=3)
 rho_hat(df_degradacao1)
 gera_plot1(df_degradacao1)
@@ -158,9 +158,11 @@ rho_hat(df_degradacao1)
 
 # Geraçao e estimativas dos parâmetros considerando 1000 Sistemas (n_s)
 set.seed(111)
-df_degradacao1 <- gera_dados3(n_s=10,t_max = 20,n_med=n_med,v=4,sigma2 = 4,rho=rho,n_manu=n_manu)
+df_degradacao1 <- gera_dados3(n_s=1000,t_max = 20,n_med=n_med,v=4,sigma2 = 4,rho=rho,n_manu=n_manu)
 mle_drift1(df_degradacao1)
 mle_sigma1(df_degradacao1) #  entre 1 e 2 minutos para rodar
+mle_drift1_y(df_degradacao1)
+mle_sigma1_y(df_degradacao1)
 
 # ---------------------------------------------------------------------
 #################### Estudo de Simulação #############################
@@ -418,7 +420,6 @@ n_intra_manu = 12
 
 # verificando index de todas as medidas de degradação (sem ações após manuntenção)
 index <- seq(1,nrow(df_aux),by=step)
-index[seq(1,length(index),by=n_intra_manu-1)]
 
 # df_aux[c(781,783),c(1,5)]
 
@@ -445,19 +446,18 @@ df_aux <- df_aux %>%
   mutate(Time = s1[1:nrow(df_aux)])
   
 # Modificando Base Criada
-sub_maria <- df_aux
-names(sub_maria)[5] <- "Y"
-sub_maria <- sub_maria %>%
+subset_bagfilter <- df_aux
+names(subset_bagfilter)[5] <- "Y"
+subset_bagfilter <- subset_bagfilter %>%
   mutate(Time = Time -1,
          Objeto = "OBJ_001")
 
 # gerando grafico e estimando parametros
-plot_maintanance(sub_maria,ylab="Diferencial",xlab="Tempo",time = TRUE)
+plot_maintanance(subset_bagfilter,ylab="Diferencial",xlab="Tempo",time = TRUE)
 rsvg::rsvg_pdf('figures/RESULT_001.svg',"figures/RESULT_001.pdf")
-mu <- mle_drift1_y(sub_maria)
-sigma <- mle_sigma1_y(sub_maria)
-rho_hat(sub_maria)
-
+mu <- mle_drift1_y(subset_bagfilter)
+sigma2 <- mle_sigma1_y(subset_bagfilter)
+rho_hat(subset_bagfilter)
 
 #################
 #################
@@ -576,7 +576,7 @@ gera_plot_wiener(labs_wiener)
 rsvg::rsvg_pdf("figures/PLOT_WIENER.svg","figures/PLOT_WIENER.pdf")
 
 labs_reparos <- c("Time","Degradation",
-                  "Perfect repair","Minimal Repair","Imperfect Repair")
+                  "(a)","(b)","(c)")
 gera_plot_reparos(labs_reparos)
 # Salvar em 900x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_REPARO.svg',"figures/PLOT_REPARO.pdf")
@@ -620,12 +620,12 @@ rsvg::rsvg_pdf('figures/PLOT_XTYT.svg',"figures/PLOT_XTYT.pdf")
 labs_merito01 <- c("Densidade","Tempo","f(t)")
 labs_merito02 <- c("Acumulada","Tempo","F(t)")
 t0 = 39
-x0 = sub_maria %>%
+x0 = subset_bagfilter %>%
   filter(Time == 39) %>%
   filter(Y == min(Y)) %>%
   select(Y) %>%
   pull()
-gera_plot_merito(mu=mu,sigma=sigma,
+gera_plot_merito(mu=mu,sigma=sigma2,
                  alpha = 150,
                  t0 = t0,
                  x0 = x0,
@@ -657,28 +657,30 @@ gera_plot_degrada01(labs_degrada01)
 t0 = 39
 
 # x0: degradação para o tempo inicial
-x0 = sub_maria %>%
+x0 = subset_bagfilter %>%
   filter(Time == 39) %>%
   filter(Y == min(Y)) %>%
   select(Y) %>%
   pull()
 
-plot_reliability(mu=mu,sigma=sigma,
+plot_reliability(mu=mu,sigma2=sigma2,
                  alpha = 150,
                  t0 = t0,
                  x0 = x0,
                  t_max = c(150+5),
-                 xlab = "Time",ylab = "Reliability = R(t)",
+                 xlab = "Time",ylab = "Reliability (%)",
                  paleta = "taylor1989")
 
 # Salvar em 1100x500 em .svg
 rsvg::rsvg_pdf('figures/RESULT_002.svg',"figures/RESULT_002.pdf")
 
-plot_maintanance(sub_maria,ylab="Diferencial",xlab="Tempo",time = TRUE)
+plot_maintanance(sub_maria,ylab="Differential [mmWC] ",xlab="Time",time = TRUE)
 # Salvar em 800x400 em .svg
 rsvg::rsvg_pdf('figures/RESULT_001.svg',"figures/RESULT_001.pdf")
 
-
+gera_plot_confiabilidade()
+# Salvar em 600x350 em .svg
+rsvg::rsvg_pdf('figures/CONFIABILIDADE_001.svg',"figures/CONFIABILIDADE_001.pdf")
 
 
 
