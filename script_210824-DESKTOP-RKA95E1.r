@@ -258,11 +258,11 @@ Summarise <- function(condition, results, fixed_objects) {
   ret
 }
 
-resultados <- runSimulation(design=Design, replications=1000,
-                            generate=Generate, analyse=Analyse, summarise=Summarise)
-
-saveRDS(resultados,file = "SimDesign4.rds")
-# resultados <- readRDS("SimDesign3.rds")
+# resultados <- runSimulation(design=Design, replications=1000,
+#                             generate=Generate, analyse=Analyse, summarise=Summarise)
+# 
+# saveRDS(resultados,file = "SimDesign4.rds")
+# resultados <- readRDS("SimDesign4.rds")
 
 
 # ---------------------------------------------------------------------
@@ -683,5 +683,102 @@ gera_plot_confiabilidade()
 rsvg::rsvg_pdf('figures/CONFIABILIDADE_001.svg',"figures/CONFIABILIDADE_001.pdf")
 
 
+###########################################################
+### Comparação modelo wiener original - modelo proposto ###
+###########################################################
 
 
+k <- subset_bagfilter |>
+  filter(duplicated(Time)) |>
+  select(Time) %>% pull()
+
+rho = rho_hat(subset_bagfilter)
+for (j in 1:(length(k)+1)) {
+  if (j==1){
+    ti <- subset_bagfilter %>% filter(Time <= k[j]) %>% 
+      filter(row_number() <= n()-1) %>% select(Time) %>% pull()
+    complete_y <- mu*ti
+  }
+  if (j==2){
+    ti <- subset_bagfilter %>% filter(Time >= k[j-1],Time <= k[j]) %>% slice(3:n()-1) %>% 
+      select(Time) %>% pull()
+    complete_y <- c(complete_y,mu*ti-rho[1]*mu*13)
+  }
+  if (j==3){
+    ti <- subset_bagfilter %>% filter(Time >= k[j-1],Time <= k[j]) %>% slice(3:n()-1) %>% 
+      select(Time) %>% pull()
+    complete_y <- c(complete_y,mu*ti-rho[1]*mu*13-rho[2]*(mu*26-mu*13))
+  }
+  if (j==4){
+    ti <- subset_bagfilter %>% filter(Time >= k[j-1]) %>% slice(2:n()) %>% 
+      select(Time) %>% pull()
+    complete_y <- c(complete_y,mu*ti-rho[1]*mu*13-rho[2]*(mu*26-mu*13)-rho[3]*(mu*39-mu*26))
+  }
+}
+modelo_completo <- complete_y
+
+
+rho = rep(mean(rho_hat(subset_bagfilter)),3)
+# rho = rep(0.5,3)
+for (j in 1:(length(k)+1)) {
+  if (j==1){
+    ti <- subset_bagfilter %>% filter(Time <= k[j]) %>% 
+      filter(row_number() <= n()-1) %>% select(Time) %>% pull()
+    complete_y <- mu*ti
+  }
+  if (j==2){
+    ti <- subset_bagfilter %>% filter(Time >= k[j-1],Time <= k[j]) %>% slice(3:n()-1) %>% 
+      select(Time) %>% pull()
+    complete_y <- c(complete_y,mu*ti-rho[1]*mu*13)
+  }
+  if (j==3){
+    ti <- subset_bagfilter %>% filter(Time >= k[j-1],Time <= k[j]) %>% slice(3:n()-1) %>% 
+      select(Time) %>% pull()
+    complete_y <- c(complete_y,mu*ti-rho[1]*mu*13-rho[2]*(mu*26-mu*13))
+  }
+  if (j==4){
+    ti <- subset_bagfilter %>% filter(Time >= k[j-1]) %>% slice(2:n()) %>% 
+      select(Time) %>% pull()
+    complete_y <- c(complete_y,mu*ti-rho[1]*(mu*13)-rho[2]*(mu*26-mu*13)-rho[3]*(mu*39-mu*26))
+  }
+}
+modelo_simples <- complete_y
+
+subset_bagfilter$modelo_completo <- modelo_completo
+subset_bagfilter$modelo_simples <- modelo_simples
+
+subset_bagfilter <- subset_bagfilter |>
+  mutate(erro_completo = Y - modelo_completo,
+         erro_simples = Y - modelo_simples)
+
+calcular_criterios <- function(sse, n_obs, n_params) {
+  # A log-verossimilhança de um modelo gaussiano é proporcional ao log(SSE)
+  logLik <- -n_obs/2 * (log(2*pi) + log(sse/n_obs) + 1)
+  aic <- -2 * logLik + 2 * n_params
+  bic <- -2 * logLik + n_params * log(n_obs)
+  return(list(logLik = round(logLik,2), AIC = round(aic,2), BIC = round(bic,2)))
+}
+
+# Parâmetros para os critérios
+n_observacoes <- nrow(subset_bagfilter)
+p_completo <- 5 # mu, sigma^2, e 3 rhos
+p_reduzido <- 3                      # mu, sigma^2, e 1 rho
+
+criterios_reduzido <- calcular_criterios(sum(subset_bagfilter$erro_simples^2),
+                                 n_observacoes,p_reduzido)
+criterios_completo <- calcular_criterios(sum(subset_bagfilter$erro_completo^2),
+                                  n_observacoes,p_completo)
+
+# Montar tabela de resultados
+tabela_comparacao <- tibble(
+  Modelo = c("Completo (ρj variável)", "Reduzido (ρ fixo)"),
+  Num_Parametros = c(p_completo, p_reduzido),
+  LogLik = c(criterios_completo$logLik, criterios_reduzido$logLik),
+  AIC = c(criterios_completo$AIC, criterios_reduzido$AIC),
+  BIC = c(criterios_completo$BIC, criterios_reduzido$BIC)
+)
+print("Tabela de Comparação (menor AIC/BIC é melhor):")
+print(tabela_comparacao)
+
+LR = -2*(criterios_reduzido$logLik - criterios_completo$logLik)
+pchisq(LR, df = 2, lower.tail = FALSE) %>% round(3)

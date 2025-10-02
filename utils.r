@@ -1656,3 +1656,4 @@ gera_plot_confiabilidade <- function(){
                  colour=tayloRswift::swift_palettes$taylor1989[4])
 }
 
+
