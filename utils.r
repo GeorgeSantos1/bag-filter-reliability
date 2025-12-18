@@ -696,47 +696,47 @@ plot_reliability <- function(mu,sigma2,alpha,t0,x0,t_max,xlab,ylab,paleta = "tay
     annotate("text",x=(t0 + 2.5), y= 0.08,							
              label=paste("t=",t0),size = 3,colour="black")
   
-  if (length(alpha) == 10){
-    times_aux = c(60,90,120)
-    conf_extract <- rep(NA,length(times_aux))
-    
-    for (k in 1:length(times_aux)) {
-      conf_extract[k] <- df_visu %>% 
-        filter(time == times_aux[k]) %>% 
-        select(r_mean) %>% pull() %>% round(2)
-    }
-    names(conf_extract) <- times_aux
-    y_breaks <- c(0,0.25,0.50,0.75,1,conf_extract)
-    
-    y_labels <- sapply(y_breaks, function(y) {
-      percent_label <- scales::percent(y)
-      if (y %in% conf_extract) {
-        paste0("<span style='color:red;'>", percent_label, "</span>")
-      } else {
-        percent_label
-      }
-    })
-    
-    p <- p + geom_segment(aes(x=60,xend=60,y=0,yend=conf_extract["60"]),
-                          linetype = "8f",linewidth=0.1, alpha = 0.2,lineend = "round",
-                          colour=tayloRswift::swift_palettes$taylor1989[4]) +
-      geom_segment(aes(x=90,xend=90,y=0,yend=conf_extract["90"]),
-                   linetype = "8f",linewidth=0.1,alpha=0.2,
-                   colour=tayloRswift::swift_palettes$taylor1989[4]) +
-      geom_segment(aes(x=120,xend=120,y=0,yend=conf_extract["120"]),
-                   linetype = "8f",linewidth=0.1,alpha=0.2,
-                   colour=tayloRswift::swift_palettes$taylor1989[4]) +
-      geom_segment(aes(x=t0-2,xend=60,y=conf_extract["60"],yend=conf_extract["60"]),
-                   linetype = "8f",linewidth=0.1,alpha=0.2,
-                   colour=tayloRswift::swift_palettes$taylor1989[4]) +
-      geom_segment(aes(x=t0-2,xend=90,y=conf_extract["90"],yend=conf_extract["90"]),
-                   linetype = "8f",linewidth=0.1,alpha=0.2,
-                   colour=tayloRswift::swift_palettes$taylor1989[4]) +
-      geom_segment(aes(x=t0-2,xend=120,y=conf_extract["120"],yend=conf_extract["120"]),
-                   linetype = "8f",linewidth=0.1,alpha=0.2,
-                   colour=tayloRswift::swift_palettes$taylor1989[4]) +
-      scale_y_continuous(breaks = y_breaks, labels = y_labels, limits = c(0, 1))
-  }
+  # if (length(alpha) == 10){
+  #   times_aux = c(60,90,120)
+  #   conf_extract <- rep(NA,length(times_aux))
+  #   
+  #   for (k in 1:length(times_aux)) {
+  #     conf_extract[k] <- df_visu %>% 
+  #       filter(time == times_aux[k]) %>% 
+  #       select(r_mean) %>% pull() %>% round(2)
+  #   }
+  #   names(conf_extract) <- times_aux
+  #   y_breaks <- c(0,0.25,0.50,0.75,1,conf_extract)
+  #   
+  #   y_labels <- sapply(y_breaks, function(y) {
+  #     percent_label <- scales::percent(y)
+  #     if (y %in% conf_extract) {
+  #       paste0("<span style='color:red;'>", percent_label, "</span>")
+  #     } else {
+  #       percent_label
+  #     }
+  #   })
+  #   
+  #   p <- p + geom_segment(aes(x=60,xend=60,y=0,yend=conf_extract["60"]),
+  #                         linetype = "8f",linewidth=0.1, alpha = 0.2,lineend = "round",
+  #                         colour=tayloRswift::swift_palettes$taylor1989[4]) +
+  #     geom_segment(aes(x=90,xend=90,y=0,yend=conf_extract["90"]),
+  #                  linetype = "8f",linewidth=0.1,alpha=0.2,
+  #                  colour=tayloRswift::swift_palettes$taylor1989[4]) +
+  #     geom_segment(aes(x=120,xend=120,y=0,yend=conf_extract["120"]),
+  #                  linetype = "8f",linewidth=0.1,alpha=0.2,
+  #                  colour=tayloRswift::swift_palettes$taylor1989[4]) +
+  #     geom_segment(aes(x=t0-2,xend=60,y=conf_extract["60"],yend=conf_extract["60"]),
+  #                  linetype = "8f",linewidth=0.1,alpha=0.2,
+  #                  colour=tayloRswift::swift_palettes$taylor1989[4]) +
+  #     geom_segment(aes(x=t0-2,xend=90,y=conf_extract["90"],yend=conf_extract["90"]),
+  #                  linetype = "8f",linewidth=0.1,alpha=0.2,
+  #                  colour=tayloRswift::swift_palettes$taylor1989[4]) +
+  #     geom_segment(aes(x=t0-2,xend=120,y=conf_extract["120"],yend=conf_extract["120"]),
+  #                  linetype = "8f",linewidth=0.1,alpha=0.2,
+  #                  colour=tayloRswift::swift_palettes$taylor1989[4]) +
+  #     scale_y_continuous(breaks = y_breaks, labels = y_labels, limits = c(0, 1))
+  # }
   
   return(p)
 }
@@ -1656,4 +1656,77 @@ gera_plot_confiabilidade <- function(){
                  colour=tayloRswift::swift_palettes$taylor1989[4])
 }
 
-
+plot_reliability_ic <- function(mu, sigma2, var_mu, var_sigma2, alpha, t0, x0, t_max, xlab, ylab, paleta = "taylor1989"){
+  library(ggtext)
+  library(numDeriv)
+  library(dplyr)
+  library(ggplot2)
+  library(tayloRswift)
+  
+  # Matriz de variância-covariância (independente, conforme dados fornecidos)
+  vcov_params <- diag(c(var_mu, var_sigma2))
+  
+  # Função de Sobrevivência (S(t)) para Gaussiana Inversa
+  surv_func <- function(p, tau, a, x_z) {
+    curr_mu <- p[1]
+    curr_sig2 <- p[2]
+    # mean = (alpha-x0)/mu ; shape = (alpha-x0)^2/sigma2
+    m <- (a - x_z) / curr_mu
+    s <- ((a - x_z)^2) / curr_sig2
+    statmod::pinvgauss(tau, mean = m, shape = s, lower.tail = FALSE)
+  }
+  
+  # Grade de tempo para o gráfico
+  t_seq = seq(t0 + 0.1, t_max, by = 0.5) 
+  tau_seq <- t_seq - t0
+  
+  # Cálculo das estimativas e IC ponto a ponto
+  df_visu <- lapply(tau_seq, function(tau) {
+    # 1. Estimativa Pontual
+    r_val <- surv_func(c(mu, sigma2), tau, alpha, x0)
+    
+    # 2. Erro Padrão via Método Delta (Gradiente Numérico)
+    grad_val <- numDeriv::grad(function(p) surv_func(p, tau, alpha, x0), c(mu, sigma2))
+    var_s <- t(grad_val) %*% vcov_params %*% grad_val
+    se_s <- sqrt(max(0, var_s))
+    
+    # 3. Transformação Log-Log (Garante limites [0,1] e evita Z explosivo)
+    # Z = 1.645 para IC 90% ponto a ponto
+    if (r_val > 0.0001 & r_val < 0.9999) {
+      log_r <- log(r_val)
+      se_log_log <- se_s / (r_val * abs(log_r))
+      fator <- exp(1.645 * se_log_log)
+      lower <- r_val^fator
+      upper <- r_val^(1/fator)
+    } else {
+      lower <- r_val
+      upper <- r_val
+    }
+    
+    data.frame(time = tau + t0, r_mean = r_val, lower = lower, upper = upper, Threshold = as.factor(alpha))
+  }) %>% bind_rows()
+  
+  # Visualização com sua estética original
+  p <- ggplot(df_visu, aes(x = time, y = r_mean, color = Threshold, fill = Threshold)) +
+    # IC 95% (Ribbon)
+    geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, color = NA) +
+    # Linha da Confiabilidade
+    geom_line(linewidth = 1, alpha = 0.7) +
+    scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+    geom_line(linewidth=1,alpha=0.7) +
+    geom_vline(xintercept = t0-2) +
+    geom_vline(xintercept = t0,
+               colour="black", linetype = "longdash") +
+    theme_classic() +
+    theme(plot.title = element_blank(),
+          legend.position = "none",
+          axis.text.y = ggtext::element_markdown()) +
+    labs(title = "(II)", x = xlab, y = ylab) +
+    coord_cartesian(expand = FALSE) +
+    tayloRswift::scale_color_taylor(palette = paleta) +
+    tayloRswift::scale_fill_taylor(palette = paleta) +
+    annotate("text", x = (t0 + 5), y = 0.08, 
+             label = paste("t=", t0), size = 3, colour = "black")
+  
+  return(p)
+}

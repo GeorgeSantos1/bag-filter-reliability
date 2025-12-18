@@ -463,10 +463,10 @@ rho_hat(subset_bagfilter)
 #################
 #################
 
-mu_hat <- mle_drift1_y(sub_maria)
-sigma2_hat <- mle_sigma1_y(sub_maria)
+mu_hat <- mle_drift1_y(subset_bagfilter)
+sigma2_hat <- mle_sigma1_y(subset_bagfilter)
 # CP95% sigma^2
-dat = sub_maria
+dat = subset_bagfilter
 s <- 1
 k <- dat %>% filter(duplicated(Time)) %>% pull(Time)
 nj <- dat %>% filter(Time > k[1], Time < k[2]) %>% nrow()
@@ -478,7 +478,7 @@ df <- length(s) * (N + length(k) + 1) - 1
 erro_padrao <- sqrt(sigma2_hat) / sqrt(42)
 t_crit <- qt(1 - 0.05/2, df = df)
 IC_mu_hat <- c(mu_hat - t_crit * erro_padrao, mu_hat + t_crit * erro_padrao)
-dat = sub_maria
+dat = subset_bagfilter
 
 
 chi_low <- qchisq(1 - 0.05/2, df)
@@ -491,6 +491,8 @@ IC_sigma_hat <- c(
 
 sqrt((sigma2_hat^2)*2/df)
 
+var_mu <- (sqrt(sigma2_hat) / sqrt(42))^2
+var_sigma2 <- (sqrt((sigma2_hat^2)*2/df))^2
 
 # sub_maria_1 <- sub_maria
 # write.csv2(sub_maria_1 %>%
@@ -637,7 +639,7 @@ rsvg::rsvg_pdf('figures/PLOT_MERITO.svg',"figures/PLOT_MERITO.pdf")
 
 labs_qqplot01 <- c("Theoretical Cumulative Distribution","Empirical Cumulative Distribution","P-P Plot")
 labs_qqplot02 <- c("Theoretical Quantiles","Empirical Quantiles","Q-Q Plot")
-gera_plot_qqplot(sub_maria,labs_qqplot01,labs_qqplot02)
+gera_plot_qqplot(subset_bagfilter,labs_qqplot01,labs_qqplot02)
 # Salvar em 800x400 em .svg
 rsvg::rsvg_pdf('figures/PLOT_QQPLOT.svg',"figures/PLOT_QQPLOT.pdf")
 
@@ -668,7 +670,7 @@ plot_reliability(mu=mu,sigma2=sigma2,
                  t0 = t0,
                  x0 = x0,
                  t_max = c(150+5),
-                 xlab = "Time",ylab = "Reliability (%)",
+                 xlab = "Tempo",ylab = "Confiabilidade (%)",
                  paleta = "taylor1989")
 
 # Salvar em 1100x500 em .svg
@@ -683,10 +685,20 @@ gera_plot_confiabilidade()
 rsvg::rsvg_pdf('figures/CONFIABILIDADE_001.svg',"figures/CONFIABILIDADE_001.pdf")
 
 
+plot_reliability_ic(mu=mu,sigma2=sigma2,
+                 var_mu=var_mu,var_sigma2,
+                 alpha = 150,
+                 t0 = t0,
+                 x0 = x0,
+                 t_max = c(150+5),
+                 xlab = "Time",ylab = "Reliability (%)",
+                 paleta = "taylor1989")
+# Salvar em 450x250 em .svg
+rsvg::rsvg_pdf('figures/RELIABILITY_IC_001.svg',"figures/RELIABILITY_IC_001.pdf")
+
 ###########################################################
 ### Comparação modelo wiener original - modelo proposto ###
 ###########################################################
-
 
 k <- subset_bagfilter |>
   filter(duplicated(Time)) |>
