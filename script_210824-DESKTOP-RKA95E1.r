@@ -540,6 +540,7 @@ write.csv2(reliability,"confiabilidade.xlsx")
 ########################################
 ########################################
 ########################################
+rsvg::rsvg_eps("figures/Desenho1.svg","figures/Desenho1.eps")
 
 labs_01 = c("Densidade","Tempo","f(t)")
 labs_02 = c("Taxa de Falha","Tempo","λ(t)")
@@ -582,23 +583,27 @@ labs_reparos <- c("Time","Degradation",
 gera_plot_reparos(labs_reparos)
 # Salvar em 900x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_REPARO.svg',"figures/PLOT_REPARO.pdf")
+rsvg::rsvg_eps('figures/PLOT_REPARO.svg',"figures/PLOT_REPARO.eps")
 
-labs_scheme <- c("Tempo","Degradação")
+labs_scheme <- c("Time","Degradation")
 gera_plot_scheme(labs_scheme)
 # Salvar em 800x400 em .svg
 rsvg::rsvg_pdf('figures/PLOT_SCHEMA.svg',"figures/PLOT_SCHEMA.pdf")
+rsvg::rsvg_eps('figures/PLOT_SCHEMA.svg',"figures/PLOT_SCHEMA.eps")
 
 resultados <- readRDS("SimDesign4.rds")
 labs_rmse <- c("Number of Systems","RMSE")
 gera_plot_rmse(resultados,labs_rmse)
 # Salvar em 1100x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_RMSE.svg',"figures/PLOT_RMSE.pdf")
+rsvg::rsvg_eps('figures/PLOT_RMSE.svg',"figures/PLOT_RMSE.eps")
 
 resultados <- readRDS("SimDesign4.rds")
 labs_bias <- c("Number of Systems","Bias")
 gera_plot_bias(resultados,labs_bias)
 # Salvar em 1100x600 em .svg
 rsvg::rsvg_pdf('figures/PLOT_BIAS.svg',"figures/PLOT_BIAS.pdf")
+rsvg::rsvg_eps('figures/PLOT_BIAS.svg',"figures/PLOT_BIAS.eps")
 
 resultados <- readRDS("SimDesign4.rds")
 labs_coverage <- c("Número de Sistemas","Probabilidade de Cobertura (95%)")
@@ -642,6 +647,7 @@ labs_qqplot02 <- c("Theoretical Quantiles","Empirical Quantiles","Q-Q Plot")
 gera_plot_qqplot(subset_bagfilter,labs_qqplot01,labs_qqplot02)
 # Salvar em 800x400 em .svg
 rsvg::rsvg_pdf('figures/PLOT_QQPLOT.svg',"figures/PLOT_QQPLOT.pdf")
+rsvg::rsvg_eps('figures/PLOT_QQPLOT.svg',"figures/PLOT_QQPLOT.eps")
 
 labs_degrada01 <- c("Time","Degradation")
 gera_plot_degrada01(labs_degrada01)
@@ -676,9 +682,10 @@ plot_reliability(mu=mu,sigma2=sigma2,
 # Salvar em 1100x500 em .svg
 rsvg::rsvg_pdf('figures/RESULT_002.svg',"figures/RESULT_002.pdf")
 
-plot_maintanance(sub_maria,ylab="Differential [mmWC] ",xlab="Time",time = TRUE)
+plot_maintanance(subset_bagfilter,ylab="Differential [mmWC] ",xlab="Time",time = TRUE)
 # Salvar em 800x400 em .svg
 rsvg::rsvg_pdf('figures/RESULT_001.svg',"figures/RESULT_001.pdf")
+rsvg::rsvg_eps('figures/RESULT_001.svg',"figures/RESULT_001.eps")
 
 gera_plot_confiabilidade()
 # Salvar em 600x350 em .svg
@@ -692,9 +699,10 @@ plot_reliability_ic(mu=mu,sigma2=sigma2,
                  x0 = x0,
                  t_max = c(150+5),
                  xlab = "Time",ylab = "Reliability (%)",
-                 paleta = "taylor1989")
-# Salvar em 450x250 em .svg
+                 paleta = "taylor1989")$p
+# Salvar em 600x300 em .svg
 rsvg::rsvg_pdf('figures/RELIABILITY_IC_001.svg',"figures/RELIABILITY_IC_001.pdf")
+rsvg::rsvg_eps('figures/RELIABILITY_IC_001.svg',"figures/RELIABILITY_IC_001.eps")
 
 ###########################################################
 ### Comparação modelo wiener original - modelo proposto ###
@@ -794,3 +802,22 @@ print(tabela_comparacao)
 
 LR = -2*(criterios_reduzido$logLik - criterios_completo$logLik)
 pchisq(LR, df = 2, lower.tail = FALSE) %>% round(3)
+
+###########################################################
+############ IC 80% - Curva de Confiabilidade #############
+###########################################################
+
+df_ic <- plot_reliability_ic(mu=mu,sigma2=sigma2,
+                             var_mu=var_mu,var_sigma2,
+                             alpha = 150,
+                             t0 = t0,
+                             x0 = x0,
+                             t_max = c(150+5),
+                             xlab = "Time",ylab = "Reliability (%)",
+                             paleta = "taylor1989")$df_visu
+
+df_ic <- df_ic %>%
+  mutate(lower = round(lower*100,2),
+         upper = round(upper*100,2))
+
+View(df_ic)

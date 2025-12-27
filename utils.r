@@ -1677,7 +1677,7 @@ plot_reliability_ic <- function(mu, sigma2, var_mu, var_sigma2, alpha, t0, x0, t
   }
   
   # Grade de tempo para o gráfico
-  t_seq = seq(t0 + 0.1, t_max, by = 0.5) 
+  t_seq = seq(t0 + 0.1, t_max, by = 0.1) 
   tau_seq <- t_seq - t0
   
   # Cálculo das estimativas e IC ponto a ponto
@@ -1691,11 +1691,11 @@ plot_reliability_ic <- function(mu, sigma2, var_mu, var_sigma2, alpha, t0, x0, t
     se_s <- sqrt(max(0, var_s))
     
     # 3. Transformação Log-Log (Garante limites [0,1] e evita Z explosivo)
-    # Z = 1.645 para IC 90% ponto a ponto
+    # Z = 1.282 para IC 80% ponto a ponto
     if (r_val > 0.0001 & r_val < 0.9999) {
       log_r <- log(r_val)
       se_log_log <- se_s / (r_val * abs(log_r))
-      fator <- exp(1.645 * se_log_log)
+      fator <- exp(1.282 * se_log_log)
       lower <- r_val^fator
       upper <- r_val^(1/fator)
     } else {
@@ -1728,5 +1728,6 @@ plot_reliability_ic <- function(mu, sigma2, var_mu, var_sigma2, alpha, t0, x0, t
     annotate("text", x = (t0 + 5), y = 0.08, 
              label = paste("t=", t0), size = 3, colour = "black")
   
-  return(p)
+  return(list(p = p,
+              df_visu = df_visu))
 }
