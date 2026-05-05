@@ -1212,47 +1212,85 @@ gera_plot_reparos <- function(labs_reparos){
 }
 
 gera_plot_scheme <- function(labs_scheme){
-  set.seed(1111)							
-  rho<- c(0.6, 0.6)							
-  n_manu <- 2							
-  intra_manu <- 4							
-  n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)							
-  df_degradacao1 <- gera_dados3(n_s=1,t_max = 15,n_med=n_med,v=2,sigma=sqrt(2),rho=rho,n_manu=n_manu)							
-  df_degradacao1 %>%							
-    ggplot(aes(x=Time,y=Y)) +							
-    geom_point(size=2,colour=tayloRswift::swift_palettes$taylor1989[6]) +							
-    geom_line(linewidth=1,colour=tayloRswift::swift_palettes$taylor1989[6]) +							
-    geom_text(x=(1+0.5), y= (df_degradacao1 %>% filter(Time==1) %>% select(Y) %>% min())-0.5,							
-              label=TeX("$\\Delta Y_{0,1}$"),size = 4,colour="red")+							
-    geom_text(x=(2+0.5), y= (df_degradacao1 %>% filter(Time==2) %>% select(Y) %>% min())-0.5,							
-              label=TeX("$\\Delta Y_{0,2}$"),size = 4,colour="red")+							
-    geom_text(x=(4-0.3), y= (df_degradacao1 %>% filter(Time==4) %>% select(Y) %>% min())+1,							
-              label=TeX("$\\Delta Y_{0,n_0 + 1}$"),size = 4,colour="red")+							
-    geom_text(x=(5-0.5), y= (df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% min())-0.5,							
-              label=TeX("$Y(\\tau_{1}^{+})$"),size=4,colour="red") +							
-    geom_text(x=(5+0.6), y= df_degradacao1 %>% filter(Time==5) %>% summarise(y_mean = mean(Y)) %>% pull(),							
-              label=TeX("$Z_1$"),size=4,colour="red") +							
-    geom_text(x=(5-0.5), y= (df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% max()) + 0.5,							
-              label=TeX("$Y(\\tau_{1}^{-})$"),size=4,colour="red") +							
-    geom_text(x=10, y= (df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% min())-0.7,							
-              label=TeX("$Y(\\tau_{2}^{+})$"),size=4,colour="red") +							
-    geom_text(x=(10+0.6), y= df_degradacao1 %>% filter(Time==10) %>% summarise(y_mean = mean(Y)) %>% pull(),							
-              label=TeX("$Z_2$"),size=4,colour="red") +							
-    geom_text(x=10, y= (df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% max())+0.7,							
-              label=TeX("$Y(\\tau_{2}^{-})$"),size=4,colour="red") +							
-    geom_text(x=(15-0.7), y= (df_degradacao1 %>% filter(Time==15) %>% select(Y)) %>% pull(),							
-              label=TeX("$Y(\\tau_{3}^{-})$"),size=4,colour="red") +							
-    annotate("segment", x = (5+0.3), y = df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% min(),							
-             xend = (5+0.3), yend = df_degradacao1 %>% filter(Time==5) %>% select(Y) %>% max(), size = 1, ,colour="red",							
-             arrow = arrow(type = "open", ends = "both", angle = 20, length = unit(0.4, "cm"))) +							
-    annotate("segment", x = (10+0.3), y = df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% min(),							
-             xend = (10+0.3), yend = df_degradacao1 %>% filter(Time==10) %>% select(Y) %>% max(), size = 1,colour="red",							
-             arrow = arrow(type = "open", ends = "both", angle = 20, length = unit(0.4, "cm"))) +							
-    theme_classic() +							
-    theme(plot.title = element_blank()) +							
-    scale_y_continuous(expand = c(0, 0), limits = c(0,20)) +							
-    scale_x_continuous(expand = c(0, 0), limits = c(0,16),breaks = c(5,10)) +							
-    labs(x = labs_scheme[1], y = labs_scheme[2])
+  set.seed(1111)
+  rho        <- c(0.6, 0.6)
+  n_manu     <- 2
+  intra_manu <- 4
+  n_med      <- (n_manu+1)*(intra_manu+2)-(n_manu+1)
+  df_degradacao1 <- gera_dados3(n_s=1, t_max=15, n_med=n_med,
+                                v=2, sigma=sqrt(2), rho=rho, n_manu=n_manu)
+  
+  # Pre-compute Y values for clean annotation
+  y0       <- df_degradacao1 %>% filter(Time==0)  %>% pull(Y)
+  y1       <- df_degradacao1 %>% filter(Time==1)  %>% pull(Y)
+  y2       <- df_degradacao1 %>% filter(Time==2)  %>% pull(Y)
+  y3       <- df_degradacao1 %>% filter(Time==3)  %>% pull(Y)
+  y4       <- df_degradacao1 %>% filter(Time==4)  %>% pull(Y)
+  y5_min   <- df_degradacao1 %>% filter(Time==5)  %>% pull(Y) %>% min()
+  y5_max   <- df_degradacao1 %>% filter(Time==5)  %>% pull(Y) %>% max()
+  y5_mean  <- df_degradacao1 %>% filter(Time==5)  %>% summarise(m=mean(Y)) %>% pull()
+  y10_min  <- df_degradacao1 %>% filter(Time==10) %>% pull(Y) %>% min()
+  y10_max  <- df_degradacao1 %>% filter(Time==10) %>% pull(Y) %>% max()
+  y10_mean <- df_degradacao1 %>% filter(Time==10) %>% summarise(m=mean(Y)) %>% pull()
+  y15      <- df_degradacao1 %>% filter(Time==15) %>% pull(Y)
+  
+  df_degradacao1 %>%
+    ggplot(aes(x=Time, y=Y)) +
+    geom_point(size=2, colour=tayloRswift::swift_palettes$taylor1989[6]) +
+    geom_line(linewidth=1, colour=tayloRswift::swift_palettes$taylor1989[6]) +
+    
+    # === DeltaY increments: staircase style, arrows close to data points ===
+    # DeltaY_{0,1}: ref line at y0, arrow at x=1.15
+    geom_text(x=1+0.65, y=y1-0.5,
+              label=TeX("$\\Delta Y_{0,1}$"), size=4, colour="red") +
+    annotate("segment", x=0.05, xend=1.15, y=y0, yend=y0,
+             linetype="dashed", colour="red", linewidth=0.4) +
+    annotate("segment", x=1.15, xend=1.15, y=y0, yend=y1,
+             colour="red", linewidth=0.8,
+             arrow=arrow(type="open", ends="both", angle=20, length=unit(0.3,"cm"))) +
+    
+    # DeltaY_{0,2}: ref line at y1, arrow at x=2.15
+    geom_text(x=2+0.65, y=y2-0.5,
+              label=TeX("$\\Delta Y_{0,2}$"), size=4, colour="red") +
+    annotate("segment", x=1.05, xend=2.15, y=y1, yend=y1,
+             linetype="dashed", colour="red", linewidth=0.4) +
+    annotate("segment", x=2.15, xend=2.15, y=y1, yend=y2,
+             colour="red", linewidth=0.8,
+             arrow=arrow(type="open", ends="both", angle=20, length=unit(0.3,"cm"))) +
+    
+    # DeltaY_{0,n0+1}: ref line at y3, arrow at x=4.15, label above
+    geom_text(x=4-0.3, y=y4+1.0,
+              label=TeX("$\\Delta Y_{0,n_0+1}$"), size=4, colour="red") +
+    annotate("segment", x=3.05, xend=4.15, y=y3, yend=y3,
+             linetype="dashed", colour="red", linewidth=0.4) +
+    annotate("segment", x=4.15, xend=4.15, y=y3, yend=y4,
+             colour="red", linewidth=0.8,
+             arrow=arrow(type="open", ends="both", angle=20, length=unit(0.3,"cm"))) +
+    
+    # === Maintenance jump Z_1 at t=5 ===
+    geom_text(x=5-0.5, y=y5_min-0.5,   label=TeX("$Y(\\tau_{1}^{+})$"), size=4, colour="red") +
+    geom_text(x=5+0.6, y=y5_mean,       label=TeX("$Z_1$"),               size=4, colour="red") +
+    geom_text(x=5-0.5, y=y5_max+0.5,   label=TeX("$Y(\\tau_{1}^{-})$"), size=4, colour="red") +
+    annotate("segment", x=5+0.3, xend=5+0.3, y=y5_min, yend=y5_max,
+             colour="red", linewidth=1,
+             arrow=arrow(type="open", ends="both", angle=20, length=unit(0.4,"cm"))) +
+    
+    # === Maintenance jump Z_2 at t=10 ===
+    geom_text(x=10,     y=y10_min-0.7,  label=TeX("$Y(\\tau_{2}^{+})$"), size=4, colour="red") +
+    geom_text(x=10+0.6, y=y10_mean,     label=TeX("$Z_2$"),               size=4, colour="red") +
+    geom_text(x=10,     y=y10_max+0.7,  label=TeX("$Y(\\tau_{2}^{-})$"), size=4, colour="red") +
+    annotate("segment", x=10+0.3, xend=10+0.3, y=y10_min, yend=y10_max,
+             colour="red", linewidth=1,
+             arrow=arrow(type="open", ends="both", angle=20, length=unit(0.4,"cm"))) +
+    
+    # === Final boundary at t=15 ===
+    geom_text(x=15-0.7, y=y15, label=TeX("$Y(\\tau_{3}^{-})$"), size=4, colour="red") +
+    
+    theme_classic() +
+    theme(plot.title=element_blank()) +
+    scale_y_continuous(expand=c(0,0), limits=c(0,20)) +
+    scale_x_continuous(expand=c(0,0), limits=c(0,16), breaks=c(5,10)) +
+    labs(x=labs_scheme[1], y=labs_scheme[2])
 }
 
 gera_plot_bias <- function(resultados,labs_bias){
