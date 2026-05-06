@@ -587,7 +587,12 @@ mle_sigma1_y <- function(data){
   s <- unique(data$Objeto)
   k <- data %>% filter(Objeto == s[1],duplicated(Time)) %>% select(Time) %>% pull()
   nj <- data %>% filter(Objeto == s[1],Time > k[1],Time<k[2]) %>% nrow()
-  N<- nj*(length(k)+1)
+  nj_last <- data %>% filter(Objeto == s[1],Time > k[length(k)],Time<max(Time)) %>% nrow()
+  if (nj == nj_last){
+    N <- nj*(length(k)+1)
+  } else {
+    N <- nj*(length(k)) + nj_last 
+  }
   y_aux <- matrix(NA,nrow=length(s),ncol=(length(k)+1))
   yji<-NA
   tji<-NA
