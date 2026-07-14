@@ -590,6 +590,8 @@ gera_plot_scheme(labs_scheme)
 # Salvar em 800x400 em .svg
 rsvg::rsvg_pdf('figures/PLOT_SCHEMA.svg',"figures/PLOT_SCHEMA.pdf")
 rsvg::rsvg_eps('figures/PLOT_SCHEMA.svg',"figures/PLOT_SCHEMA.eps")
+rsvg::rsvg_pdf('figures/PLOT_SCHEMA_R1.svg',"figures/PLOT_SCHEMA_R1.pdf")
+rsvg::rsvg_eps('figures/PLOT_SCHEMA_R1.svg',"figures/PLOT_SCHEMA_R1.eps")
 
 resultados <- readRDS("SimDesign4.rds")
 labs_rmse <- c("Number of Systems","RMSE")

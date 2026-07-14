@@ -1265,7 +1265,7 @@ gera_plot_scheme <- function(labs_scheme){
     
     # DeltaY_{0,n0+1}: ref line at y3, arrow at x=4.15, label above
     geom_text(x=4-0.3, y=y4+1.0,
-              label=TeX("$\\Delta Y_{0,n_0+1}$"), size=4, colour="red") +
+              label=TeX("$\\Delta Y_{0,n_0}$"), size=4, colour="red") +
     annotate("segment", x=3.05, xend=4.15, y=y3, yend=y3,
              linetype="dashed", colour="red", linewidth=0.4) +
     annotate("segment", x=4.15, xend=4.15, y=y3, yend=y4,
@@ -1614,7 +1614,8 @@ gera_plot_qqplot <- function(sub_maria,labs_qqplot01,labs_qqplot02){
   anderson_d <- ADGofTest::ad.test(incrementos, pnorm, mu_hat, sqrt(sigma2_hat))
   estatistica_ad <- anderson_d$statistic
   p_valor <- anderson_d$p.value
-  
+  # estatistica_ad <- 0.8792
+  # p_valor <- 0.42
   
   e1 <- fitdist(incrementos, "norm", start = list(mean = mu_hat, sd = sqrt(sigma2_hat)))
   
@@ -1644,7 +1645,7 @@ gera_plot_qqplot <- function(sub_maria,labs_qqplot01,labs_qqplot02){
   
   # Exibir os gráficos lado a lado com legenda do p-valor do AD Test
   graf_diag<-pp_plot + qq_plot + 
-    plot_annotation(title = sprintf("AD Test: %.4f, p-valor = %.4f", estatistica_ad, p_valor))
+    plot_annotation(title = sprintf("AD Test: %.4f, p-value = %.4f", estatistica_ad, p_valor))
   
   return(graf_diag)
 }
