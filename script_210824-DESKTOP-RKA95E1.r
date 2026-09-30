@@ -30,26 +30,19 @@ source("utils.r")
 # ---------------------------------------------------
 ## Gerando dados
 set.seed(111)
-df_degradacao1 <- gera_dados(n_obs=1,t_max=20,n_med=20,v=2,sigma = sqrt(2))
-df_degradacao2 <- gera_dados(n_obs=1,t_max=20,n_med=100,v=0,sigma = 4)
-df_degradacao3 <- gera_dados(n_obs=10,t_max=20,n_med=200,v=10,sigma = 3)
-df_degradacao4 <- gera_dados(n_obs=10,t_max=20,n_med=200,v=10,sigma = 1)
+df_degradacao1 <- sim_wiener_paths(n_units = 1, t_max = 20, n_steps = 20, drift = 2, sigma2 = 2)
+df_degradacao2 <- sim_wiener_paths(n_units = 1, t_max = 20, n_steps = 100, drift = 0, sigma2 = 4)
+df_degradacao3 <- sim_wiener_paths(n_units = 10, t_max = 20, n_steps = 200, drift = 10, sigma2 = 3)
+df_degradacao4 <- sim_wiener_paths(n_units = 10, t_max = 20, n_steps = 200, drift = 10, sigma2 = 1)
 
 aux <- diff(df_degradacao2$Wt)
 mean(aux)
 var(aux)
 
 ## Plotando curvas de degradação
-gera_plot(df_degradacao1)
-gera_plot(df_degradacao2)
+plot_degradation_paths(df_degradacao1)
+plot_degradation_paths(df_degradacao2)
 
-## EMV: Drift
-mle_drift(data=df_degradacao1)
-mle_drift(data=df_degradacao2)
-
-## EMV: Sigma
-mle_sigma(data=df_degradacao1)
-mle_sigma(data=df_degradacao2)
 
 # --------------------------------------------------------------------------------
 # Caso 1 do Artigo:  Statistical inference for a Wiener-based degradation model
@@ -59,80 +52,80 @@ mle_sigma(data=df_degradacao2)
 
 # rho=0.5
 set.seed(111)
-df_degradacao1 <-  gera_dados1(t_max = 20,n_med=20,v=2,sigma2=(2),
-            rho=0.5,n_manu=3)
-rho_hat(df_degradacao1)
-gera_plot1(df_degradacao1)
+df_degradacao1 <- sim_wiener_maintenance(t_max = 20, n_steps = 20, drift = 2, sigma2 = 2,
+                                         rho = 0.5, n_maint = 3)
+calc_rho(df_degradacao1)
+plot_wiener_maintenance(df_degradacao1)
 
 
 # rho=1
 set.seed(111)
-df_degradacao1 <-  gera_dados1(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
-                               rho=1,n_manu=3)
-rho_hat(df_degradacao1)
-gera_plot1(df_degradacao1)
+df_degradacao1 <- sim_wiener_maintenance(t_max = 20, n_steps = 20, drift = 2, sigma2 = 2,
+                                         rho = 1, n_maint = 3)
+calc_rho(df_degradacao1)
+plot_wiener_maintenance(df_degradacao1)
 
 
 # rho=0
 set.seed(111)
-df_degradacao1 <-  gera_dados1(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
-                               rho=0,n_manu=3)
-rho_hat(df_degradacao1)
-gera_plot1(df_degradacao1)
+df_degradacao1 <- sim_wiener_maintenance(t_max = 20, n_steps = 20, drift = 2, sigma2 = 2,
+                                         rho = 0, n_maint = 3)
+calc_rho(df_degradacao1)
+plot_wiener_maintenance(df_degradacao1)
 
 
 # rho=0.8
 set.seed(111)
-df_degradacao1 <-  gera_dados1(t_max = 40,n_med=20,v=2,sigma=sqrt(2),
-                               rho=0.8,n_manu=9)
-rho_hat(df_degradacao1)
-gera_plot1(df_degradacao1)
+df_degradacao1 <- sim_wiener_maintenance(t_max = 40, n_steps = 20, drift = 2, sigma2 = 2,
+                                         rho = 0.8, n_maint = 9)
+calc_rho(df_degradacao1)
+plot_wiener_maintenance(df_degradacao1)
 
 # ------------------------------------------------------------------------
 ### Different rho's per maintenance: 30-04-2024
 ### ARD1 (Arithmetic Reduction of Degradation)
-### Usar funçao gera_dados2
+### Using sim_wiener_maintenance_path
 # ------------------------------------------------------------------------
 
 set.seed(111)
 n_manu <- 3
-rho = rep(1,n_manu) # Perfect repair in all maintenance.
-df_degradacao1 <-  gera_dados2(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
-                               rho=rho,n_manu=n_manu)
-rho_hat(df_degradacao1)
-gera_plot1(df_degradacao1)
+rho <- rep(1, n_manu) # Perfect repair in all maintenance.
+df_degradacao1 <- sim_wiener_maintenance_path(t_max = 20, n_steps = 20, drift = 2, sigma2 = 2,
+                                              rho = rho, n_maint = n_manu)
+calc_rho(df_degradacao1)
+plot_wiener_maintenance(df_degradacao1)
 
 
 set.seed(111)
-rho = rep(0,n_manu) # Minimum repair in all maintenance
-df_degradacao1 <-  gera_dados2(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
-                               rho=rho,n_manu=n_manu)
-rho_hat(df_degradacao1)
-gera_plot1(df_degradacao1)
+rho <- rep(0, n_manu) # Minimum repair in all maintenance
+df_degradacao1 <- sim_wiener_maintenance_path(t_max = 20, n_steps = 20, drift = 2, sigma2 = 2,
+                                              rho = rho, n_maint = n_manu)
+calc_rho(df_degradacao1)
+plot_wiener_maintenance(df_degradacao1)
 
 
 set.seed(111)
-rho = runif(n_manu) # Maintenance effects follow a uniform distribution
+rho <- runif(n_manu) # Maintenance effects follow a uniform distribution
 set.seed(111)
-df_degradacao1 <-  gera_dados2(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
-                               rho=rho,n_manu=n_manu)
-rho_hat(df_degradacao1)
-gera_plot1(df_degradacao1)
-
-
-set.seed(111)
-rho<- c(1, 0, 1)
-df_degradacao1 <-  gera_dados2(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
-                               rho=rho,n_manu=n_manu)
-rho_hat(df_degradacao1)
-gera_plot1(df_degradacao1)
+df_degradacao1 <- sim_wiener_maintenance_path(t_max = 20, n_steps = 20, drift = 2, sigma2 = 2,
+                                              rho = rho, n_maint = n_manu)
+calc_rho(df_degradacao1)
+plot_wiener_maintenance(df_degradacao1)
 
 
 set.seed(111)
-rho<- c(0.5, 0.5, 1)
-df_degradacao2 <-  gera_dados2(t_max = 20,n_med=20,v=2,sigma=sqrt(2),
-                               rho=rho,n_manu=n_manu)
-gera_plot1(df_degradacao2)
+rho <- c(1, 0, 1)
+df_degradacao1 <- sim_wiener_maintenance_path(t_max = 20, n_steps = 20, drift = 2, sigma2 = 2,
+                                              rho = rho, n_maint = n_manu)
+calc_rho(df_degradacao1)
+plot_wiener_maintenance(df_degradacao1)
+
+
+set.seed(111)
+rho <- c(0.5, 0.5, 1)
+df_degradacao2 <- sim_wiener_maintenance_path(t_max = 20, n_steps = 20, drift = 2, sigma2 = 2,
+                                              rho = rho, n_maint = n_manu)
+plot_wiener_maintenance(df_degradacao2)
 
 # -------------------------------------------------------------------------
 ### Multiple systems with Different rho's per maintenance: 10-05-2024
@@ -145,24 +138,26 @@ set.seed(111)
 rho<- c(0.1, 0.3, 0.5)
 n_manu <- 3
 intra_manu <- 4
-n_med <- (n_manu+1)*(intra_manu+2)-(n_manu+1)
-df_degradacao1 <- gera_dados3(n_s=1,t_max = 20,n_med=n_med,v=3,sigma2=2,rho=rho,n_manu=n_manu)
+n_med <- (n_manu + 1) * (intra_manu + 2) - (n_manu + 1)
+df_degradacao1 <- sim_wiener_maintenance_paths(n_units = 1, t_max = 20, n_steps = n_med,
+                                               drift = 3, sigma2 = 2, rho = rho, n_maint = n_manu)
 
-gera_plot2(df_degradacao1)
-mle_drift1(df_degradacao1)
-mle_sigma1(df_degradacao1)
+plot_wiener_maintenance_grid(df_degradacao1)
+mle_drift_standard(df_degradacao1)
+mle_sigma2_standard(df_degradacao1)
 
-mle_drift1_y(df_degradacao1)
-mle_sigma1_y(df_degradacao1)
-rho_hat(df_degradacao1)
+mle_drift_maintenance(df_degradacao1)
+mle_sigma2_maintenance(df_degradacao1)
+calc_rho(df_degradacao1)
 
 # Geraçao e estimativas dos parâmetros considerando 1000 Sistemas (n_s)
 set.seed(111)
-df_degradacao1 <- gera_dados3(n_s=1000,t_max = 20,n_med=n_med,v=4,sigma2 = 4,rho=rho,n_manu=n_manu)
-mle_drift1(df_degradacao1)
-mle_sigma1(df_degradacao1) #  entre 1 e 2 minutos para rodar
-mle_drift1_y(df_degradacao1)
-mle_sigma1_y(df_degradacao1)
+df_degradacao1 <- sim_wiener_maintenance_paths(n_units = 1000, t_max = 20, n_steps = n_med,
+                                               drift = 4, sigma2 = 4, rho = rho, n_maint = n_manu)
+mle_drift_standard(df_degradacao1)
+mle_sigma2_standard(df_degradacao1) #  entre 1 e 2 minutos para rodar
+mle_drift_maintenance(df_degradacao1)
+mle_sigma2_maintenance(df_degradacao1)
 
 # ---------------------------------------------------------------------
 #################### Estudo de Simulação #############################
@@ -186,17 +181,23 @@ Generate <- function(condition,fixed_objects){
   if (condition$n_main==5){
     rho = c(0.1,0.3,0.5,0.7,0.9)
   }
-  dat <- gera_dados3(n_s=condition$n_system,
-                     t_max = condition$tau,n_med=n_med,
-                     v=condition$mu,sigma2=condition$sigma2,rho=rho,n_manu=condition$n_main)
+  dat <- sim_wiener_maintenance_paths(
+    n_units = condition$n_system,
+    t_max = condition$tau,
+    n_steps = n_med,
+    drift = condition$mu,
+    sigma2 = condition$sigma2,
+    rho = rho,
+    n_maint = condition$n_main
+  )
   dat
 }
 
 Analyse <- function(condition, dat, fixed_objects) {
   n_med <- (condition$n_main+1)*(condition$n_intra+2)-(condition$n_main+1)
   
-  mu_hat <- mle_drift1(dat)
-  sigma2_hat <- (mle_sigma1(dat))
+  mu_hat <- mle_drift_standard(dat)
+  sigma2_hat <- mle_sigma2_standard(dat)
   
   # CP95% mu
   erro_padrao <- sqrt(sigma2_hat) / sqrt(condition$n_system * condition$tau)
@@ -205,9 +206,10 @@ Analyse <- function(condition, dat, fixed_objects) {
   CP_mu_hat <- ECR(IC_mu_hat, condition$mu)
   
   # CP95% sigma^2
-  s <- unique(dat$Objeto)
-  k <- dat %>% filter(Objeto == s[1], duplicated(Time)) %>% pull(Time)
-  nj <- dat %>% filter(Objeto == s[1], Time > k[1], Time < k[2]) %>% nrow()
+  id_col <- if ("Object" %in% names(dat)) "Object" else if ("Objeto" %in% names(dat)) "Objeto" else names(dat)[1]
+  s <- unique(dat[[id_col]])
+  k <- dat %>% filter(.data[[id_col]] == s[1], duplicated(Time)) %>% pull(Time)
+  nj <- dat %>% filter(.data[[id_col]] == s[1], Time > k[1], Time < k[2]) %>% nrow()
   N <- nj * (length(k) + 1)
   df <- length(s) * (N + length(k) + 1) - 1
   
@@ -381,9 +383,9 @@ sub_maria <- sub_maria %>%
 
 # Visualização e estimação dos parâmetros de degradação
 plot_maintanance(sub_maria,ylab="Degradation",xlab="Time",time = TRUE)
-mle_drift1_y(sub_maria)
-mle_sigma1_y(sub_maria)
-rho_hat(sub_maria)
+mle_drift_maintenance(sub_maria)
+mle_sigma2_maintenance(sub_maria)
+calc_rho(sub_maria)
 
 # Exportação opcional
 # write.csv2(
@@ -455,16 +457,16 @@ subset_bagfilter <- subset_bagfilter %>%
 # gerando grafico e estimando parametros
 plot_maintanance(subset_bagfilter,ylab="Diferencial",xlab="Tempo",time = TRUE)
 rsvg::rsvg_pdf('figures/RESULT_001.svg',"figures/RESULT_001.pdf")
-mu <- mle_drift1_y(subset_bagfilter)
-sigma2 <- mle_sigma1_y(subset_bagfilter)
-rho_hat(subset_bagfilter)
+mu <- mle_drift_maintenance(subset_bagfilter)
+sigma2 <- mle_sigma2_maintenance(subset_bagfilter)
+calc_rho(subset_bagfilter)
 
 #################
 #################
 #################
 
-mu_hat <- mle_drift1_y(subset_bagfilter)
-sigma2_hat <- mle_sigma1_y(subset_bagfilter)
+mu_hat <- mle_drift_maintenance(subset_bagfilter)
+sigma2_hat <- mle_sigma2_maintenance(subset_bagfilter)
 # CP95% sigma^2
 dat = subset_bagfilter
 s <- 1
