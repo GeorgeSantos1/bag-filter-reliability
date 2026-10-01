@@ -8,7 +8,7 @@
 
 **WienerRS** is an R package designed for statistical inference, degradation modeling, and reliability prognosis of repairable industrial systems subject to imperfect maintenance. 
 
-The package implements an extended reliability modeling framework that couples a **Wiener degradation process with drift** with a dynamic **Arithmetic Reduction of Degradation with Memory One ($\text{ARD}_1$)** model under a **complete observation scheme**. It provides exact Maximum Likelihood Estimation (MLE), asymptotic inference, First Passage Time (FHT) / Remaining Useful Life (RUL) reliability predictions, model comparison criteria, and publication-ready diagnostic visualizations.
+The package implements an extended reliability modeling framework that couples a **Wiener degradation process with drift** with a dynamic **Arithmetic Reduction of Degradation with Memory One (ARD₁)** model under a **complete observation scheme**. It provides exact Maximum Likelihood Estimation (MLE), asymptotic inference, First Passage Time (FHT) / Remaining Useful Life (RUL) reliability predictions, model comparison criteria, and publication-ready diagnostic visualizations.
 
 ---
 
@@ -18,7 +18,7 @@ This package accompanies the methodologies, simulation studies, and empirical ap
 
 1. **Journal Article (Under Review):**  
    > Santos, G. A. A., Ferreira, P. H., Portela, A. C. T., Toledo, M. L., Morita, L. H. M., Tomazella, V., & Droguett, E. L.  
-   > *Reliability Analysis of Repairable Systems Using the Arithmetic Reduction of Degradation with Memory One ($\text{ARD}_1$) Model: An Application to Industrial Bag Filter Data*.
+   > *Reliability Analysis of Repairable Systems Using the Arithmetic Reduction of Degradation with Memory One (ARD₁) Model: An Application to Industrial Bag Filter Data*.
    
 2. **Master's Dissertation:**  
    > Santos, G. A. A. (2025).  
@@ -30,32 +30,45 @@ This package accompanies the methodologies, simulation studies, and empirical ap
 ## Key Features
 
 - **Wiener Degradation Process:** Models non-monotonic stochastic deterioration with positive drift ($\mu > 0$) and diffusion variance ($\sigma^2 > 0$).
-- **Dynamic $\text{ARD}_1$ Imperfect Maintenance:** Supports time-varying repair effectiveness ($\rho_j \in [0, 1]$), overcoming the limitation of constant-effect assumptions in classical maintenance models.
+- **Dynamic ARD₁ Imperfect Maintenance:** Supports time-varying repair effectiveness ($\rho_j \in [0, 1]$), overcoming the limitation of constant-effect assumptions in classical maintenance models.
 - **Multiple Systems Inference ($S \ge 1$):** Generalizes closed-form Maximum Likelihood Estimators (MLE) for single and multiple independent monitored units under complete observation.
-- **RUL Prognosis via First Passage Time (FHT):** Exact derivation of the conditional survival function and PDF using the shifted Inverse Gaussian ($\text{IG}$) distribution.
+- **RUL Prognosis via First Passage Time (FHT):** Exact derivation of the conditional survival function and PDF using the shifted Inverse Gaussian (IG) distribution.
 - **Pointwise Asymptotic Confidence Intervals:** Standard errors and 80%/95% confidence bands computed via the Delta Method with log-log transformation.
-- **Goodness-of-Fit Diagnostics:** Probability-Probability (P-P) and Quantile-Quantile (Q-Q) plots coupled with the Anderson-Darling ($\text{AD}$) test.
-- **Model Selection & Hypothesis Testing:** Log-Likelihood, Akaike Information Criterion ($\text{AIC}$), Bayesian Information Criterion ($\text{BIC}$), and Likelihood Ratio Test ($\text{LRT}$) to compare time-varying vs. fixed maintenance models.
+- **Goodness-of-Fit Diagnostics:** Probability-Probability (P-P) and Quantile-Quantile (Q-Q) plots coupled with the Anderson-Darling (AD) test.
+- **Model Selection & Hypothesis Testing:** Log-Likelihood, Akaike Information Criterion (AIC), Bayesian Information Criterion (BIC), and Likelihood Ratio Test (LRT) to compare time-varying vs. fixed maintenance models.
 - **Packaged Industrial Dataset (`bagfilter`):** High-frequency differential pressure data (309,901 raw industrial records filtered and adjusted) from an operational industrial baghouse filter in a calcium carbonate drying plant.
 
 ---
 
 ## Mathematical Formulation
 
-### 1. Underlying Degradation & $\text{ARD}_1$ Maintenance
+### 1. Underlying Degradation & ARD₁ Maintenance
 
 The underlying natural degradation is modeled as a continuous Wiener process with drift:
-$$X(t) = X(0) + \mu t + \sigma B(t), \quad t \ge 0$$
+
+$$
+X(t) = X(0) + \mu t + \sigma B(t), \quad t \ge 0
+$$
+
 where $\mu > 0$ is the drift coefficient, $\sigma^2 > 0$ is the diffusion variance, and $B(t)$ is standard Brownian motion.
 
-Under the dynamic $\text{ARD}_1$ model with maintenance interventions at times $\tau_1 < \tau_2 < \dots < \tau_k$, each maintenance action reduces the accumulated degradation since the previous intervention by a fraction $\rho_j \in [0, 1]$:
-$$Y(t) = X(t) - \sum_{j \le r} \rho_j [X(\tau_j) - X(\tau_{j-1})], \quad t \in [\tau_r, \tau_{r+1})$$
+Under the dynamic ARD₁ model with maintenance interventions at times $\tau_1 < \tau_2 < \dots < \tau_k$, each maintenance action reduces the accumulated degradation since the previous intervention by a fraction $\rho_j \in [0, 1]$:
+
+$$
+Y(t) = X(t) - \sum_{j \le r} \rho_j [X(\tau_j) - X(\tau_{j-1})], \quad t \in [\tau_r, \tau_{r+1})
+$$
 
 The effective degradation reduction jump at time $\tau_j$ is given by:
-$$Z_j = Y(\tau_j^+) - Y(\tau_j^-) = -\rho_j [X(\tau_j) - X(\tau_{j-1})]$$
+
+$$
+Z_j = Y(\tau_j^+) - Y(\tau_j^-) = -\rho_j [X(\tau_j) - X(\tau_{j-1})]
+$$
 
 Under the complete observation scheme (monitoring immediately before and after each intervention), the maintenance efficiencies $\rho_j$ are analytically obtained:
-$$\rho_j = \frac{-Z_j}{\sum_{i=1}^{n_{j-1}+1} \Delta Y_{j-1, i}}$$
+
+$$
+\rho_j = \frac{-Z_j}{\sum_{i=1}^{n_{j-1}+1} \Delta Y_{j-1, i}}
+$$
 
 <p align="center">
   <img src="figures/PLOT_SCHEMA.svg" width="720" alt="Observation scheme with imperfect maintenance actions">
@@ -66,18 +79,34 @@ $$\rho_j = \frac{-Z_j}{\sum_{i=1}^{n_{j-1}+1} \Delta Y_{j-1, i}}$$
 ### 2. Maximum Likelihood Estimators (MLE)
 
 For $S$ independent systems observed up to horizon $\tau$, the closed-form estimators are:
-$$\hat{\mu} = \frac{\sum_{l=1}^S \left[ y_l(\tau) - \sum_{j=1}^k z_{l,j} \right]}{S \cdot \tau}$$
-$$\hat{\sigma}^2 = \frac{1}{S(N + k + 1)} \sum_{l=1}^S \sum_{j=0}^k \sum_{i=1}^{n_j+1} \frac{(\Delta y_{l,j,i} - \hat{\mu} \Delta t_{l,j,i})^2}{\Delta t_{l,j,i}}$$
+
+$$
+\hat{\mu} = \frac{\sum_{l=1}^S \left[ y_l(\tau) - \sum_{j=1}^k z_{l,j} \right]}{S \cdot \tau}
+$$
+
+$$
+\hat{\sigma}^2 = \frac{1}{S(N + k + 1)} \sum_{l=1}^S \sum_{j=0}^k \sum_{i=1}^{n_j+1} \frac{(\Delta y_{l,j,i} - \hat{\mu} \Delta t_{l,j,i})^2}{\Delta t_{l,j,i}}
+$$
 
 The unbiased Bessel-corrected estimator for diffusion variance is:
-$$s^2 = \frac{S(N + k + 1)}{S(N + k + 1) - 1} \hat{\sigma}^2$$
+
+$$
+s^2 = \frac{S(N + k + 1)}{S(N + k + 1) - 1} \hat{\sigma}^2
+$$
 
 ### 3. Reliability Function & Remaining Useful Life (RUL)
 
-Conditioned on the system state $Y(t_0)$ immediately following the most recent maintenance at time $t_0$, the First Passage Time to a critical failure threshold $\alpha > Y(t_0)$ follows a shifted Inverse Gaussian distribution $T \sim \text{IG}\left(\frac{\alpha - Y(t_0)}{\mu}, \frac{[\alpha - Y(t_0)]^2}{\sigma^2}\right)$. 
+Conditioned on the system state $Y(t_0)$ immediately following the most recent maintenance at time $t_0$, the First Passage Time (FHT) to a critical failure threshold $\alpha > Y(t_0)$ follows a shifted Inverse Gaussian distribution:
+
+$$
+T \sim \text{IG}\left(\frac{\alpha - Y(t_0)}{\mu}, \frac{[\alpha - Y(t_0)]^2}{\sigma^2}\right)
+$$
 
 The resulting reliability function $R(t)$ for $t \ge t_0$ is:
-$$R(t) = \Phi\left( \frac{\alpha - Y(t_0) - \mu(t - t_0)}{\sigma \sqrt{t - t_0}} \right) - \exp\left( \frac{2\mu[\alpha - Y(t_0)]}{\sigma^2} \right) \Phi\left( \frac{-\mu(t - t_0) - \alpha + Y(t_0)}{\sigma \sqrt{t - t_0}} \right)$$
+
+$$
+R(t) = \Phi\left( \frac{\alpha - Y(t_0) - \mu(t - t_0)}{\sigma \sqrt{t - t_0}} \right) - \exp\left( \frac{2\mu[\alpha - Y(t_0)]}{\sigma^2} \right) \Phi\left( \frac{-\mu(t - t_0) - \alpha + Y(t_0)}{\sigma \sqrt{t - t_0}} \right)
+$$
 
 ---
 
@@ -156,7 +185,7 @@ print(p_diag)
 
 ### 4. Reliability Prediction with Confidence Bands
 
-Evaluate the survival probability starting after the 3rd maintenance intervention ($t_0 = 39$, $x_0 = 62.52\text{ mmWC}$) up to critical threshold $\alpha = 150\text{ mmWC}$:
+Evaluate the survival probability starting after the 3rd maintenance intervention ($t_0 = 39$, $x_0 = 62.52$ mmWC) up to critical failure threshold $\alpha = 150$ mmWC:
 
 ```r
 # Approximate asymptotic variances for Delta Method
@@ -194,7 +223,7 @@ head(rel_res$data)
 
 ### 5. Model Comparison (Complete vs. Fixed Maintenance)
 
-Compare the time-varying $\text{ARD}_1$ model against a baseline fixed-effect model ($\text{LRT}$, $\text{AIC}$, and $\text{BIC}$):
+Compare the time-varying ARD₁ model against a baseline fixed-effect model (LRT, AIC, and BIC):
 
 ```r
 # Execute complete analysis script
@@ -205,7 +234,7 @@ source("scripts/case_study_analysis.R")
 
 ## Monte Carlo Simulation Study
 
-A comprehensive factorial simulation experiment ($M = 1{,}000$ replications per scenario) assesses the finite-sample performance, unbiasedness, and consistency of the Maximum Likelihood Estimators across varying numbers of systems ($S \in \{1, 10, 20, 50\}$), maintenance interventions ($k \in \{3, 4, 5\}$), and intermediate inspection measurements ($n_j \in \{0, 2, 4\}$):
+A comprehensive factorial simulation experiment ($M = 1000$ replications per scenario) assesses the finite-sample performance, unbiasedness, and consistency of the Maximum Likelihood Estimators across varying numbers of systems ($S \in \{1, 10, 20, 50\}$), maintenance interventions ($k \in \{3, 4, 5\}$), and intermediate inspection measurements ($n_j \in \{0, 2, 4\}$):
 
 <p align="center">
   <img src="figures/PLOT_RMSE.svg" width="750" alt="Monte Carlo Simulation RMSE">
