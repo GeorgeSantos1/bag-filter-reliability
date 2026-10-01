@@ -4,3 +4,5 @@
 .Ruserdata
 -DESKTOP-RKA95E1.Rhistory
 Rplots.pdf
+*.tar.gz
+*.Rcheck/

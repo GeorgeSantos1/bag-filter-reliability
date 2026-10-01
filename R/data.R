@@ -1,0 +1,30 @@
+#' Industrial Bag Filter Degradation and Maintenance Dataset
+#'
+#' A dataset containing process measurements from an industrial bag filter
+#' (filtro de mangas) system undergoing continuous degradation (filter cake
+#' deposition / clogging) and imperfect maintenance actions (reverse-air pulses).
+#' This dataset corresponds to the primary empirical study ("Recorte 02") analyzed
+#' in the article and dissertation.
+#'
+#' @format A data frame with 46 rows and 8 variables:
+#' \describe{
+#'   \item{Data_Hora}{Timestamp of each process measurement (POSIXct).}
+#'   \item{Batimento_FM_Passo}{Pulse jet / cleaning stroke indicator.}
+#'   \item{Entrada_mmCa_800PT8101}{Inlet pressure measurement (in mmH2O / mmWC).}
+#'   \item{Saida_mmCa_800PT8102}{Outlet pressure measurement (in mmH2O / mmWC).}
+#'   \item{Y}{Differential pressure across the filter (degradation level, in mmH2O / mmWC).}
+#'   \item{Corrente_exaustor_AIC800EXA001}{Exhaust fan electrical current (in Amperes).}
+#'   \item{Time}{Discrete observation time index \eqn{t \in \{0, 1, \dots, 42\}}, with duplicated indices at \eqn{t = 13, 26, 39} representing pre- and post-maintenance states.}
+#'   \item{Objeto}{System/unit identifier (\code{"OBJ_001"}).}
+#' }
+#' @source Industrial process data collected from an industrial bag filter system,
+#'   analyzed in George Anderson A. dos Santos's Master's dissertation.
+#' @examples
+#' data(bagfilter)
+#' head(bagfilter)
+#'
+#' # Estimate Wiener degradation drift and diffusion
+#' mle_drift_maintenance(bagfilter)
+#' mle_sigma2_maintenance(bagfilter)
+#' calc_rho(bagfilter)
+"bagfilter"

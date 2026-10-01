@@ -1,0 +1,41 @@
+Package: WienerRS
+Type: Package
+Title: Wiener Process Degradation Models with Imperfect Maintenance Effects
+Version: 0.1.0
+Authors@R: 
+    person(given = "George Anderson",
+           family = "A. dos Santos",
+           role = c("aut", "cre"),
+           email = "george_13031995@hotmail.com")
+Description: Provides tools for simulating, estimating, and analyzing 
+    degradation processes modeled by Wiener processes (Brownian motion 
+    with drift) under imperfect maintenance actions, restoration states, 
+    and degradation reductions. Features include maximum likelihood 
+    parameter estimation, Monte Carlo simulation studies, diagnostic 
+    plots (P-P, Q-Q, Anderson-Darling tests), and reliability/hazard 
+    merit functions.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 8.0.0
+Depends: 
+    R (>= 3.5.0)
+Imports: 
+    ADGofTest,
+    dplyr,
+    ggh4x,
+    ggplot2,
+    grid,
+    gridExtra,
+    latex2exp,
+    numDeriv,
+    patchwork,
+    scales,
+    statmod,
+    stats,
+    tidyr
+Suggests: 
+    ggtext,
+    readxl,
+    tayloRswift,
+    testthat (>= 3.0.0)

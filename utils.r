@@ -1,6 +1,6 @@
 # ---------------------------------------------------
 # Arquivo: utils.R
-# Descrição: Conjunto de funções úteis para análise
+# Descricao: Conjunto de funcoes uteis para analise
 # Autor: George Anderson A. dos Santos
 # Data: 17-04-2024
 # ---------------------------------------------------
@@ -13,6 +13,7 @@ for (pkg in c("dplyr", "ggplot2", "statmod", "scales", "patchwork")) {
 if (requireNamespace("tayloRswift", quietly = TRUE)) {
   suppressPackageStartupMessages(library(tayloRswift))
 }
+
 
 #' Simulate a Single Wiener Process Degradation Path
 #'
@@ -1914,6 +1915,7 @@ plot_censura_all <- function(
 #' @param palette Optional character name of the color palette. Default is \code{"taylor1989"}.
 #' @param labs_degradacao Optional character vector of length 5 providing legacy Portuguese labels
 #'   in the order: \code{c(threshold_label, path_label, failure_time_label, x_label, y_label)}.
+#' @param ... Additional arguments passed to \code{plot_degradation}.
 #'
 #' @return A \code{ggplot2::ggplot} object representing the degradation failure process.
 #'
@@ -2157,6 +2159,7 @@ gera_plot_degrada <- function(
 #' @param show_axis_text Logical indicating whether to display numeric tick labels along the axes. Default is \code{FALSE} (qualitative schematic).
 #' @param labs_banheira Optional character vector of length 4 for legacy Portuguese compatibility:
 #'   \code{c(infant_mortality_label, useful_life_label, wear_out_label, x_label)}.
+#' @param ... Additional arguments passed to \code{plot_bathtub_curve}.
 #'
 #' @return A \code{ggplot2::ggplot} object visualizing the bathtub curve.
 #'
@@ -2331,6 +2334,7 @@ gera_plot_banheira <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} color palette. Default is \code{"taylor1989"}.
 #' @param labs_wiener Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(y_label, x_label)}.
+#' @param ... Additional arguments passed to \code{plot_wiener_drift}.
 #'
 #' @return A \code{ggplot2::ggplot} object showing the overlaid degradation trajectories.
 #'
@@ -2494,6 +2498,7 @@ gera_plot_wiener <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} color palette. Default is \code{"taylor1989"}.
 #' @param labs_reparos Optional character vector of length 5 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label, title_perfect, title_minimal, title_imperfect)}.
+#' @param ... Additional arguments passed to \code{plot_repair_types}.
 #'
 #' @return A combined \code{patchwork} object arranging the three repair plots in a 2-row layout.
 #'
@@ -2693,6 +2698,7 @@ gera_plot_reparos <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} color palette. Default is \code{"taylor1989"}.
 #' @param labs_scheme Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label)}.
+#' @param ... Additional arguments passed to \code{plot_maintenance_scheme}.
 #'
 #' @return A \code{ggplot2::ggplot} object representing the maintenance observation scheme.
 #'
@@ -2897,6 +2903,8 @@ gera_plot_scheme <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_bias Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label)}.
+#' @param resultados Legacy alias parameter for \code{data}.
+#' @param ... Additional arguments passed to \code{plot_simulation_bias}.
 #'
 #' @return A \code{ggplot2::ggplot} object featuring nested facet grids of estimation bias.
 #'
@@ -3011,7 +3019,7 @@ plot_simulation_bias <- function(
 #' @export
 gera_plot_bias <- function(
   resultados,
-  labs_bias = c("Número de Sistemas", "Viés"),
+  labs_bias = c("N\u00famero de Sistemas", "Vi\u00e9s"),
   ...
 ) {
   plot_simulation_bias(data = resultados, labs_bias = labs_bias, ...)
@@ -3045,6 +3053,7 @@ gera_plot_bias <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} color palette. Default is \code{"taylor1989"}.
 #' @param labs_xtyt Optional character vector of length 4 for legacy Portuguese compatibility:
 #'   \code{c(maintained_label, standard_label, x_label, y_label)}.
+#' @param ... Additional arguments passed to \code{plot_wiener_maintenance_comparison}.
 #'
 #' @return A \code{ggplot2::ggplot} object showing both degradation trajectories overlaid.
 #'
@@ -3239,6 +3248,8 @@ gera_plot_xtyt <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_rmse Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label)}.
+#' @param resultados Legacy alias parameter for \code{data}.
+#' @param ... Additional arguments passed to \code{plot_simulation_rmse}.
 #'
 #' @return A \code{ggplot2::ggplot} object featuring nested facet grids of estimation RMSE.
 #'
@@ -3353,7 +3364,7 @@ plot_simulation_rmse <- function(
 #' @export
 gera_plot_rmse <- function(
   resultados,
-  labs_rmse = c("Número de Sistemas", "REQM"),
+  labs_rmse = c("N\u00famero de Sistemas", "REQM"),
   ...
 ) {
   plot_simulation_rmse(data = resultados, labs_rmse = labs_rmse, ...)
@@ -3385,6 +3396,8 @@ gera_plot_rmse <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_coverage Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label)}.
+#' @param resultados Legacy alias parameter for \code{data}.
+#' @param ... Additional arguments passed to \code{plot_simulation_coverage}.
 #'
 #' @return A \code{ggplot2::ggplot} object featuring nested facet grids of coverage probability.
 #'
@@ -3509,7 +3522,7 @@ plot_simulation_coverage <- function(
 #' @export
 gera_plot_coveragep <- function(
   resultados,
-  labs_coverage = c("Número de Sistemas", "Probabilidade de Cobertura"),
+  labs_coverage = c("N\u00famero de Sistemas", "Probabilidade de Cobertura"),
   ...
 ) {
   plot_simulation_coverage(data = resultados, labs_coverage = labs_coverage, ...)
@@ -3543,6 +3556,8 @@ gera_plot_coveragep <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_ratiovar Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label)}.
+#' @param resultados Legacy alias parameter for \code{data}.
+#' @param ... Additional arguments passed to \code{plot_simulation_variance_ratio}.
 #'
 #' @return A \code{ggplot2::ggplot} object featuring nested facet grids of variance ratios.
 #'
@@ -3672,7 +3687,7 @@ plot_simulation_variance_ratio <- function(
 #' @export
 gera_plot_ratiovar <- function(
   resultados,
-  labs_ratiovar = c("Número de Sistemas", "Razão de Variâncias"),
+  labs_ratiovar = c("N\u00famero de Sistemas", "Raz\u00e3o de Vari\u00e2ncias"),
   ...
 ) {
   plot_simulation_variance_ratio(data = resultados, labs_ratiovar = labs_ratiovar, ...)
@@ -3705,6 +3720,10 @@ gera_plot_ratiovar <- function(
 #'   \code{c(pdf_title, pdf_x_label, pdf_y_label)}.
 #' @param labs_merito02 Optional character vector of length 3 for legacy Portuguese CDF labels:
 #'   \code{c(cdf_title, cdf_x_label, cdf_y_label)}.
+#' @param mu Legacy alias parameter for \code{drift}.
+#' @param sigma Legacy alias parameter for \code{sigma2}.
+#' @param alpha Legacy alias parameter for \code{threshold}.
+#' @param ... Additional arguments passed to \code{plot_merit_functions}.
 #'
 #' @return A composite plot (\pkg{patchwork}) featuring the PDF (left) and CDF (right).
 #'
@@ -3890,12 +3909,13 @@ gera_plot_merito <- function(
 #' @param qq_title Character title for the Q-Q panel. Default is \code{"Q-Q Plot"}.
 #' @param qq_x_label Character label for the horizontal axis of the Q-Q plot. Default is \code{"Theoretical Quantiles"}.
 #' @param qq_y_label Character label for the vertical axis of the Q-Q plot. Default is \code{"Sample Quantiles"}.
-#' @param expand Numeric vector of length 2 controlling scale expansion for both axes. Default is \code{c(0, 0)}.
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_qqplot01 Optional character vector of length 3 for legacy Portuguese P-P labels:
 #'   \code{c(pp_x_label, pp_y_label, pp_title)}.
 #' @param labs_qqplot02 Optional character vector of length 3 for legacy Portuguese Q-Q labels:
 #'   \code{c(qq_x_label, qq_y_label, qq_title)}.
+#' @param sub_maria Legacy Portuguese parameter for \code{data}.
+#' @param ... Additional arguments passed to \code{plot_diagnostic_qq}.
 #'
 #' @return A composite diagnostic plot (\pkg{patchwork}) featuring the P-P plot (left) and Q-Q plot (right).
 #'
@@ -4123,6 +4143,7 @@ gera_plot_qqplot <- function(
 #' @param expand Numeric vector of length 2 controlling scale expansion for both axes. Default is \code{c(0, 0)}.
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_degrada01 Optional character vector of length 2 for legacy Portuguese compatibility: \code{c(x_label, y_label)}.
+#' @param ... Additional arguments passed to \code{plot_exponential_degradation}.
 #'
 #' @return A \code{ggplot2::ggplot} object showing the simulated degradation trajectories.
 #'
@@ -4256,6 +4277,7 @@ gera_plot_degrada01 <- function(
 #' @param expand Numeric vector of length 2 controlling scale expansion for both axes. Default is \code{c(0, 0)}.
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_reliability Optional character vector of length 2 for legacy Portuguese compatibility: \code{c(x_label, y_label)}.
+#' @param ... Additional arguments passed to \code{plot_exponential_reliability}.
 #'
 #' @return A \code{ggplot2::ggplot} object visualizing the exponential reliability function.
 #'
@@ -4405,6 +4427,13 @@ gera_plot_confiabilidade <- function(...) {
 #' @param expand Numeric vector of length 2 controlling scale expansion for both axes. Default is \code{c(0, 0)}.
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_ci Optional character vector of length 2 for legacy compatibility: \code{c(x_label, y_label)}.
+#' @param mu Legacy alias parameter for \code{drift}.
+#' @param var_mu Legacy alias parameter for \code{var_drift}.
+#' @param alpha Legacy alias parameter for \code{threshold}.
+#' @param xlab Legacy alias parameter for \code{x_label}.
+#' @param ylab Legacy alias parameter for \code{y_label}.
+#' @param paleta Legacy alias parameter for \code{palette}.
+#' @param ... Additional arguments passed to \code{plot_reliability_ci}.
 #'
 #' @return A named list containing:
 #' \describe{

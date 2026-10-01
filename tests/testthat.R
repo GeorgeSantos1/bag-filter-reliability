@@ -1,4 +1,4 @@
 library(testthat)
-source("utils.r")
+library(WienerRS)
 
 test_check("WienerRS")
