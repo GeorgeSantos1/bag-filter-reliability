@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_wiener_maintenance_comparison}
 \alias{plot_wiener_maintenance_comparison}
-\alias{gera_plot_xtyt}
 \title{Plot Comparison Between Natural and Maintained Degradation Paths}
 \usage{
 plot_wiener_maintenance_comparison(
@@ -21,12 +20,6 @@ plot_wiener_maintenance_comparison(
   expand = c(0, 0),
   palette = "taylor1989",
   labs_xtyt = NULL
-)
-
-gera_plot_xtyt(
-  labs_xtyt = c("Y(t) - Processo de degradação com ações de manutenção",
-    "X(t) - Processo de degradação natural", "Tempo", "Degradação"),
-  ...
 )
 }
 \arguments{
@@ -60,8 +53,6 @@ gera_plot_xtyt(
 
 \item{labs_xtyt}{Optional character vector of length 4 for legacy Portuguese compatibility:
 \code{c(maintained_label, standard_label, x_label, y_label)}.}
-
-\item{...}{Additional arguments passed to \code{plot_wiener_maintenance_comparison}.}
 }
 \value{
 A \code{ggplot2::ggplot} object showing both degradation trajectories overlaid.

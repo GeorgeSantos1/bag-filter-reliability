@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_repair_types}
 \alias{plot_repair_types}
-\alias{gera_plot_reparos}
 \title{Plot Illustrative Maintenance and Repair Types}
 \usage{
 plot_repair_types(
@@ -19,12 +18,6 @@ plot_repair_types(
   expand = c(0, 0),
   palette = "taylor1989",
   labs_reparos = NULL
-)
-
-gera_plot_reparos(
-  labs_reparos = c("Tempo", "Degradação", "(a) Reparo Perfeito", "(b) Reparo Mínimo",
-    "(c) Reparo Imperfeito"),
-  ...
 )
 }
 \arguments{
@@ -57,8 +50,6 @@ Default is \code{c(0, 0)} to eliminate Cartesian origin spacing.}
 
 \item{labs_reparos}{Optional character vector of length 5 for legacy Portuguese compatibility:
 \code{c(x_label, y_label, title_perfect, title_minimal, title_imperfect)}.}
-
-\item{...}{Additional arguments passed to \code{plot_repair_types}.}
 }
 \value{
 A combined \code{patchwork} object arranging the three repair plots in a 2-row layout.

@@ -2,25 +2,9 @@
 % Please edit documentation in R/utils.R
 \name{plot_maintenance}
 \alias{plot_maintenance}
-\alias{plot_maintanance}
 \title{Plot Degradation Path with Maintenance Interventions}
 \usage{
 plot_maintenance(
-  data,
-  xlab = "Time",
-  ylab = "Degradation",
-  title = NULL,
-  show_title = FALSE,
-  show_time = FALSE,
-  line_size = 1,
-  line_alpha = 0.7,
-  path_color = NULL,
-  maint_color = "black",
-  expand = c(0, 0),
-  time = NULL
-)
-
-plot_maintanance(
   data,
   xlab = "Time",
   ylab = "Degradation",

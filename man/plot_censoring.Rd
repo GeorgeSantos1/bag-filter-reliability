@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_censoring}
 \alias{plot_censoring}
-\alias{plot_censura_all}
 \title{Plot Survival and Reliability Censoring Types}
 \usage{
 plot_censoring(
@@ -12,18 +11,6 @@ plot_censoring(
   y_label = "Units",
   experiment_end = 20,
   experiment_end_label = "End of Experiment",
-  xlim = c(0, 22),
-  expand = c(0, 0),
-  show_end_line = TRUE
-)
-
-plot_censura_all(
-  titles = c("(a) Dados completos", "(b) Dados com censura tipo I",
-    "(c) Dados com censura tipo II", "(d) Dados com censura aleatória"),
-  x_label = "Tempos",
-  y_label = "Equipamentos",
-  experiment_end = 20,
-  experiment_end_label = "Final do Experimento",
   xlim = c(0, 22),
   expand = c(0, 0),
   show_end_line = TRUE

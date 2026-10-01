@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_wiener_drift}
 \alias{plot_wiener_drift}
-\alias{gera_plot_wiener}
 \title{Plot Wiener Process Paths with Different Drift Parameters}
 \usage{
 plot_wiener_drift(
@@ -20,8 +19,6 @@ plot_wiener_drift(
   palette = "taylor1989",
   labs_wiener = NULL
 )
-
-gera_plot_wiener(labs_wiener = c("Degradação", "Tempo"), ...)
 }
 \arguments{
 \item{drifts}{Numeric vector of length 2 containing the drift coefficients \eqn{\mu}
@@ -52,8 +49,6 @@ If \code{NULL}, dynamically formatted as \code{"mu = [drift], sigma = [sigma]"}.
 
 \item{labs_wiener}{Optional character vector of length 2 for legacy Portuguese compatibility:
 \code{c(y_label, x_label)}.}
-
-\item{...}{Additional arguments passed to \code{plot_wiener_drift}.}
 }
 \value{
 A \code{ggplot2::ggplot} object showing the overlaid degradation trajectories.

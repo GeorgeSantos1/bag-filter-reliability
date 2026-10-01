@@ -320,7 +320,7 @@ test_that("plot_maintenance creates a valid ggplot object with maintenance jumps
   expect_equal(p$scales$get_scales("y")$expand, c(0, 0))
 })
 
-test_that("plot_maintenance handles process without maintenance and supports legacy alias", {
+test_that("plot_maintenance handles process without maintenance and with maintenance", {
   set.seed(42)
   df_std <- sim_wiener_path(t_max = 10, n_steps = 20, drift = 1.5, sigma2 = 0.5)
 
@@ -328,14 +328,14 @@ test_that("plot_maintenance handles process without maintenance and supports leg
   p_std <- plot_maintenance(df_std, xlab = "Time", ylab = "Wt")
   expect_s3_class(p_std, "ggplot")
 
-  # Legacy function name and legacy 'time' parameter
+  # Path with maintenance
   df_maint <- sim_wiener_maintenance(
     t_max = 15, n_steps = 21, drift = 2, sigma2 = 1, rho = 0.6, n_maint = 2
   )
-  p_legacy <- plot_maintanance(df_maint, xlab = "Tempo", ylab = "Degradação", time = TRUE)
-  expect_s3_class(p_legacy, "ggplot")
-  expect_equal(p_legacy$labels$x, "Tempo")
-  expect_equal(p_legacy$labels$y, "Degradação")
+  p_maint <- plot_maintenance(df_maint, xlab = "Time", ylab = "Degradation")
+  expect_s3_class(p_maint, "ggplot")
+  expect_equal(p_maint$labels$x, "Time")
+  expect_equal(p_maint$labels$y, "Degradation")
 })
 
 test_that("plot_maintenance validates inputs and raises informative errors", {
@@ -366,15 +366,6 @@ test_that("plot_exponential creates a valid combined patchwork/ggplot object", {
   # Test custom lambdas and horizon
   p_custom <- plot_exponential(lambdas = c(0.2, 0.8), t_max = 10, n_points = 50)
   expect_true(inherits(p_custom, "patchwork") || inherits(p_custom, "ggplot"))
-})
-
-test_that("gera_plot_exp legacy alias works with 3-element label vectors", {
-  labs_01 <- c("Densidade", "Tempo", "f(t)")
-  labs_02 <- c("Taxa de Falha", "Tempo", "\u03bb(t)")
-  labs_03 <- c("Confiabilidade", "Tempo", "R(t)")
-
-  p_legacy <- gera_plot_exp(labs_01, labs_02, labs_03)
-  expect_true(inherits(p_legacy, "patchwork") || inherits(p_legacy, "ggplot"))
 })
 
 test_that("plot_exponential validates inputs and raises informative errors", {
@@ -408,15 +399,6 @@ test_that("plot_weibull creates a valid combined patchwork/ggplot object", {
   expect_true(inherits(p_custom, "patchwork") || inherits(p_custom, "ggplot"))
 })
 
-test_that("gera_plot_weibull legacy alias works with 3-element label vectors", {
-  labs_01 <- c("Densidade", "Tempo", "f(t)")
-  labs_02 <- c("Taxa de Falha", "Tempo", "\u03bb(t)")
-  labs_03 <- c("Confiabilidade", "Tempo", "R(t)")
-
-  p_legacy <- gera_plot_weibull(labs_01, labs_02, labs_03)
-  expect_true(inherits(p_legacy, "patchwork") || inherits(p_legacy, "ggplot"))
-})
-
 test_that("plot_weibull validates inputs and raises informative errors", {
   expect_error(plot_weibull(gammas = -1), "gammas")
   expect_error(plot_weibull(gammas = c(1, -0.5)), "gammas")
@@ -448,15 +430,6 @@ test_that("plot_lognormal creates a valid combined patchwork/ggplot object", {
   # Test custom sigmas, mu, and horizon
   p_custom <- plot_lognormal(sigmas = c(0.4, 0.9), mu = 0.5, t_max = 5, n_points = 50)
   expect_true(inherits(p_custom, "patchwork") || inherits(p_custom, "ggplot"))
-})
-
-test_that("gera_plot_lognormal legacy alias works with 3-element label vectors", {
-  labs_01 <- c("Densidade", "Tempo", "f(t)")
-  labs_02 <- c("Taxa de Falha", "Tempo", "\u03bb(t)")
-  labs_03 <- c("Confiabilidade", "Tempo", "R(t)")
-
-  p_legacy <- gera_plot_lognormal(labs_01, labs_02, labs_03)
-  expect_true(inherits(p_legacy, "patchwork") || inherits(p_legacy, "ggplot"))
 })
 
 test_that("plot_lognormal validates inputs and raises informative errors", {
@@ -497,15 +470,6 @@ test_that("plot_censoring creates a valid combined patchwork/ggplot object", {
   expect_equal(p_custom[[1]]$labels$title, "Complete")
   expect_equal(p_custom[[1]]$labels$x, "Hours")
   expect_equal(p_custom[[1]]$labels$y, "Device ID")
-})
-
-test_that("plot_censura_all legacy alias works with Portuguese defaults", {
-  p_legacy <- plot_censura_all()
-
-  expect_true(inherits(p_legacy, "patchwork") || inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy[[1]]$labels$title, "(a) Dados completos")
-  expect_equal(p_legacy[[1]]$labels$x, "Tempos")
-  expect_equal(p_legacy[[1]]$labels$y, "Equipamentos")
 })
 
 test_that("plot_censoring validates inputs and raises informative errors", {
@@ -557,21 +521,6 @@ test_that("plot_degradation creates a valid ggplot object", {
   expect_equal(nrow(p_custom$data), 50)
 })
 
-test_that("gera_plot_degrada legacy alias works with Portuguese defaults and vectors", {
-  p_legacy <- gera_plot_degrada()
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$x, "Tempo")
-  expect_equal(p_legacy$labels$y, "Degrada\u00e7\u00e3o")
-
-  # Legacy 5-element vector
-  labs_vec <- c("Limite", "Curva", "Falha", "Horas", "Desgaste")
-  p_vec <- gera_plot_degrada(labs_degradacao = labs_vec)
-  expect_true(inherits(p_vec, "ggplot"))
-  expect_equal(p_vec$labels$x, "Horas")
-  expect_equal(p_vec$labels$y, "Desgaste")
-})
-
 test_that("plot_degradation validates inputs and raises informative errors", {
   expect_error(plot_degradation(failure_threshold = -5), "failure_threshold")
   expect_error(plot_degradation(failure_threshold = 0), "failure_threshold")
@@ -612,19 +561,6 @@ test_that("plot_bathtub_curve creates a valid ggplot object", {
   expect_true(inherits(p_custom, "ggplot"))
   expect_equal(p_custom$labels$x, "Operating Hours")
   expect_equal(nrow(p_custom$data), 200)
-})
-
-test_that("gera_plot_banheira legacy alias works with Portuguese defaults and vectors", {
-  p_legacy <- gera_plot_banheira()
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$x, "Tempo")
-
-  # Legacy 4-element vector
-  labs_vec <- c("Fase Inicial", "Fase Estável", "Fase Final", "Horas")
-  p_vec <- gera_plot_banheira(labs_banheira = labs_vec)
-  expect_true(inherits(p_vec, "ggplot"))
-  expect_equal(p_vec$labels$x, "Horas")
 })
 
 test_that("plot_bathtub_curve validates inputs and raises informative errors", {
@@ -675,21 +611,6 @@ test_that("plot_wiener_drift creates a valid ggplot object", {
   expect_equal(p_custom$labels$x, "Hours")
   expect_equal(p_custom$labels$y, "Wear (um)")
   expect_equal(nrow(p_custom$data), 102)  # 2 paths * 51 points
-})
-
-test_that("gera_plot_wiener legacy alias works with Portuguese defaults and vectors", {
-  p_legacy <- gera_plot_wiener()
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$y, "Degrada\u00e7\u00e3o")
-  expect_equal(p_legacy$labels$x, "Tempo")
-
-  # Legacy 2-element vector (y, x)
-  labs_vec <- c("Nível", "Horas")
-  p_vec <- gera_plot_wiener(labs_wiener = labs_vec)
-  expect_true(inherits(p_vec, "ggplot"))
-  expect_equal(p_vec$labels$y, "Nível")
-  expect_equal(p_vec$labels$x, "Horas")
 })
 
 test_that("plot_wiener_drift validates inputs and raises informative errors", {
@@ -744,27 +665,6 @@ test_that("plot_repair_types creates a valid combined patchwork/ggplot object", 
   expect_equal(p_custom[[1]]$labels$y, "Damage Index")
 })
 
-test_that("gera_plot_reparos legacy alias works with Portuguese defaults and vectors", {
-  p_legacy <- gera_plot_reparos()
-
-  expect_true(inherits(p_legacy, "patchwork") || inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy[[1]]$labels$x, "Tempo")
-  expect_equal(p_legacy[[1]]$labels$y, "Degrada\u00e7\u00e3o")
-  expect_equal(p_legacy[[1]]$labels$title, "(a) Reparo Perfeito")
-  expect_equal(p_legacy[[2]]$labels$title, "(b) Reparo M\u00ednimo")
-  expect_equal(p_legacy[[3]]$labels$title, "(c) Reparo Imperfeito")
-
-  # Legacy 5-element vector
-  labs_vec <- c("Horas", "Dano", "T1", "T2", "T3")
-  p_vec <- gera_plot_reparos(labs_reparos = labs_vec)
-  expect_true(inherits(p_vec, "patchwork") || inherits(p_vec, "ggplot"))
-  expect_equal(p_vec[[1]]$labels$x, "Horas")
-  expect_equal(p_vec[[1]]$labels$y, "Dano")
-  expect_equal(p_vec[[1]]$labels$title, "T1")
-  expect_equal(p_vec[[2]]$labels$title, "T2")
-  expect_equal(p_vec[[3]]$labels$title, "T3")
-})
-
 test_that("plot_repair_types validates inputs and raises informative errors", {
   expect_error(plot_repair_types(titles = c("A", "B")), "titles")
   expect_error(plot_repair_types(t_maint = -1), "t_maint")
@@ -805,21 +705,6 @@ test_that("plot_maintenance_scheme creates a valid ggplot object", {
   expect_true(inherits(p_custom, "ggplot"))
   expect_equal(p_custom$labels$x, "Horas")
   expect_equal(p_custom$labels$y, "Desgaste")
-})
-
-test_that("gera_plot_scheme legacy alias works with Portuguese defaults and vectors", {
-  p_legacy <- gera_plot_scheme()
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$x, "Tempo")
-  expect_equal(p_legacy$labels$y, "Degrada\u00e7\u00e3o")
-
-  # Legacy 2-element vector (x, y)
-  labs_vec <- c("Período", "Medida")
-  p_vec <- gera_plot_scheme(labs_scheme = labs_vec)
-  expect_true(inherits(p_vec, "ggplot"))
-  expect_equal(p_vec$labels$x, "Período")
-  expect_equal(p_vec$labels$y, "Medida")
 })
 
 test_that("plot_maintenance_scheme validates inputs and raises informative errors", {
@@ -866,31 +751,6 @@ test_that("plot_simulation_bias creates a valid ggplot object", {
   expect_true(inherits(p_custom, "ggplot"))
   expect_equal(p_custom$labels$x, "Sistemas")
   expect_equal(p_custom$labels$y, "Viés")
-})
-
-test_that("gera_plot_bias legacy alias works with Portuguese defaults and vectors", {
-  mock_sim_data <- data.frame(
-    n_system = rep(c(1, 10, 20), each = 4),
-    mu = rep(c(4, 16), each = 2, length.out = 12),
-    sigma2 = rep(c(1, 25), length.out = 12),
-    n_main = 3,
-    n_intra = 2,
-    bias.mu_hat = rep(0.01, 12),
-    bias.sigma_hat = rep(0.02, 12)
-  )
-
-  p_legacy <- gera_plot_bias(mock_sim_data)
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$x, "Número de Sistemas")
-  expect_equal(p_legacy$labels$y, "Viés")
-
-  # Legacy 2-element vector (x, y)
-  labs_vec <- c("Qtd Sistemas", "Erro Médio")
-  p_vec <- gera_plot_bias(mock_sim_data, labs_bias = labs_vec)
-  expect_true(inherits(p_vec, "ggplot"))
-  expect_equal(p_vec$labels$x, "Qtd Sistemas")
-  expect_equal(p_vec$labels$y, "Erro Médio")
 })
 
 test_that("plot_simulation_bias validates inputs and raises informative errors", {
@@ -951,21 +811,6 @@ test_that("plot_wiener_maintenance_comparison creates a valid ggplot object", {
   expect_equal(p_custom$scales$get_scales("x")$expand, c(0.05, 0.05))
 })
 
-test_that("gera_plot_xtyt legacy alias works with Portuguese defaults and vectors", {
-  p_legacy <- gera_plot_xtyt(seed = 123)
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$x, "Tempo")
-  expect_true(grepl("Degrada", p_legacy$labels$y))
-
-  # Custom 4-element vector
-  labs_vec <- c("Manutenção", "Natural", "Horas", "Nível")
-  p_custom <- gera_plot_xtyt(labs_xtyt = labs_vec, seed = 123)
-  expect_true(inherits(p_custom, "ggplot"))
-  expect_equal(p_custom$labels$x, "Horas")
-  expect_equal(p_custom$labels$y, "Nível")
-})
-
 test_that("plot_wiener_maintenance_comparison validates inputs and raises informative errors", {
   expect_error(plot_wiener_maintenance_comparison(t_max = -1), "t_max")
   expect_error(plot_wiener_maintenance_comparison(n_maint = 0), "n_maint")
@@ -1006,31 +851,6 @@ test_that("plot_simulation_rmse creates a valid ggplot object", {
   expect_true(inherits(p_custom, "ggplot"))
   expect_equal(p_custom$labels$x, "Sistemas")
   expect_equal(p_custom$labels$y, "REQM")
-})
-
-test_that("gera_plot_rmse legacy alias works with Portuguese defaults and vectors", {
-  mock_sim_data <- data.frame(
-    n_system = rep(c(1, 10, 20), each = 4),
-    mu = rep(c(4, 16), each = 2, length.out = 12),
-    sigma2 = rep(c(1, 25), length.out = 12),
-    n_main = 3,
-    n_intra = 2,
-    RMSE.mu_hat = rep(0.15, 12),
-    RMSE.sigma_hat = rep(0.25, 12)
-  )
-
-  p_legacy <- gera_plot_rmse(mock_sim_data)
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$x, "Número de Sistemas")
-  expect_equal(p_legacy$labels$y, "REQM")
-
-  # Legacy 2-element vector (x, y)
-  labs_vec <- c("Qtd Sistemas", "Erro Quadrático Médio")
-  p_vec <- gera_plot_rmse(mock_sim_data, labs_rmse = labs_vec)
-  expect_true(inherits(p_vec, "ggplot"))
-  expect_equal(p_vec$labels$x, "Qtd Sistemas")
-  expect_equal(p_vec$labels$y, "Erro Quadrático Médio")
 })
 
 test_that("plot_simulation_rmse validates inputs and raises informative errors", {
@@ -1090,31 +910,6 @@ test_that("plot_simulation_coverage creates a valid ggplot object", {
   expect_true(inherits(p_custom, "ggplot"))
   expect_equal(p_custom$labels$x, "Sistemas")
   expect_equal(p_custom$labels$y, "Cobertura")
-})
-
-test_that("gera_plot_coveragep legacy alias works with Portuguese defaults and vectors", {
-  mock_sim_data <- data.frame(
-    n_system = rep(c(1, 10, 20), each = 4),
-    mu = rep(c(4, 16), each = 2, length.out = 12),
-    sigma2 = rep(c(1, 25), length.out = 12),
-    n_main = 3,
-    n_intra = 2,
-    CP_mu_hat = rep(0.94, 12),
-    CP_sigma2_hat = rep(0.96, 12)
-  )
-
-  p_legacy <- gera_plot_coveragep(mock_sim_data)
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$x, "Número de Sistemas")
-  expect_equal(p_legacy$labels$y, "Probabilidade de Cobertura")
-
-  # Legacy 2-element vector (x, y)
-  labs_vec <- c("Qtd Sistemas", "Taxa Cobertura")
-  p_vec <- gera_plot_coveragep(mock_sim_data, labs_coverage = labs_vec)
-  expect_true(inherits(p_vec, "ggplot"))
-  expect_equal(p_vec$labels$x, "Qtd Sistemas")
-  expect_equal(p_vec$labels$y, "Taxa Cobertura")
 })
 
 test_that("plot_simulation_coverage validates inputs and raises informative errors", {
@@ -1189,33 +984,6 @@ test_that("plot_simulation_variance_ratio creates a valid ggplot object", {
   expect_equal(p_custom$labels$y, "Razão de Variâncias")
 })
 
-test_that("gera_plot_ratiovar legacy alias works with Portuguese defaults and vectors", {
-  mock_sim_data <- data.frame(
-    n_system = rep(c(1, 10, 20), each = 4),
-    mu = rep(c(4, 16), each = 2, length.out = 12),
-    sigma2 = rep(c(1, 25), length.out = 12),
-    n_main = 3,
-    n_intra = 2,
-    obs_ModVar_mu = rep(0.04, 12),
-    obs_ModVar_sigma2 = rep(0.08, 12),
-    obs_EmpVar_mu = rep(0.04, 12),
-    obs_EmpVar_sigma2 = rep(0.08, 12)
-  )
-
-  p_legacy <- gera_plot_ratiovar(mock_sim_data)
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$x, "Número de Sistemas")
-  expect_equal(p_legacy$labels$y, "Razão de Variâncias")
-
-  # Legacy 2-element vector (x, y)
-  labs_vec <- c("Qtd Sistemas", "Razão Var")
-  p_vec <- gera_plot_ratiovar(mock_sim_data, labs_ratiovar = labs_vec)
-  expect_true(inherits(p_vec, "ggplot"))
-  expect_equal(p_vec$labels$x, "Qtd Sistemas")
-  expect_equal(p_vec$labels$y, "Razão Var")
-})
-
 test_that("plot_simulation_variance_ratio validates inputs and raises informative errors", {
   expect_error(plot_simulation_variance_ratio("not a df"), "data")
   expect_error(plot_simulation_variance_ratio(data.frame(x = 1)), "missing required column")
@@ -1275,12 +1043,6 @@ test_that("plot_merit_functions creates a valid patchwork/ggplot composite", {
   expect_true(inherits(p_custom, "ggplot") || inherits(p_custom, "patchwork"))
 })
 
-test_that("gera_plot_merito legacy alias works as expected", {
-  p_legacy <- gera_plot_merito(mu = 3, sigma = 2, alpha = 50, t0 = 10, x0 = 20, t_max = 30)
-
-  expect_true(inherits(p_legacy, "ggplot") || inherits(p_legacy, "patchwork"))
-})
-
 test_that("plot_merit_functions validates inputs and raises informative errors", {
   expect_error(plot_merit_functions(drift = -1), "drift")
   expect_error(plot_merit_functions(sigma2 = -1), "sigma2")
@@ -1319,28 +1081,6 @@ test_that("plot_diagnostic_qq creates a valid diagnostic composite plot", {
   expect_true(grepl("AD Test:", p_custom$patches$annotation$title))
 })
 
-test_that("gera_plot_qqplot legacy alias works as expected", {
-  sim_data <- sim_wiener_maintenance_path(
-    t_max = 20,
-    n_steps = 30,
-    drift = 2,
-    sigma2 = 1,
-    rho = c(0.5),
-    n_maint = 1,
-    obj_id = 1
-  )
-
-  p_legacy <- gera_plot_qqplot(sim_data)
-  expect_true(inherits(p_legacy, "ggplot") || inherits(p_legacy, "patchwork"))
-  expect_true(grepl("AD Test:", p_legacy$patches$annotation$title))
-
-  labs1 <- c("Teórico", "Empírico", "P-P")
-  labs2 <- c("Teórico", "Amostral", "Q-Q")
-  p_vec <- gera_plot_qqplot(sim_data, labs_qqplot01 = labs1, labs_qqplot02 = labs2)
-  expect_true(inherits(p_vec, "ggplot") || inherits(p_vec, "patchwork"))
-  expect_true(grepl("AD Test:", p_vec$patches$annotation$title))
-})
-
 test_that("plot_diagnostic_qq validates inputs and raises informative errors", {
   expect_error(plot_diagnostic_qq("not a df"), "data")
   expect_error(plot_diagnostic_qq(data.frame(x = 1)), "missing required column")
@@ -1376,20 +1116,6 @@ test_that("plot_exponential_degradation creates a valid ggplot object", {
   expect_equal(p_custom$labels$y, "Desgaste")
 })
 
-test_that("gera_plot_degrada01 legacy alias works as expected", {
-  p_legacy <- gera_plot_degrada01()
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$x, "Tempo")
-  expect_true(grepl("Degrada", p_legacy$labels$y))
-
-  # Custom 2-element vector
-  p_custom <- gera_plot_degrada01(labs_degrada01 = c("Horas", "Nível"))
-  expect_true(inherits(p_custom, "ggplot"))
-  expect_equal(p_custom$labels$x, "Horas")
-  expect_equal(p_custom$labels$y, "Nível")
-})
-
 test_that("plot_exponential_degradation validates inputs and raises informative errors", {
   expect_error(plot_exponential_degradation(t_max = -1), "t_max")
   expect_error(plot_exponential_degradation(by = -1), "by")
@@ -1423,18 +1149,6 @@ test_that("plot_exponential_reliability creates a valid ggplot object", {
   expect_true(inherits(p_custom, "ggplot"))
   expect_equal(p_custom$labels$x, "Horas")
   expect_equal(p_custom$labels$y, "Sobrevivência")
-})
-
-test_that("gera_plot_confiabilidade legacy alias works as expected", {
-  p_legacy <- gera_plot_confiabilidade()
-
-  expect_true(inherits(p_legacy, "ggplot"))
-  expect_equal(p_legacy$labels$x, "Tempo")
-  expect_equal(p_legacy$labels$y, "R(t)")
-
-  # Custom parameters
-  p_custom <- gera_plot_confiabilidade(mean_lifetime = 150)
-  expect_true(inherits(p_custom, "ggplot"))
 })
 
 test_that("plot_exponential_reliability validates inputs and raises informative errors", {
@@ -1475,24 +1189,6 @@ test_that("plot_reliability_ci creates a valid ggplot and data structure", {
   expect_true(all(res$data$lower >= 0 & res$data$lower <= 1))
   expect_true(all(res$data$upper >= 0 & res$data$upper <= 1))
   expect_true(all(res$data$lower <= res$data$upper))
-})
-
-test_that("plot_reliability_ic legacy alias works with Portuguese defaults and vectors", {
-  res_legacy <- plot_reliability_ic(
-    mu = 3,
-    sigma2 = 2,
-    var_mu = 0.05,
-    var_sigma2 = 0.05,
-    alpha = 50,
-    t0 = 10,
-    x0 = 20,
-    t_max = 30
-  )
-
-  expect_true(is.list(res_legacy))
-  expect_true(inherits(res_legacy$p, "ggplot"))
-  expect_equal(res_legacy$p$labels$x, "Tempo")
-  expect_equal(res_legacy$p$labels$y, "Confiabilidade")
 })
 
 test_that("plot_reliability_ci validates inputs and raises informative errors", {

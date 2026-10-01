@@ -1079,10 +1079,6 @@ plot_maintenance <- function(data,
   return(p)
 }
 
-#' @rdname plot_maintenance
-#' @export
-plot_maintanance <- plot_maintenance
-
 #' Plot Exponential Distribution Reliability Characteristics
 #'
 #' Creates a combined multi-panel plot illustrating the primary reliability
@@ -1248,10 +1244,6 @@ plot_exponential <- function(labs_density = c("Density", "Time", "f(t)"),
   "
   patchwork::wrap_plots(A = g_density, B = g_reliability, C = g_hazard, design = layout)
 }
-
-#' @rdname plot_exponential
-#' @export
-gera_plot_exp <- plot_exponential
 
 #' Plot Weibull Distribution Reliability Characteristics
 #'
@@ -1429,10 +1421,6 @@ plot_weibull <- function(labs_density = c("Density", "Time", "f(t)"),
   patchwork::wrap_plots(A = g_density, B = g_reliability, C = g_hazard, design = layout)
 }
 
-#' @rdname plot_weibull
-#' @export
-gera_plot_weibull <- plot_weibull
-
 #' Plot Lognormal Distribution Reliability Characteristics
 #'
 #' Creates a combined multi-panel plot illustrating the primary reliability
@@ -1609,10 +1597,6 @@ plot_lognormal <- function(labs_density = c("Density", "Time", "f(t)"),
   patchwork::wrap_plots(A = g_density, B = g_reliability, C = g_hazard, design = layout)
 }
 
-#' @rdname plot_lognormal
-#' @export
-gera_plot_lognormal <- plot_lognormal
-
 #' Plot Survival and Reliability Censoring Types
 #'
 #' @description
@@ -1762,36 +1746,6 @@ plot_censoring <- function(
   patchwork::wrap_plots(g1, g2, g3, g4, ncol = 2)
 }
 
-#' @rdname plot_censoring
-#' @export
-plot_censura_all <- function(
-  titles = c(
-    "(a) Dados completos",
-    "(b) Dados com censura tipo I",
-    "(c) Dados com censura tipo II",
-    "(d) Dados com censura aleat\u00f3ria"
-  ),
-  x_label = "Tempos",
-  y_label = "Equipamentos",
-  experiment_end = 20,
-  experiment_end_label = "Final do Experimento",
-  xlim = c(0, 22),
-  expand = c(0, 0),
-  show_end_line = TRUE
-) {
-  plot_censoring(
-    titles = titles,
-    x_label = x_label,
-    y_label = y_label,
-    experiment_end = experiment_end,
-    experiment_end_label = experiment_end_label,
-    xlim = xlim,
-    expand = expand,
-    show_end_line = show_end_line
-  )
-}
-
-
 #' Plot Illustrative Degradation Path and First Hitting Time
 #'
 #' @description
@@ -1817,7 +1771,6 @@ plot_censura_all <- function(
 #' @param palette Optional character name of the color palette. Default is \code{"taylor1989"}.
 #' @param labs_degradacao Optional character vector of length 5 providing legacy Portuguese labels
 #'   in the order: \code{c(threshold_label, path_label, failure_time_label, x_label, y_label)}.
-#' @param ... Additional arguments passed to \code{plot_degradation}.
 #'
 #' @return A \code{ggplot2::ggplot} object representing the degradation failure process.
 #'
@@ -2009,22 +1962,6 @@ plot_degradation <- function(
   p
 }
 
-#' @rdname plot_degradation
-#' @export
-gera_plot_degrada <- function(
-  labs_degradacao = c(
-    "N\u00edvel Cr\u00edtico",
-    "Trajet\u00f3ria de Degrada\u00e7\u00e3o",
-    "Tempo de Falha",
-    "Tempo",
-    "Degrada\u00e7\u00e3o"
-  ),
-  ...
-) {
-  plot_degradation(labs_degradacao = labs_degradacao, ...)
-}
-
-
 #' Plot Illustrative Bathtub Curve (Hazard Rate Lifecycle)
 #'
 #' @description
@@ -2061,7 +1998,6 @@ gera_plot_degrada <- function(
 #' @param show_axis_text Logical indicating whether to display numeric tick labels along the axes. Default is \code{FALSE} (qualitative schematic).
 #' @param labs_banheira Optional character vector of length 4 for legacy Portuguese compatibility:
 #'   \code{c(infant_mortality_label, useful_life_label, wear_out_label, x_label)}.
-#' @param ... Additional arguments passed to \code{plot_bathtub_curve}.
 #'
 #' @return A \code{ggplot2::ggplot} object visualizing the bathtub curve.
 #'
@@ -2196,21 +2132,6 @@ plot_bathtub_curve <- function(
   p
 }
 
-#' @rdname plot_bathtub_curve
-#' @export
-gera_plot_banheira <- function(
-  labs_banheira = c(
-    "Mortalidade Infantil",
-    "Vida \u00datil",
-    "Obsolesc\u00eancia",
-    "Tempo"
-  ),
-  ...
-) {
-  plot_bathtub_curve(labs_banheira = labs_banheira, ...)
-}
-
-
 #' Plot Wiener Process Paths with Different Drift Parameters
 #'
 #' @description
@@ -2236,7 +2157,6 @@ gera_plot_banheira <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} color palette. Default is \code{"taylor1989"}.
 #' @param labs_wiener Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(y_label, x_label)}.
-#' @param ... Additional arguments passed to \code{plot_wiener_drift}.
 #'
 #' @return A \code{ggplot2::ggplot} object showing the overlaid degradation trajectories.
 #'
@@ -2358,16 +2278,6 @@ plot_wiener_drift <- function(
   p
 }
 
-#' @rdname plot_wiener_drift
-#' @export
-gera_plot_wiener <- function(
-  labs_wiener = c("Degrada\u00e7\u00e3o", "Tempo"),
-  ...
-) {
-  plot_wiener_drift(labs_wiener = labs_wiener, ...)
-}
-
-
 #' Plot Illustrative Maintenance and Repair Types
 #'
 #' @description
@@ -2400,7 +2310,6 @@ gera_plot_wiener <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} color palette. Default is \code{"taylor1989"}.
 #' @param labs_reparos Optional character vector of length 5 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label, title_perfect, title_minimal, title_imperfect)}.
-#' @param ... Additional arguments passed to \code{plot_repair_types}.
 #'
 #' @return A combined \code{patchwork} object arranging the three repair plots in a 2-row layout.
 #'
@@ -2555,22 +2464,6 @@ plot_repair_types <- function(
   patchwork::wrap_plots(A = g_perfect, B = g_minimal, C = g_imperfect, design = layout)
 }
 
-#' @rdname plot_repair_types
-#' @export
-gera_plot_reparos <- function(
-  labs_reparos = c(
-    "Tempo",
-    "Degrada\u00e7\u00e3o",
-    "(a) Reparo Perfeito",
-    "(b) Reparo M\u00ednimo",
-    "(c) Reparo Imperfeito"
-  ),
-  ...
-) {
-  plot_repair_types(labs_reparos = labs_reparos, ...)
-}
-
-
 #' Plot Illustrative Maintenance Observation Scheme
 #'
 #' @description
@@ -2600,7 +2493,6 @@ gera_plot_reparos <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} color palette. Default is \code{"taylor1989"}.
 #' @param labs_scheme Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label)}.
-#' @param ... Additional arguments passed to \code{plot_maintenance_scheme}.
 #'
 #' @return A \code{ggplot2::ggplot} object representing the maintenance observation scheme.
 #'
@@ -2771,16 +2663,6 @@ plot_maintenance_scheme <- function(
   p
 }
 
-#' @rdname plot_maintenance_scheme
-#' @export
-gera_plot_scheme <- function(
-  labs_scheme = c("Tempo", "Degrada\u00e7\u00e3o"),
-  ...
-) {
-  plot_maintenance_scheme(labs_scheme = labs_scheme, ...)
-}
-
-
 #' Plot Monte Carlo Simulation Estimation Bias Grid
 #'
 #' @description
@@ -2805,8 +2687,6 @@ gera_plot_scheme <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_bias Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label)}.
-#' @param resultados Legacy alias parameter for \code{data}.
-#' @param ... Additional arguments passed to \code{plot_simulation_bias}.
 #'
 #' @return A \code{ggplot2::ggplot} object featuring nested facet grids of estimation bias.
 #'
@@ -2917,17 +2797,6 @@ plot_simulation_bias <- function(
   p
 }
 
-#' @rdname plot_simulation_bias
-#' @export
-gera_plot_bias <- function(
-  resultados,
-  labs_bias = c("N\u00famero de Sistemas", "Vi\u00e9s"),
-  ...
-) {
-  plot_simulation_bias(data = resultados, labs_bias = labs_bias, ...)
-}
-
-
 #' Plot Comparison Between Natural and Maintained Degradation Paths
 #'
 #' @description
@@ -2955,7 +2824,6 @@ gera_plot_bias <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} color palette. Default is \code{"taylor1989"}.
 #' @param labs_xtyt Optional character vector of length 4 for legacy Portuguese compatibility:
 #'   \code{c(maintained_label, standard_label, x_label, y_label)}.
-#' @param ... Additional arguments passed to \code{plot_wiener_maintenance_comparison}.
 #'
 #' @return A \code{ggplot2::ggplot} object showing both degradation trajectories overlaid.
 #'
@@ -3112,21 +2980,6 @@ plot_wiener_maintenance_comparison <- function(
   p
 }
 
-#' @rdname plot_wiener_maintenance_comparison
-#' @export
-gera_plot_xtyt <- function(
-  labs_xtyt = c(
-    "Y(t) - Processo de degrada\u00e7\u00e3o com a\u00e7\u00f5es de manuten\u00e7\u00e3o",
-    "X(t) - Processo de degrada\u00e7\u00e3o natural",
-    "Tempo",
-    "Degrada\u00e7\u00e3o"
-  ),
-  ...
-) {
-  plot_wiener_maintenance_comparison(labs_xtyt = labs_xtyt, ...)
-}
-
-
 #' Plot Monte Carlo Simulation Root Mean Squared Error (RMSE)
 #'
 #' @description
@@ -3150,8 +3003,6 @@ gera_plot_xtyt <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_rmse Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label)}.
-#' @param resultados Legacy alias parameter for \code{data}.
-#' @param ... Additional arguments passed to \code{plot_simulation_rmse}.
 #'
 #' @return A \code{ggplot2::ggplot} object featuring nested facet grids of estimation RMSE.
 #'
@@ -3262,17 +3113,6 @@ plot_simulation_rmse <- function(
   p
 }
 
-#' @rdname plot_simulation_rmse
-#' @export
-gera_plot_rmse <- function(
-  resultados,
-  labs_rmse = c("N\u00famero de Sistemas", "REQM"),
-  ...
-) {
-  plot_simulation_rmse(data = resultados, labs_rmse = labs_rmse, ...)
-}
-
-
 #' Plot Monte Carlo Simulation Coverage Probability
 #'
 #' @description
@@ -3298,8 +3138,6 @@ gera_plot_rmse <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_coverage Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label)}.
-#' @param resultados Legacy alias parameter for \code{data}.
-#' @param ... Additional arguments passed to \code{plot_simulation_coverage}.
 #'
 #' @return A \code{ggplot2::ggplot} object featuring nested facet grids of coverage probability.
 #'
@@ -3420,17 +3258,6 @@ plot_simulation_coverage <- function(
   p
 }
 
-#' @rdname plot_simulation_coverage
-#' @export
-gera_plot_coveragep <- function(
-  resultados,
-  labs_coverage = c("N\u00famero de Sistemas", "Probabilidade de Cobertura"),
-  ...
-) {
-  plot_simulation_coverage(data = resultados, labs_coverage = labs_coverage, ...)
-}
-
-
 #' Plot Monte Carlo Simulation Variance Ratio (Model / Empirical)
 #'
 #' @description
@@ -3458,8 +3285,6 @@ gera_plot_coveragep <- function(
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_ratiovar Optional character vector of length 2 for legacy Portuguese compatibility:
 #'   \code{c(x_label, y_label)}.
-#' @param resultados Legacy alias parameter for \code{data}.
-#' @param ... Additional arguments passed to \code{plot_simulation_variance_ratio}.
 #'
 #' @return A \code{ggplot2::ggplot} object featuring nested facet grids of variance ratios.
 #'
@@ -3585,17 +3410,6 @@ plot_simulation_variance_ratio <- function(
   p
 }
 
-#' @rdname plot_simulation_variance_ratio
-#' @export
-gera_plot_ratiovar <- function(
-  resultados,
-  labs_ratiovar = c("N\u00famero de Sistemas", "Raz\u00e3o de Vari\u00e2ncias"),
-  ...
-) {
-  plot_simulation_variance_ratio(data = resultados, labs_ratiovar = labs_ratiovar, ...)
-}
-
-
 #' Plot Inverse Gaussian Merit Functions (PDF and CDF)
 #'
 #' @description
@@ -3622,10 +3436,6 @@ gera_plot_ratiovar <- function(
 #'   \code{c(pdf_title, pdf_x_label, pdf_y_label)}.
 #' @param labs_merito02 Optional character vector of length 3 for legacy Portuguese CDF labels:
 #'   \code{c(cdf_title, cdf_x_label, cdf_y_label)}.
-#' @param mu Legacy alias parameter for \code{drift}.
-#' @param sigma Legacy alias parameter for \code{sigma2}.
-#' @param alpha Legacy alias parameter for \code{threshold}.
-#' @param ... Additional arguments passed to \code{plot_merit_functions}.
 #'
 #' @return A composite plot (\pkg{patchwork}) featuring the PDF (left) and CDF (right).
 #'
@@ -3763,34 +3573,6 @@ plot_merit_functions <- function(
   }
 }
 
-#' @rdname plot_merit_functions
-#' @export
-gera_plot_merito <- function(
-  mu = 3,
-  sigma = 2,
-  alpha = 50,
-  t0 = 10,
-  x0 = 20,
-  t_max = 30,
-  labs_merito01 = c("Fun\u00e7\u00e3o de Densidade de Probabilidade", "Tempo", "f(t)"),
-  labs_merito02 = c("Fun\u00e7\u00e3o de Distribui\u00e7\u00e3o Acumulada", "Tempo", "F(t)"),
-  ...
-) {
-  plot_merit_functions(
-    drift = mu,
-    sigma2 = sigma,
-    threshold = alpha,
-    t0 = t0,
-    x0 = x0,
-    t_max = t_max,
-    labs_merito01 = labs_merito01,
-    labs_merito02 = labs_merito02,
-    ...
-  )
-}
-
-
-
 #' Plot Goodness-of-Fit Diagnostic Plots (P-P and Q-Q Plots)
 #'
 #' @description
@@ -3818,8 +3600,6 @@ gera_plot_merito <- function(
 #'   \code{c(pp_x_label, pp_y_label, pp_title)}.
 #' @param labs_qqplot02 Optional character vector of length 3 for legacy Portuguese Q-Q labels:
 #'   \code{c(qq_x_label, qq_y_label, qq_title)}.
-#' @param sub_maria Legacy Portuguese parameter for \code{data}.
-#' @param ... Additional arguments passed to \code{plot_diagnostic_qq}.
 #'
 #' @return A composite diagnostic plot (\pkg{patchwork}) featuring the P-P plot (left) and Q-Q plot (right).
 #'
@@ -4015,23 +3795,6 @@ plot_diagnostic_qq <- function(
   }
 }
 
-#' @rdname plot_diagnostic_qq
-#' @export
-gera_plot_qqplot <- function(
-  sub_maria,
-  labs_qqplot01 = c("Te\u00f3rico", "Emp\u00edrico", "P-P Plot"),
-  labs_qqplot02 = c("Te\u00f3rico", "Amostra", "Q-Q Plot"),
-  ...
-) {
-  plot_diagnostic_qq(
-    data = sub_maria,
-    labs_qqplot01 = labs_qqplot01,
-    labs_qqplot02 = labs_qqplot02,
-    ...
-  )
-}
-
-
 #' Plot Simulated Exponential Increments Degradation Paths
 #'
 #' @description
@@ -4049,7 +3812,6 @@ gera_plot_qqplot <- function(
 #' @param expand Numeric vector of length 2 controlling scale expansion for both axes. Default is \code{c(0, 0)}.
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_degrada01 Optional character vector of length 2 for legacy Portuguese compatibility: \code{c(x_label, y_label)}.
-#' @param ... Additional arguments passed to \code{plot_exponential_degradation}.
 #'
 #' @return A \code{ggplot2::ggplot} object showing the simulated degradation trajectories.
 #'
@@ -4157,16 +3919,6 @@ plot_exponential_degradation <- function(
   p
 }
 
-#' @rdname plot_exponential_degradation
-#' @export
-gera_plot_degrada01 <- function(
-  labs_degrada01 = c("Tempo", "Degrada\u00e7\u00e3o"),
-  ...
-) {
-  plot_exponential_degradation(labs_degrada01 = labs_degrada01, ...)
-}
-
-
 #' Plot Exponential Reliability Curve with Median Lifetime
 #'
 #' @description
@@ -4183,7 +3935,6 @@ gera_plot_degrada01 <- function(
 #' @param expand Numeric vector of length 2 controlling scale expansion for both axes. Default is \code{c(0, 0)}.
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_reliability Optional character vector of length 2 for legacy Portuguese compatibility: \code{c(x_label, y_label)}.
-#' @param ... Additional arguments passed to \code{plot_exponential_reliability}.
 #'
 #' @return A \code{ggplot2::ggplot} object visualizing the exponential reliability function.
 #'
@@ -4289,17 +4040,6 @@ plot_exponential_reliability <- function(
   p
 }
 
-#' @rdname plot_exponential_reliability
-#' @export
-gera_plot_confiabilidade <- function(...) {
-  plot_exponential_reliability(
-    x_label = "Tempo",
-    y_label = "R(t)",
-    ...
-  )
-}
-
-
 #' Plot Inverse Gaussian Reliability Curve with Delta Method Confidence Bands
 #'
 #' @description
@@ -4333,13 +4073,6 @@ gera_plot_confiabilidade <- function(...) {
 #' @param expand Numeric vector of length 2 controlling scale expansion for both axes. Default is \code{c(0, 0)}.
 #' @param palette Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.
 #' @param labs_ci Optional character vector of length 2 for legacy compatibility: \code{c(x_label, y_label)}.
-#' @param mu Legacy alias parameter for \code{drift}.
-#' @param var_mu Legacy alias parameter for \code{var_drift}.
-#' @param alpha Legacy alias parameter for \code{threshold}.
-#' @param xlab Legacy alias parameter for \code{x_label}.
-#' @param ylab Legacy alias parameter for \code{y_label}.
-#' @param paleta Legacy alias parameter for \code{palette}.
-#' @param ... Additional arguments passed to \code{plot_reliability_ci}.
 #'
 #' @return A named list containing:
 #' \describe{
@@ -4503,38 +4236,6 @@ plot_reliability_ci <- function(
     data = plot_data,
     p = p,
     df_visu = plot_data
-  )
-}
-
-#' @rdname plot_reliability_ci
-#' @export
-plot_reliability_ic <- function(
-  mu = 3,
-  sigma2 = 2,
-  var_mu = 0.05,
-  var_sigma2 = 0.05,
-  alpha = 50,
-  t0 = 10,
-  x0 = 20,
-  t_max = 30,
-  xlab = "Tempo",
-  ylab = "Confiabilidade",
-  paleta = "taylor1989",
-  ...
-) {
-  plot_reliability_ci(
-    drift = mu,
-    sigma2 = sigma2,
-    var_drift = var_mu,
-    var_sigma2 = var_sigma2,
-    threshold = alpha,
-    t0 = t0,
-    x0 = x0,
-    t_max = t_max,
-    x_label = xlab,
-    y_label = ylab,
-    palette = paleta,
-    ...
   )
 }
 

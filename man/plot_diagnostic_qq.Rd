@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_diagnostic_qq}
 \alias{plot_diagnostic_qq}
-\alias{gera_plot_qqplot}
 \title{Plot Goodness-of-Fit Diagnostic Plots (P-P and Q-Q Plots)}
 \usage{
 plot_diagnostic_qq(
@@ -19,13 +18,6 @@ plot_diagnostic_qq(
   palette = "taylor1989",
   labs_qqplot01 = NULL,
   labs_qqplot02 = NULL
-)
-
-gera_plot_qqplot(
-  sub_maria,
-  labs_qqplot01 = c("Teórico", "Empírico", "P-P Plot"),
-  labs_qqplot02 = c("Teórico", "Amostra", "Q-Q Plot"),
-  ...
 )
 }
 \arguments{
@@ -58,10 +50,6 @@ If \code{NULL}, maintenance jump transitions (\code{diff(Time) <= 0}) are automa
 
 \item{labs_qqplot02}{Optional character vector of length 3 for legacy Portuguese Q-Q labels:
 \code{c(qq_x_label, qq_y_label, qq_title)}.}
-
-\item{sub_maria}{Legacy Portuguese parameter for \code{data}.}
-
-\item{...}{Additional arguments passed to \code{plot_diagnostic_qq}.}
 }
 \value{
 A composite diagnostic plot (\pkg{patchwork}) featuring the P-P plot (left) and Q-Q plot (right).

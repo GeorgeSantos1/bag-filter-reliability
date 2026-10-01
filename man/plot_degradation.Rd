@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_degradation}
 \alias{plot_degradation}
-\alias{gera_plot_degrada}
 \title{Plot Illustrative Degradation Path and First Hitting Time}
 \usage{
 plot_degradation(
@@ -20,12 +19,6 @@ plot_degradation(
   expand = c(0, 0),
   palette = "taylor1989",
   labs_degradacao = NULL
-)
-
-gera_plot_degrada(
-  labs_degradacao = c("Nível Crítico", "Trajetória de Degradação", "Tempo de Falha",
-    "Tempo", "Degradação"),
-  ...
 )
 }
 \arguments{
@@ -57,8 +50,6 @@ gera_plot_degrada(
 
 \item{labs_degradacao}{Optional character vector of length 5 providing legacy Portuguese labels
 in the order: \code{c(threshold_label, path_label, failure_time_label, x_label, y_label)}.}
-
-\item{...}{Additional arguments passed to \code{plot_degradation}.}
 }
 \value{
 A \code{ggplot2::ggplot} object representing the degradation failure process.

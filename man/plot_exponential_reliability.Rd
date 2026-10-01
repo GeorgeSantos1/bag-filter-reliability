@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_exponential_reliability}
 \alias{plot_exponential_reliability}
-\alias{gera_plot_confiabilidade}
 \title{Plot Exponential Reliability Curve with Median Lifetime}
 \usage{
 plot_exponential_reliability(
@@ -16,8 +15,6 @@ plot_exponential_reliability(
   palette = "taylor1989",
   labs_reliability = NULL
 )
-
-gera_plot_confiabilidade(...)
 }
 \arguments{
 \item{mean_lifetime}{Numeric scale parameter (\eqn{\lambda}) representing the mean time to failure. Default is \code{100}.}
@@ -37,8 +34,6 @@ gera_plot_confiabilidade(...)
 \item{palette}{Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.}
 
 \item{labs_reliability}{Optional character vector of length 2 for legacy Portuguese compatibility: \code{c(x_label, y_label)}.}
-
-\item{...}{Additional arguments passed to \code{plot_exponential_reliability}.}
 }
 \value{
 A \code{ggplot2::ggplot} object visualizing the exponential reliability function.

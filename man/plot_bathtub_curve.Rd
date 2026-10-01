@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_bathtub_curve}
 \alias{plot_bathtub_curve}
-\alias{gera_plot_banheira}
 \title{Plot Illustrative Bathtub Curve (Hazard Rate Lifecycle)}
 \usage{
 plot_bathtub_curve(
@@ -25,11 +24,6 @@ plot_bathtub_curve(
   palette = "taylor1989",
   show_axis_text = FALSE,
   labs_banheira = NULL
-)
-
-gera_plot_banheira(
-  labs_banheira = c("Mortalidade Infantil", "Vida Útil", "Obsolescência", "Tempo"),
-  ...
 )
 }
 \arguments{
@@ -71,8 +65,6 @@ gera_plot_banheira(
 
 \item{labs_banheira}{Optional character vector of length 4 for legacy Portuguese compatibility:
 \code{c(infant_mortality_label, useful_life_label, wear_out_label, x_label)}.}
-
-\item{...}{Additional arguments passed to \code{plot_bathtub_curve}.}
 }
 \value{
 A \code{ggplot2::ggplot} object visualizing the bathtub curve.

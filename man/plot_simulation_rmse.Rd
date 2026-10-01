@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_simulation_rmse}
 \alias{plot_simulation_rmse}
-\alias{gera_plot_rmse}
 \title{Plot Monte Carlo Simulation Root Mean Squared Error (RMSE)}
 \usage{
 plot_simulation_rmse(
@@ -14,8 +13,6 @@ plot_simulation_rmse(
   palette = "taylor1989",
   labs_rmse = NULL
 )
-
-gera_plot_rmse(resultados, labs_rmse = c("Número de Sistemas", "REQM"), ...)
 }
 \arguments{
 \item{data}{A \code{data.frame} of simulation results containing at minimum the columns:
@@ -34,10 +31,6 @@ gera_plot_rmse(resultados, labs_rmse = c("Número de Sistemas", "REQM"), ...)
 
 \item{labs_rmse}{Optional character vector of length 2 for legacy Portuguese compatibility:
 \code{c(x_label, y_label)}.}
-
-\item{resultados}{Legacy alias parameter for \code{data}.}
-
-\item{...}{Additional arguments passed to \code{plot_simulation_rmse}.}
 }
 \value{
 A \code{ggplot2::ggplot} object featuring nested facet grids of estimation RMSE.

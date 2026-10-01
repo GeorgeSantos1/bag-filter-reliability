@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_exponential_degradation}
 \alias{plot_exponential_degradation}
-\alias{gera_plot_degrada01}
 \title{Plot Simulated Exponential Increments Degradation Paths}
 \usage{
 plot_exponential_degradation(
@@ -17,8 +16,6 @@ plot_exponential_degradation(
   palette = "taylor1989",
   labs_degrada01 = NULL
 )
-
-gera_plot_degrada01(labs_degrada01 = c("Tempo", "Degradação"), ...)
 }
 \arguments{
 \item{t_max}{Numeric maximum observation time horizon. Default is \code{10}.}
@@ -40,8 +37,6 @@ gera_plot_degrada01(labs_degrada01 = c("Tempo", "Degradação"), ...)
 \item{palette}{Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.}
 
 \item{labs_degrada01}{Optional character vector of length 2 for legacy Portuguese compatibility: \code{c(x_label, y_label)}.}
-
-\item{...}{Additional arguments passed to \code{plot_exponential_degradation}.}
 }
 \value{
 A \code{ggplot2::ggplot} object showing the simulated degradation trajectories.

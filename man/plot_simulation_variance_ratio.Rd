@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_simulation_variance_ratio}
 \alias{plot_simulation_variance_ratio}
-\alias{gera_plot_ratiovar}
 \title{Plot Monte Carlo Simulation Variance Ratio (Model / Empirical)}
 \usage{
 plot_simulation_variance_ratio(
@@ -14,12 +13,6 @@ plot_simulation_variance_ratio(
   expand = c(0, 0),
   palette = "taylor1989",
   labs_ratiovar = NULL
-)
-
-gera_plot_ratiovar(
-  resultados,
-  labs_ratiovar = c("Número de Sistemas", "Razão de Variâncias"),
-  ...
 )
 }
 \arguments{
@@ -41,10 +34,6 @@ gera_plot_ratiovar(
 
 \item{labs_ratiovar}{Optional character vector of length 2 for legacy Portuguese compatibility:
 \code{c(x_label, y_label)}.}
-
-\item{resultados}{Legacy alias parameter for \code{data}.}
-
-\item{...}{Additional arguments passed to \code{plot_simulation_variance_ratio}.}
 }
 \value{
 A \code{ggplot2::ggplot} object featuring nested facet grids of variance ratios.

@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_simulation_coverage}
 \alias{plot_simulation_coverage}
-\alias{gera_plot_coveragep}
 \title{Plot Monte Carlo Simulation Coverage Probability}
 \usage{
 plot_simulation_coverage(
@@ -14,12 +13,6 @@ plot_simulation_coverage(
   expand = c(0, 0),
   palette = "taylor1989",
   labs_coverage = NULL
-)
-
-gera_plot_coveragep(
-  resultados,
-  labs_coverage = c("Número de Sistemas", "Probabilidade de Cobertura"),
-  ...
 )
 }
 \arguments{
@@ -41,10 +34,6 @@ gera_plot_coveragep(
 
 \item{labs_coverage}{Optional character vector of length 2 for legacy Portuguese compatibility:
 \code{c(x_label, y_label)}.}
-
-\item{resultados}{Legacy alias parameter for \code{data}.}
-
-\item{...}{Additional arguments passed to \code{plot_simulation_coverage}.}
 }
 \value{
 A \code{ggplot2::ggplot} object featuring nested facet grids of coverage probability.

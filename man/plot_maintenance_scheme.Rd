@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_maintenance_scheme}
 \alias{plot_maintenance_scheme}
-\alias{gera_plot_scheme}
 \title{Plot Illustrative Maintenance Observation Scheme}
 \usage{
 plot_maintenance_scheme(
@@ -21,8 +20,6 @@ plot_maintenance_scheme(
   palette = "taylor1989",
   labs_scheme = NULL
 )
-
-gera_plot_scheme(labs_scheme = c("Tempo", "Degradação"), ...)
 }
 \arguments{
 \item{x_label}{Character label for the horizontal axis. Default is \code{"Time"}.}
@@ -54,8 +51,6 @@ Default is \code{c(0, 0)} to eliminate Cartesian origin spacing.}
 
 \item{labs_scheme}{Optional character vector of length 2 for legacy Portuguese compatibility:
 \code{c(x_label, y_label)}.}
-
-\item{...}{Additional arguments passed to \code{plot_maintenance_scheme}.}
 }
 \value{
 A \code{ggplot2::ggplot} object representing the maintenance observation scheme.

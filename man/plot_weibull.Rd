@@ -2,25 +2,9 @@
 % Please edit documentation in R/utils.R
 \name{plot_weibull}
 \alias{plot_weibull}
-\alias{gera_plot_weibull}
 \title{Plot Weibull Distribution Reliability Characteristics}
 \usage{
 plot_weibull(
-  labs_density = c("Density", "Time", "f(t)"),
-  labs_hazard = c("Failure Rate", "Time", "h(t)"),
-  labs_reliability = c("Reliability", "Time", "R(t)"),
-  gammas = c(0.5, 1, 1.5),
-  alpha = 1,
-  t_max = 5,
-  n_points = 100,
-  palette = "taylor1989",
-  expand = c(0, 0),
-  labs_01 = NULL,
-  labs_02 = NULL,
-  labs_03 = NULL
-)
-
-gera_plot_weibull(
   labs_density = c("Density", "Time", "f(t)"),
   labs_hazard = c("Failure Rate", "Time", "h(t)"),
   labs_reliability = c("Reliability", "Time", "R(t)"),

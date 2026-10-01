@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_merit_functions}
 \alias{plot_merit_functions}
-\alias{gera_plot_merito}
 \title{Plot Inverse Gaussian Merit Functions (PDF and CDF)}
 \usage{
 plot_merit_functions(
@@ -23,18 +22,6 @@ plot_merit_functions(
   palette = "taylor1989",
   labs_merito01 = NULL,
   labs_merito02 = NULL
-)
-
-gera_plot_merito(
-  mu = 3,
-  sigma = 2,
-  alpha = 50,
-  t0 = 10,
-  x0 = 20,
-  t_max = 30,
-  labs_merito01 = c("Função de Densidade de Probabilidade", "Tempo", "f(t)"),
-  labs_merito02 = c("Função de Distribuição Acumulada", "Tempo", "F(t)"),
-  ...
 )
 }
 \arguments{
@@ -73,14 +60,6 @@ gera_plot_merito(
 
 \item{labs_merito02}{Optional character vector of length 3 for legacy Portuguese CDF labels:
 \code{c(cdf_title, cdf_x_label, cdf_y_label)}.}
-
-\item{mu}{Legacy alias parameter for \code{drift}.}
-
-\item{sigma}{Legacy alias parameter for \code{sigma2}.}
-
-\item{alpha}{Legacy alias parameter for \code{threshold}.}
-
-\item{...}{Additional arguments passed to \code{plot_merit_functions}.}
 }
 \value{
 A composite plot (\pkg{patchwork}) featuring the PDF (left) and CDF (right).

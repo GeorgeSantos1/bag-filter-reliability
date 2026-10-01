@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_reliability_ci}
 \alias{plot_reliability_ci}
-\alias{plot_reliability_ic}
 \title{Plot Inverse Gaussian Reliability Curve with Delta Method Confidence Bands}
 \usage{
 plot_reliability_ci(
@@ -22,21 +21,6 @@ plot_reliability_ci(
   expand = c(0, 0),
   palette = "taylor1989",
   labs_ci = NULL
-)
-
-plot_reliability_ic(
-  mu = 3,
-  sigma2 = 2,
-  var_mu = 0.05,
-  var_sigma2 = 0.05,
-  alpha = 50,
-  t0 = 10,
-  x0 = 20,
-  t_max = 30,
-  xlab = "Tempo",
-  ylab = "Confiabilidade",
-  paleta = "taylor1989",
-  ...
 )
 }
 \arguments{
@@ -71,20 +55,6 @@ plot_reliability_ic(
 \item{palette}{Optional character name of the \pkg{tayloRswift} palette. Default is \code{"taylor1989"}.}
 
 \item{labs_ci}{Optional character vector of length 2 for legacy compatibility: \code{c(x_label, y_label)}.}
-
-\item{mu}{Legacy alias parameter for \code{drift}.}
-
-\item{var_mu}{Legacy alias parameter for \code{var_drift}.}
-
-\item{alpha}{Legacy alias parameter for \code{threshold}.}
-
-\item{xlab}{Legacy alias parameter for \code{x_label}.}
-
-\item{ylab}{Legacy alias parameter for \code{y_label}.}
-
-\item{paleta}{Legacy alias parameter for \code{palette}.}
-
-\item{...}{Additional arguments passed to \code{plot_reliability_ci}.}
 }
 \value{
 A named list containing:

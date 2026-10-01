@@ -2,25 +2,9 @@
 % Please edit documentation in R/utils.R
 \name{plot_exponential}
 \alias{plot_exponential}
-\alias{gera_plot_exp}
 \title{Plot Exponential Distribution Reliability Characteristics}
 \usage{
 plot_exponential(
-  labs_density = c("Density", "Time", "f(t)"),
-  labs_hazard = c("Failure Rate", "Time", "h(t)"),
-  labs_reliability = c("Reliability", "Time", "R(t)"),
-  lambdas = c(0.5, 1, 1.5),
-  t_max = 5,
-  n_points = 100,
-  palette = "taylor1989",
-  param_name = "lambda",
-  expand = c(0, 0),
-  labs_01 = NULL,
-  labs_02 = NULL,
-  labs_03 = NULL
-)
-
-gera_plot_exp(
   labs_density = c("Density", "Time", "f(t)"),
   labs_hazard = c("Failure Rate", "Time", "h(t)"),
   labs_reliability = c("Reliability", "Time", "R(t)"),

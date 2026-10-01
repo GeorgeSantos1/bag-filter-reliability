@@ -2,7 +2,6 @@
 % Please edit documentation in R/utils.R
 \name{plot_simulation_bias}
 \alias{plot_simulation_bias}
-\alias{gera_plot_bias}
 \title{Plot Monte Carlo Simulation Estimation Bias Grid}
 \usage{
 plot_simulation_bias(
@@ -14,8 +13,6 @@ plot_simulation_bias(
   palette = "taylor1989",
   labs_bias = NULL
 )
-
-gera_plot_bias(resultados, labs_bias = c("Número de Sistemas", "Viés"), ...)
 }
 \arguments{
 \item{data}{A \code{data.frame} of simulation results containing at minimum the columns:
@@ -34,10 +31,6 @@ gera_plot_bias(resultados, labs_bias = c("Número de Sistemas", "Viés"), ...)
 
 \item{labs_bias}{Optional character vector of length 2 for legacy Portuguese compatibility:
 \code{c(x_label, y_label)}.}
-
-\item{resultados}{Legacy alias parameter for \code{data}.}
-
-\item{...}{Additional arguments passed to \code{plot_simulation_bias}.}
 }
 \value{
 A \code{ggplot2::ggplot} object featuring nested facet grids of estimation bias.

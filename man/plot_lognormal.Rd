@@ -2,25 +2,9 @@
 % Please edit documentation in R/utils.R
 \name{plot_lognormal}
 \alias{plot_lognormal}
-\alias{gera_plot_lognormal}
 \title{Plot Lognormal Distribution Reliability Characteristics}
 \usage{
 plot_lognormal(
-  labs_density = c("Density", "Time", "f(t)"),
-  labs_hazard = c("Failure Rate", "Time", "h(t)"),
-  labs_reliability = c("Reliability", "Time", "R(t)"),
-  sigmas = c(0.5, 1, 1.5),
-  mu = 0,
-  t_max = 5,
-  n_points = 100,
-  palette = "taylor1989",
-  expand = c(0, 0),
-  labs_01 = NULL,
-  labs_02 = NULL,
-  labs_03 = NULL
-)
-
-gera_plot_lognormal(
   labs_density = c("Density", "Time", "f(t)"),
   labs_hazard = c("Failure Rate", "Time", "h(t)"),
   labs_reliability = c("Reliability", "Time", "R(t)"),
