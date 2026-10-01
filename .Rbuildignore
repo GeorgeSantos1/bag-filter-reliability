@@ -2,14 +2,12 @@
 ^\.Rproj\.user$
 ^run_tests\.R$
 ^figures$
-^subsets$
-^####.*$
 ^.*\.xlsx$
 ^.*\.dat$
 ^.*\.csv$
 ^.*\.rds$
-^script_.*\.r$
 ^.*\.tar\.gz$
 ^.*\.Rcheck$
 ^data-raw$
 ^simulations$
+^scripts$

@@ -1,9 +1,7 @@
-
 # ---------------------------------------------------
-# Arquivo: script_210824-DESKTOP-RKA95E1.r
-# Descrição: Conjunto de funções úteis para análise
+# Arquivo: scripts/case_study_analysis.R
+# Descrição: Estudo de caso empírico e modelagem estatística do artigo
 # Autor: George Anderson A. dos Santos
-# Data: 17-04-2024
 # ---------------------------------------------------
 # ---------------------------------------------------
 # Carregamento de Pacotes
@@ -460,7 +458,6 @@ subset_bagfilter <- subset_bagfilter %>%
 
 # gerando grafico e estimando parametros
 plot_maintenance(subset_bagfilter, y_label = "Diferencial", x_label = "Tempo", show_maintenance_times = TRUE)
-rsvg::rsvg_pdf('figures/RESULT_001.svg',"figures/RESULT_001.pdf")
 mu <- mle_drift_maintenance(subset_bagfilter)
 sigma2 <- mle_sigma2_maintenance(subset_bagfilter)
 calc_rho(subset_bagfilter)
@@ -521,196 +518,21 @@ var_sigma2 <- (sqrt((sigma2_hat^2)*2/df))^2
 ########### Gera Tabela de Confiabilidade ################
 # --------------------------------------------------------
 
-reliability = df_visu %>%
-  mutate(r_mean = paste(round(r_mean,digits = 4)*100,"%")) %>%
-  spread(key = "Threshold",value="r_mean")
-saveRDS(reliability,"confiabilidade.dat")
-
-# Carrega os dados
-reliability = readRDS("confiabilidade.dat")
-
-# filtra para tempos 39:45
-reliability = reliability %>%
-  filter(time %in% c(39,50,70,90,110,130,150,170))
+reliability <- df_visu %>%
+  mutate(r_mean = paste(round(r_mean, digits = 4) * 100, "%")) %>%
+  spread(key = "Threshold", value = "r_mean") %>%
+  filter(time %in% c(39, 50, 70, 90, 110, 130, 150, 170))
 
 library(grid)
 library(gridExtra)
 
-myTable <- tableGrob(reliability,
-                     rows = NULL)
+myTable <- tableGrob(reliability, rows = NULL)
 grid.draw(myTable)
 
-# salva os dados
-write.csv2(reliability,"confiabilidade.xlsx")
-
-########################################
-########################################
-########################################
-rsvg::rsvg_eps("figures/Desenho1.svg","figures/Desenho1.eps")
-
-labs_01 = c("Densidade","Tempo","f(t)")
-labs_02 = c("Taxa de Falha","Tempo","λ(t)")
-labs_03 = c("Confiabilidade","Tempo","R(t)")
-plot_exponential(labs_density = labs_01, labs_reliability = labs_02, labs_hazard = labs_03)
-# Salvar em 900x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_EXP.svg',"figures/PLOT_EXP.pdf")
-
-plot_weibull(labs_density = labs_01, labs_reliability = labs_02, labs_hazard = labs_03)
-# Salvar em 900x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_WEIBULL.svg',"figures/PLOT_WEIBULL.pdf")
-
-plot_lognormal(labs_density = labs_01, labs_reliability = labs_02, labs_hazard = labs_03)
-# Salvar em 900x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_LOGNORMAL.svg',"figures/PLOT_LOGNORMAL.pdf")
-
-plot_censoring()
-# Salvar em 1000x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_CENSURA.svg',"figures/PLOT_CENSURA.pdf")
-
-labs_banheira <- c("Mortalidade \nInfantil","Vida Operacional",
-                   "Obsolescência","Tempo")
-plot_bathtub_curve(labs_banheira = labs_banheira)
-# Salvar em 600x350 em .svg
-rsvg::rsvg_pdf('figures/PLOT_BANHEIRA.svg',"figures/PLOT_BANHEIRA.pdf")
-
-labs_degradacao <- c("Limiar de Falha","Caminho de Degradação","Tempo de Falha",
-                     "Tempo","Nível de Degradação")
-plot_degradation(labs_degradacao = labs_degradacao)
-# Salvar em 800x400 em .svg
-rsvg::rsvg_pdf("figures/PLOT_DEGRADA001.svg","figures/PLOT_DEGRADA001.pdf")
-
-labs_wiener <- c("Degradação","Tempo")
-plot_wiener_drift(labs_wiener = labs_wiener)
-# Salvar em 600x350 em m.svg
-rsvg::rsvg_pdf("figures/PLOT_WIENER.svg","figures/PLOT_WIENER.pdf")
-
-labs_reparos <- c("Time","Degradation",
-                  "(a)","(b)","(c)")
-plot_repair_types(labs_reparos = labs_reparos)
-# Salvar em 900x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_REPARO.svg',"figures/PLOT_REPARO.pdf")
-rsvg::rsvg_eps('figures/PLOT_REPARO.svg',"figures/PLOT_REPARO.eps")
-
-labs_scheme <- c("Time","Degradation")
-plot_maintenance_scheme(labs_scheme = labs_scheme)
-# Salvar em 800x400 em .svg
-rsvg::rsvg_pdf('figures/PLOT_SCHEMA.svg',"figures/PLOT_SCHEMA.pdf")
-rsvg::rsvg_eps('figures/PLOT_SCHEMA.svg',"figures/PLOT_SCHEMA.eps")
-rsvg::rsvg_pdf('figures/PLOT_SCHEMA_R1.svg',"figures/PLOT_SCHEMA_R1.pdf")
-rsvg::rsvg_eps('figures/PLOT_SCHEMA_R1.svg',"figures/PLOT_SCHEMA_R1.eps")
-
-resultados <- readRDS("simulations/SimDesign4.rds")
-labs_rmse <- c("Number of Systems","RMSE")
-plot_simulation_rmse(data = resultados, labs_rmse = labs_rmse)
-# Salvar em 1100x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_RMSE.svg',"figures/PLOT_RMSE.pdf")
-rsvg::rsvg_eps('figures/PLOT_RMSE.svg',"figures/PLOT_RMSE.eps")
-
-resultados <- readRDS("simulations/SimDesign4.rds")
-labs_bias <- c("Number of Systems","Bias")
-plot_simulation_bias(data = resultados, labs_bias = labs_bias)
-# Salvar em 1100x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_BIAS.svg',"figures/PLOT_BIAS.pdf")
-rsvg::rsvg_eps('figures/PLOT_BIAS.svg',"figures/PLOT_BIAS.eps")
-
-resultados <- readRDS("simulations/SimDesign4.rds")
-labs_coverage <- c("Número de Sistemas","Probabilidade de Cobertura (95%)")
-plot_simulation_coverage(data = resultados, labs_coverage = labs_coverage)
-# Salvar em 1100x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_CP.svg',"figures/PLOT_CP.pdf")
-
-resultados <- readRDS("simulations/SimDesign4.rds")
-labs_ratiovar <- c("Número de Sistemas","Razão de Variâncias")
-plot_simulation_variance_ratio(data = resultados, labs_ratiovar = labs_ratiovar)
-# Salvar em 1100x600 em .svg
-rsvg::rsvg_pdf('figures/PLOT_RATIOVAR.svg',"figures/PLOT_RATIOVAR.pdf")
-
-labs_xtyt <- c("Y(t) - Processo de degradação com ações de manutenção",
-               "X(t) - Processo de degradação natural",
-               "Tempo","Degradação")
-plot_wiener_maintenance_comparison(labs_xtyt = labs_xtyt)
-# Salvar em 800x400 em .svg
-rsvg::rsvg_pdf('figures/PLOT_XTYT.svg',"figures/PLOT_XTYT.pdf")
-
-labs_merito01 <- c("Densidade","Tempo","f(t)")
-labs_merito02 <- c("Acumulada","Tempo","F(t)")
-t0 = 39
-x0 = subset_bagfilter %>%
-  filter(Time == 39) %>%
-  filter(Y == min(Y)) %>%
-  select(Y) %>%
-  pull()
-plot_merit_functions(drift = mu, sigma2 = sigma2,
-                     threshold = 150,
-                     t0 = t0,
-                     x0 = x0,
-                     t_max = c(150+5),
-                     labs_merito01 = labs_merito01,
-                     labs_merito02 = labs_merito02)
-# Salvar em 800x400 em .svg
-rsvg::rsvg_pdf('figures/PLOT_MERITO.svg',"figures/PLOT_MERITO.pdf")
-
-labs_qqplot01 <- c("Theoretical Cumulative Distribution","Empirical Cumulative Distribution","P-P Plot")
-labs_qqplot02 <- c("Theoretical Quantiles","Empirical Quantiles","Q-Q Plot")
-plot_diagnostic_qq(subset_bagfilter, labs_qqplot01 = labs_qqplot01, labs_qqplot02 = labs_qqplot02)
-# Salvar em 800x400 em .svg
-rsvg::rsvg_pdf('figures/PLOT_QQPLOT.svg',"figures/PLOT_QQPLOT.pdf")
-rsvg::rsvg_eps('figures/PLOT_QQPLOT.svg',"figures/PLOT_QQPLOT.eps")
-
-labs_degrada01 <- c("Time","Degradation")
-plot_exponential_degradation(labs_degrada01 = labs_degrada01)
-
-
-# ------------------------------------------------
-######## Gerando Curvas de Confiabilidade ########
-# ------------------------------------------------
-
-# gera curvas de confiabilidade considerando fdp do first passage time (fpt) como gaussiana inversa
-# media: media
-# variancia: (media^3)/desvio
-
-# t0: tempo inicial
-t0 = 39
-
-# x0: degradação para o tempo inicial
-x0 = subset_bagfilter %>%
-  filter(Time == 39) %>%
-  filter(Y == min(Y)) %>%
-  select(Y) %>%
-  pull()
-
-plot_reliability(mu=mu,sigma2=sigma2,
-                 alpha = 150,
-                 t0 = t0,
-                 x0 = x0,
-                 t_max = c(150+5),
-                 xlab = "Tempo",ylab = "Confiabilidade (%)",
-                 paleta = "taylor1989")
-
-# Salvar em 1100x500 em .svg
-rsvg::rsvg_pdf('figures/RESULT_002.svg',"figures/RESULT_002.pdf")
-
-plot_maintenance(subset_bagfilter, y_label = "Differential [mmWC] ", x_label = "Time", show_maintenance_times = TRUE)
-# Salvar em 800x400 em .svg
-rsvg::rsvg_pdf('figures/RESULT_001.svg',"figures/RESULT_001.pdf")
-rsvg::rsvg_eps('figures/RESULT_001.svg',"figures/RESULT_001.eps")
-
-plot_exponential_reliability(x_label = "Tempo", y_label = "R(t)")
-# Salvar em 600x350 em .svg
-rsvg::rsvg_pdf('figures/CONFIABILIDADE_001.svg',"figures/CONFIABILIDADE_001.pdf")
-
-
-plot_reliability_ci(drift = mu, sigma2 = sigma2,
-                 var_drift = var_mu, var_sigma2 = var_sigma2,
-                 threshold = 150,
-                 t0 = t0,
-                 x0 = x0,
-                 t_max = c(150+5),
-                 x_label = "Time", y_label = "Reliability (%)",
-                 palette = "taylor1989")$plot
-# Salvar em 600x300 em .svg
-rsvg::rsvg_pdf('figures/RELIABILITY_IC_001.svg',"figures/RELIABILITY_IC_001.pdf")
-rsvg::rsvg_eps('figures/RELIABILITY_IC_001.svg',"figures/RELIABILITY_IC_001.eps")
+# --------------------------------------------------------------------------------
+# NOTA: O código de geração e salvamento de todas as figuras do artigo foi
+# modularizado e transferido para o script dedicado: scripts/generate_figures.R
+# --------------------------------------------------------------------------------
 
 ###########################################################
 ### Comparação modelo wiener original - modelo proposto ###
