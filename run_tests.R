@@ -8,7 +8,7 @@ if (!requireNamespace("testthat", quietly = TRUE)) {
 }
 
 library(testthat)
-source("utils.r")
+source("R/utils.R")
 
 message("\n=== Running Unit Tests ===")
 test_results <- testthat::test_dir("tests/testthat")
