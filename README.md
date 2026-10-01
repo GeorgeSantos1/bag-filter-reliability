@@ -121,7 +121,7 @@ print(p_maint)
 <p align="center">
   <img src="figures/RESULT_001.svg" width="720" alt="Industrial Bag Filter Degradation Path">
   <br>
-  <em>Figure: Observed degradation path of the industrial bag filter with imperfect maintenance actions at $t = 13, 26, 39$ (13-minute intervals).</em>
+  <em>Figure: Observed degradation path of the industrial bag filter with imperfect maintenance actions at <i>t</i> = 13, 26, 39 (13-minute intervals).</em>
 </p>
 
 ### 2. Parameter Estimation
@@ -151,7 +151,7 @@ print(p_diag)
 <p align="center">
   <img src="figures/PLOT_QQPLOT.svg" width="720" alt="Goodness-of-fit Diagnostics (P-P and Q-Q Plots)">
   <br>
-  <em>Figure: Goodness-of-fit diagnostics (P-P plot and Q-Q plot) for degradation increments under the Wiener process, supported by the Anderson-Darling test (AD = 0.8792, p-value = 0.4266).</em>
+  <em>Figure: Goodness-of-fit diagnostics (P-P plot and Q-Q plot) for degradation increments under the Wiener process, supported by the Anderson-Darling test (AD = 0.8792, <i>p</i>-value = 0.4266).</em>
 </p>
 
 ### 4. Reliability Prediction with Confidence Bands
@@ -189,7 +189,7 @@ head(rel_res$data)
 <p align="center">
   <img src="figures/RELIABILITY_IC_001.svg" width="620" alt="Reliability Curve with 80% Pointwise Confidence Interval">
   <br>
-  <em>Figure: Predicted reliability function R(t) following the 3rd maintenance intervention (t0 = 39) with 80% pointwise asymptotic confidence interval bands (log-log Delta method).</em>
+  <em>Figure: Predicted reliability function <i>R</i>(<i>t</i>) following the 3rd maintenance intervention (<i>t</i><sub>0</sub> = 39) with 80% pointwise asymptotic confidence interval bands (log-log Delta method).</em>
 </p>
 
 ### 5. Model Comparison (Complete vs. Fixed Maintenance)
@@ -210,7 +210,7 @@ A comprehensive factorial simulation experiment ($M = 1{,}000$ replications per 
 <p align="center">
   <img src="figures/PLOT_RMSE.svg" width="750" alt="Monte Carlo Simulation RMSE">
   <br>
-  <em>Figure: Root Mean Square Error (RMSE) for parameter estimators ($\mu$ and $\sigma^2$), demonstrating rapid convergence to zero as sample size and inspection frequency increase.</em>
+  <em>Figure: Root Mean Square Error (RMSE) for parameter estimators (&mu; and &sigma;<sup>2</sup>), demonstrating rapid convergence to zero as sample size and inspection frequency increase.</em>
 </p>
 
 ---
