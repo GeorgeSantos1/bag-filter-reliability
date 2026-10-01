@@ -11,8 +11,8 @@ Provides tools for simulating, estimating, and analyzing degradation processes m
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/GeorgeSantos1/Wiener_RS}
-  \item Report bugs at \url{https://github.com/GeorgeSantos1/Wiener_RS/issues}
+  \item \url{https://github.com/GeorgeSantos1/bag-filter-reliability}
+  \item Report bugs at \url{https://github.com/GeorgeSantos1/bag-filter-reliability/issues}
 }
 
 }

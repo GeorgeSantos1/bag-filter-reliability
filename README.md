@@ -1,7 +1,7 @@
 # WienerRS: Reliability Analysis of Repairable Systems under Imperfect Maintenance
 
 <!-- badges: start -->
-[![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen.svg)](https://github.com/GeorgeSantos1/Wiener_RS)
+[![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen.svg)](https://github.com/GeorgeSantos1/bag-filter-reliability)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![R version](https://img.shields.io/badge/R-%3E%3D%203.5.0-blue)](https://www.r-project.org/)
 <!-- badges: end -->
@@ -119,7 +119,7 @@ You can install the development version of **WienerRS** directly from GitHub:
 install.packages("remotes")
 
 # Install WienerRS
-remotes::install_github("GeorgeSantos1/Wiener_RS")
+remotes::install_github("GeorgeSantos1/bag-filter-reliability")
 ```
 
 ---
@@ -247,7 +247,7 @@ A comprehensive factorial simulation experiment ($M = 1000$ replications per sce
 ## Repository Structure
 
 ```text
-Wiener_RS/
+bag-filter-reliability/
 ├── R/                     # Exported functions and package documentation
 ├── data/                  # Built-in packaged dataset ('bagfilter.rda')
 ├── data-raw/              # Raw industrial dataset ('Bagfilter_Dataset.xlsx') & extraction script
@@ -301,7 +301,7 @@ All empirical results, simulation tables, and publication figures can be reprodu
 To cite the **WienerRS** package or the underlying research methodology in publications, please use:
 
 ### Package Reference
-> Santos, G. A. A. (2025). *WienerRS: Wiener Process Degradation Models with Imperfect Maintenance Effects*. R package version 0.1.0, https://github.com/GeorgeSantos1/Wiener_RS.
+> Santos, G. A. A. (2025). *WienerRS: Wiener Process Degradation Models with Imperfect Maintenance Effects*. R package version 0.1.0, https://github.com/GeorgeSantos1/bag-filter-reliability.
 
 ```bibtex
 @manual{santos2025wienerrs,
@@ -309,7 +309,7 @@ To cite the **WienerRS** package or the underlying research methodology in publi
   author = {Santos, George Anderson Alves dos},
   year = {2025},
   note = {R package version 0.1.0},
-  url = {https://github.com/GeorgeSantos1/Wiener_RS}
+  url = {https://github.com/GeorgeSantos1/bag-filter-reliability}
 }
 ```
 

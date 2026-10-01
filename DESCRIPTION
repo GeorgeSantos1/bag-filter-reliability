@@ -15,8 +15,8 @@ Description: Provides tools for simulating, estimating, and analyzing
     plots (P-P, Q-Q, Anderson-Darling tests), and reliability/hazard 
     merit functions.
 License: GPL (>= 3)
-URL: https://github.com/GeorgeSantos1/Wiener_RS
-BugReports: https://github.com/GeorgeSantos1/Wiener_RS/issues
+URL: https://github.com/GeorgeSantos1/bag-filter-reliability
+BugReports: https://github.com/GeorgeSantos1/bag-filter-reliability/issues
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 8.0.0

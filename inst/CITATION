@@ -4,8 +4,8 @@ bibentry(
   author = person(given = c("George", "Anderson"), family = "Alves dos Santos", email = "george_13031995@hotmail.com"),
   year = "2025",
   note = "R package version 0.1.0",
-  url = "https://github.com/GeorgeSantos1/Wiener_RS",
-  textVersion = "Santos, G. A. A. (2025). WienerRS: Wiener Process Degradation Models with Imperfect Maintenance Effects. R package version 0.1.0, https://github.com/GeorgeSantos1/Wiener_RS.",
+  url = "https://github.com/GeorgeSantos1/bag-filter-reliability",
+  textVersion = "Santos, G. A. A. (2025). WienerRS: Wiener Process Degradation Models with Imperfect Maintenance Effects. R package version 0.1.0, https://github.com/GeorgeSantos1/bag-filter-reliability.",
   header = "To cite the 'WienerRS' package in publications, please use:"
 )
 
