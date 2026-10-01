@@ -1096,7 +1096,7 @@ plot_maintanance <- plot_maintenance
 #' @param labs_density Character vector of length 3: \code{c(title, xlab, ylab)} for
 #'   the probability density function plot (default: \code{c("Density", "Time", "f(t)")}).
 #' @param labs_hazard Character vector of length 3: \code{c(title, xlab, ylab)} for
-#'   the failure/hazard rate plot (default: \code{c("Failure Rate", "Time", "\u03bb(t)")}).
+#'   the failure/hazard rate plot (default: \code{c("Failure Rate", "Time", "h(t)")}).
 #' @param labs_reliability Character vector of length 3: \code{c(title, xlab, ylab)} for
 #'   the reliability function plot (default: \code{c("Reliability", "Time", "R(t)")}).
 #' @param lambdas Numeric vector. Rate parameters (\eqn{\lambda > 0}) to evaluate
@@ -1104,7 +1104,7 @@ plot_maintanance <- plot_maintenance
 #' @param t_max Numeric. Maximum evaluation time horizon (default: 5).
 #' @param n_points Integer. Number of evaluation points along the time domain (default: 100).
 #' @param palette Character. Color palette name for \code{tayloRswift} or fallback (default: \code{"taylor1989"}).
-#' @param param_name Character. Symbol or label used for the rate parameter in the legend (default: \code{"\u03bb"}).
+#' @param param_name Character. Symbol or label used for the rate parameter in the legend (default: \code{"lambda"}).
 #' @param expand Numeric vector. Range expansion factor for plot axes (default: \code{c(0, 0)} to eliminate Cartesian origin spacing).
 #' @param labs_01 Character vector. Legacy alias for \code{labs_density} (for backward compatibility).
 #' @param labs_02 Character vector. Legacy alias for \code{labs_hazard} (for backward compatibility).
@@ -1121,13 +1121,13 @@ plot_maintanance <- plot_maintenance
 #'
 #' @export
 plot_exponential <- function(labs_density = c("Density", "Time", "f(t)"),
-                             labs_hazard = c("Failure Rate", "Time", "\u03bb(t)"),
+                             labs_hazard = c("Failure Rate", "Time", "h(t)"),
                              labs_reliability = c("Reliability", "Time", "R(t)"),
                              lambdas = c(0.5, 1.0, 1.5),
                              t_max = 5,
                              n_points = 100,
                              palette = "taylor1989",
-                             param_name = "\u03bb",
+                             param_name = "lambda",
                              expand = c(0, 0),
                              labs_01 = NULL,
                              labs_02 = NULL,
@@ -1334,7 +1334,7 @@ plot_weibull <- function(labs_density = c("Density", "Time", "f(t)"),
   plot_data$hazard[is.infinite(plot_data$hazard)] <- NA
   plot_data$density[is.infinite(plot_data$density)] <- NA
 
-  gamma_labels <- paste0("\u03b3 = ", gammas, ", \u03b1 = ", alpha)
+  gamma_labels <- paste0("gamma = ", gammas, ", alpha = ", alpha)
   plot_data$gamma_factor <- factor(plot_data$gamma, levels = gammas, labels = gamma_labels)
 
   # 1. Density Plot: f(t)
@@ -1511,7 +1511,7 @@ plot_lognormal <- function(labs_density = c("Density", "Time", "f(t)"),
   plot_data$hazard <- ifelse(plot_data$reliability > 0, plot_data$density / plot_data$reliability, 0)
   plot_data$hazard[is.na(plot_data$hazard) | is.infinite(plot_data$hazard)] <- 0
 
-  sigma_labels <- paste0("\u03bc = ", mu, ", \u03c3 = ", sigmas)
+  sigma_labels <- paste0("mu = ", mu, ", sigma = ", sigmas)
   plot_data$sigma_factor <- factor(plot_data$sigma, levels = sigmas, labels = sigma_labels)
 
   max_density <- max(plot_data$density, na.rm = TRUE)
@@ -2227,7 +2227,7 @@ gera_plot_banheira <- function(
 #' @param t_max Numeric maximum observation time horizon. Default is \code{20}.
 #' @param n_steps Integer number of measurement increments. Default is \code{100}.
 #' @param labels Optional character vector of length 2 providing custom legend labels.
-#'   If \code{NULL}, dynamically formatted as \code{"\u03bc = [drift], \u03c3 = [sigma]"}.
+#'   If \code{NULL}, dynamically formatted as \code{"mu = [drift], sigma = [sigma]"}.
 #' @param x_label Character label for the horizontal axis. Default is \code{"Time"}.
 #' @param y_label Character label for the vertical axis. Default is \code{"Degradation"}.
 #' @param seed Optional integer seed for reproducible simulations. Default is \code{123}.
@@ -2305,8 +2305,8 @@ plot_wiener_drift <- function(
   if (is.null(labels)) {
     disp_sigma <- if (!is.null(sigma2)) round(sqrt(sigma2), 2) else sigma
     labels <- c(
-      paste0("\u03bc = ", drifts[1], ", \u03c3 = ", disp_sigma),
-      paste0("\u03bc = ", drifts[2], ", \u03c3 = ", disp_sigma)
+      paste0("mu = ", drifts[1], ", sigma = ", disp_sigma),
+      paste0("mu = ", drifts[2], ", sigma = ", disp_sigma)
     )
   }
 
@@ -3805,6 +3805,8 @@ gera_plot_merito <- function(
 #'   \code{Time} and \code{Y}.
 #' @param exclude_indices Optional integer vector of specific increment indices to exclude.
 #'   If \code{NULL}, maintenance jump transitions (\code{diff(Time) <= 0}) are automatically detected and excluded.
+#' @param mu Optional numeric drift parameter \eqn{\mu}. If \code{NULL}, estimated via \code{\link{mle_drift_maintenance}}.
+#' @param sigma2 Optional numeric diffusion variance \eqn{\sigma^2}. If \code{NULL}, estimated via \code{\link{mle_sigma2_maintenance}}.
 #' @param pp_title Character title for the P-P panel. Default is \code{"P-P Plot"}.
 #' @param pp_x_label Character label for the horizontal axis of the P-P plot. Default is \code{"Theoretical Probabilities"}.
 #' @param pp_y_label Character label for the vertical axis of the P-P plot. Default is \code{"Empirical Probabilities"}.
@@ -3832,6 +3834,8 @@ gera_plot_merito <- function(
 plot_diagnostic_qq <- function(
   data,
   exclude_indices = c(14, 28, 42),
+  mu = NULL,
+  sigma2 = NULL,
   pp_title = "P-P Plot",
   pp_x_label = "Theoretical Probabilities",
   pp_y_label = "Empirical Probabilities",
@@ -3874,8 +3878,8 @@ plot_diagnostic_qq <- function(
     qq_title <- labs_qqplot02[3]
   }
 
-  mu_hat <- mle_drift_maintenance(data)
-  sigma2_hat <- mle_sigma2_maintenance(data)
+  mu_hat <- if (!is.null(mu)) mu else mle_drift_maintenance(data)
+  sigma2_hat <- if (!is.null(sigma2)) sigma2 else mle_sigma2_maintenance(data)
 
   if (!is.null(exclude_indices) && length(exclude_indices) > 0) {
     increments <- diff(data$Y)[-exclude_indices]

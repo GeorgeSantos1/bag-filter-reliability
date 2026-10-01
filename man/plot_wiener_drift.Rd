@@ -36,7 +36,7 @@ to compare. Default is \code{c(0, 5)}.}
 \item{n_steps}{Integer number of measurement increments. Default is \code{100}.}
 
 \item{labels}{Optional character vector of length 2 providing custom legend labels.
-If \code{NULL}, dynamically formatted as \code{"\u03bc = [drift], \u03c3 = [sigma]"}.}
+If \code{NULL}, dynamically formatted as \code{"mu = [drift], sigma = [sigma]"}.}
 
 \item{x_label}{Character label for the horizontal axis. Default is \code{"Time"}.}
 

@@ -23,3 +23,8 @@ source(file.path(root_dir, "R/utils.R"))
 message("\n=== Running Unit Tests ===")
 test_results <- testthat::test_dir(file.path(root_dir, "tests/testthat"))
 print(test_results)
+
+# Clean up transient graphics artifacts generated during headless test runs
+for (p in c("Rplots.pdf", file.path(root_dir, "Rplots.pdf"), file.path(root_dir, "tests/testthat/Rplots.pdf"))) {
+  if (file.exists(p)) unlink(p)
+}

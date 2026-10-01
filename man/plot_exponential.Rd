@@ -7,13 +7,13 @@
 \usage{
 plot_exponential(
   labs_density = c("Density", "Time", "f(t)"),
-  labs_hazard = c("Failure Rate", "Time", "λ(t)"),
+  labs_hazard = c("Failure Rate", "Time", "h(t)"),
   labs_reliability = c("Reliability", "Time", "R(t)"),
   lambdas = c(0.5, 1, 1.5),
   t_max = 5,
   n_points = 100,
   palette = "taylor1989",
-  param_name = "λ",
+  param_name = "lambda",
   expand = c(0, 0),
   labs_01 = NULL,
   labs_02 = NULL,
@@ -22,13 +22,13 @@ plot_exponential(
 
 gera_plot_exp(
   labs_density = c("Density", "Time", "f(t)"),
-  labs_hazard = c("Failure Rate", "Time", "λ(t)"),
+  labs_hazard = c("Failure Rate", "Time", "h(t)"),
   labs_reliability = c("Reliability", "Time", "R(t)"),
   lambdas = c(0.5, 1, 1.5),
   t_max = 5,
   n_points = 100,
   palette = "taylor1989",
-  param_name = "λ",
+  param_name = "lambda",
   expand = c(0, 0),
   labs_01 = NULL,
   labs_02 = NULL,
@@ -40,7 +40,7 @@ gera_plot_exp(
 the probability density function plot (default: \code{c("Density", "Time", "f(t)")}).}
 
 \item{labs_hazard}{Character vector of length 3: \code{c(title, xlab, ylab)} for
-the failure/hazard rate plot (default: \code{c("Failure Rate", "Time", "\u03bb(t)")}).}
+the failure/hazard rate plot (default: \code{c("Failure Rate", "Time", "h(t)")}).}
 
 \item{labs_reliability}{Character vector of length 3: \code{c(title, xlab, ylab)} for
 the reliability function plot (default: \code{c("Reliability", "Time", "R(t)")}).}
@@ -54,7 +54,7 @@ the reliability function plot (default: \code{c("Reliability", "Time", "R(t)")})
 
 \item{palette}{Character. Color palette name for \code{tayloRswift} or fallback (default: \code{"taylor1989"}).}
 
-\item{param_name}{Character. Symbol or label used for the rate parameter in the legend (default: \code{"\u03bb"}).}
+\item{param_name}{Character. Symbol or label used for the rate parameter in the legend (default: \code{"lambda"}).}
 
 \item{expand}{Numeric vector. Range expansion factor for plot axes (default: \code{c(0, 0)} to eliminate Cartesian origin spacing).}
 

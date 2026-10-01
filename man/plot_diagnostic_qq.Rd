@@ -8,6 +8,8 @@
 plot_diagnostic_qq(
   data,
   exclude_indices = c(14, 28, 42),
+  mu = NULL,
+  sigma2 = NULL,
   pp_title = "P-P Plot",
   pp_x_label = "Theoretical Probabilities",
   pp_y_label = "Empirical Probabilities",
@@ -32,6 +34,10 @@ gera_plot_qqplot(
 
 \item{exclude_indices}{Optional integer vector of specific increment indices to exclude.
 If \code{NULL}, maintenance jump transitions (\code{diff(Time) <= 0}) are automatically detected and excluded.}
+
+\item{mu}{Optional numeric drift parameter \eqn{\mu}. If \code{NULL}, estimated via \code{\link{mle_drift_maintenance}}.}
+
+\item{sigma2}{Optional numeric diffusion variance \eqn{\sigma^2}. If \code{NULL}, estimated via \code{\link{mle_sigma2_maintenance}}.}
 
 \item{pp_title}{Character title for the P-P panel. Default is \code{"P-P Plot"}.}
 

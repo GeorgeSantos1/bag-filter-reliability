@@ -263,6 +263,7 @@ labs_qq01 <- c("Theoretical Cumulative Distribution", "Empirical Cumulative Dist
 labs_qq02 <- c("Theoretical Quantiles", "Empirical Quantiles", "Q-Q Plot")
 p_qqplot <- plot_diagnostic_qq(
   data          = bagfilter,
+  sigma2        = 52.84, # Paper reported scale parameter (Figure 8, AD = 0.8792, p = 0.4266)
   labs_qqplot01 = labs_qq01,
   labs_qqplot02 = labs_qq02
 )
