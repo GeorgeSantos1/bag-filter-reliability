@@ -1,67 +1,88 @@
 # ==============================================================================
-# Script de Reprodução: Geração de Todas as Figuras da Dissertação / Artigo
+# Reproduction Script: Generation of All Article & Dissertation Figures
 #
-# Pacote: WienerRS
-# Autor: George Anderson A. dos Santos
-# Descrição: Este script gera e exporta todas as figuras conceituais, empíricas
-#            e de simulação Monte Carlo para o diretório 'figures/'.
+# Package: WienerRS
+# Author: George Anderson A. dos Santos
+# Description: Generates and exports all conceptual, empirical, and
+#              Monte Carlo simulation figures to 'figures/' directory.
 # ==============================================================================
 
-# 1. Carregamento de Pacotes
+# 1. Package Loading
 if (requireNamespace("WienerRS", quietly = TRUE)) {
   library(WienerRS)
+} else if (requireNamespace("devtools", quietly = TRUE)) {
+  devtools::load_all(".", quiet = TRUE)
 } else {
   source("R/utils.R")
 }
 
 library(ggplot2)
+library(dplyr)
 
-# Garantir existência do diretório de saída
+# Ensure output directory exists
 if (!dir.exists("figures")) {
   dir.create("figures")
 }
 
-# Função auxiliar para salvar figuras em múltiplos formatos (.svg, .pdf, .eps)
+# Helper function to save figures in multiple formats (.svg, .pdf, .eps)
 save_plot <- function(plot_obj, base_name, width, height, formats = c("svg", "pdf")) {
-  svg_path <- file.path("figures", paste0(base_name, ".svg"))
-  
-  # Salvar SVG inicial
-  ggplot2::ggsave(
-    filename = svg_path,
-    plot     = plot_obj,
-    width    = width,
-    height   = height,
-    units    = "in",
-    dpi      = 300
-  )
-  message("Figura salva: ", svg_path)
-  
-  # Conversão para PDF e EPS usando rsvg se disponível
-  if (requireNamespace("rsvg", quietly = TRUE)) {
-    if ("pdf" %in% formats) {
-      pdf_path <- file.path("figures", paste0(base_name, ".pdf"))
-      rsvg::rsvg_pdf(svg_path, pdf_path)
-      message("  -> Convertido para PDF: ", pdf_path)
-    }
-    if ("eps" %in% formats) {
-      eps_path <- file.path("figures", paste0(base_name, ".eps"))
-      rsvg::rsvg_eps(svg_path, eps_path)
-      message("  -> Convertido para EPS: ", eps_path)
-    }
+  # 1. SVG
+  if ("svg" %in% formats) {
+    svg_path <- file.path("figures", paste0(base_name, ".svg"))
+    ggplot2::ggsave(
+      filename = svg_path,
+      plot     = plot_obj,
+      width    = width,
+      height   = height,
+      units    = "in",
+      dpi      = 300,
+      device   = grDevices::svg
+    )
+    message("Saved figure: ", svg_path)
+  }
+
+  # 2. PDF
+  if ("pdf" %in% formats) {
+    pdf_path <- file.path("figures", paste0(base_name, ".pdf"))
+    ggplot2::ggsave(
+      filename = pdf_path,
+      plot     = plot_obj,
+      width    = width,
+      height   = height,
+      units    = "in",
+      dpi      = 300,
+      device   = grDevices::cairo_pdf
+    )
+    message("  -> Saved as PDF: ", pdf_path)
+  }
+
+  # 3. EPS
+  if ("eps" %in% formats) {
+    eps_path <- file.path("figures", paste0(base_name, ".eps"))
+    ggplot2::ggsave(
+      filename = eps_path,
+      plot     = plot_obj,
+      width    = width,
+      height   = height,
+      units    = "in",
+      dpi      = 300,
+      device   = grDevices::cairo_ps
+    )
+    message("  -> Saved as EPS: ", eps_path)
   }
 }
 
 # ==============================================================================
-# PARTE 1: Modelos Teóricos de Confiabilidade e Sobrevivência
+# PART 1: Theoretical Reliability and Survival Models
 # ==============================================================================
 
-message("\n[1/4] Gerando figuras conceituais de confiabilidade...")
+message("\n[1/4] Generating theoretical reliability figures...")
 
-labs_density     <- c("Densidade", "Tempo", "f(t)")
-labs_hazard      <- c("Taxa de Falha", "Tempo", "\u03bb(t)")
-labs_reliability <- c("Confiabilidade", "Tempo", "R(t)")
+labs_density     <- c("Density", "Time", "f(t)")
+labs_hazard      <- c("Hazard Rate", "Time", "\u03bb(t)")
+labs_reliability <- c("Reliability", "Time", "R(t)")
 
-# 1.1 Distribuição Exponencial
+# 1.1 Exponential Distribution
 p_exp <- plot_exponential(
   labs_density     = labs_density,
   labs_reliability = labs_reliability,
@@ -69,7 +90,7 @@ p_exp <- plot_exponential(
 )
 save_plot(p_exp, "PLOT_EXP", width = 9, height = 6, formats = c("svg", "pdf"))
 
-# 1.2 Distribuição Weibull
+# 1.2 Weibull Distribution
 p_weibull <- plot_weibull(
   labs_density     = labs_density,
   labs_reliability = labs_reliability,
@@ -77,7 +98,7 @@ p_weibull <- plot_weibull(
 )
 save_plot(p_weibull, "PLOT_WEIBULL", width = 9, height = 6, formats = c("svg", "pdf"))
 
-# 1.3 Distribuição Lognormal
+# 1.3 Lognormal Distribution
 p_lognormal <- plot_lognormal(
   labs_density     = labs_density,
   labs_reliability = labs_reliability,
@@ -85,49 +106,59 @@ p_lognormal <- plot_lognormal(
 )
 save_plot(p_lognormal, "PLOT_LOGNORMAL", width = 9, height = 6, formats = c("svg", "pdf"))
 
-# 1.4 Esquemas de Censura
+# 1.4 Censoring Schemes
 p_censura <- plot_censoring()
 save_plot(p_censura, "PLOT_CENSURA", width = 10, height = 6, formats = c("svg", "pdf"))
 
-# 1.5 Curva da Banheira (Bathtub Curve)
-labs_banheira <- c("Mortalidade \nInfantil", "Vida Operacional", "Obsolesc\u00eancia", "Tempo")
-p_banheira <- plot_bathtub_curve(labs_banheira = labs_banheira)
+# 1.5 Bathtub Curve
+p_banheira <- plot_bathtub_curve(
+  infant_mortality_label = "Infant\nMortality",
+  useful_life_label      = "Useful Life",
+  wear_out_label         = "Wear-out",
+  x_label                = "Time"
+)
 save_plot(p_banheira, "PLOT_BANHEIRA", width = 6, height = 3.5, formats = c("svg", "pdf"))
 
-# 1.6 Degradação e Limiar Crítico de Falha
-labs_degradacao <- c("Limiar de Falha", "Caminho de Degrada\u00e7\u00e3o", "Tempo de Falha", "Tempo", "N\u00edvel de Degrada\u00e7\u00e3o")
+# 1.6 Degradation Path and Critical Failure Threshold
+labs_degradacao <- c(
+  "Failure Threshold",
+  "Degradation Path",
+  "Failure Time",
+  "Time",
+  "Degradation Level"
+)
 p_degrada001 <- plot_degradation(labs_degradacao = labs_degradacao)
 save_plot(p_degrada001, "PLOT_DEGRADA001", width = 8, height = 4, formats = c("svg", "pdf"))
 
-# 1.7 Processo de Wiener com Diferentes Drifts
-labs_wiener <- c("Degrada\u00e7\u00e3o", "Tempo")
+# 1.7 Wiener Process Paths with Different Drifts
+labs_wiener <- c("Degradation", "Time")
 p_wiener <- plot_wiener_drift(labs_wiener = labs_wiener)
 save_plot(p_wiener, "PLOT_WIENER", width = 6, height = 3.5, formats = c("svg", "pdf"))
 
-# 1.8 Comparação dos Tipos de Reparo (Perfeito, Mínimo, Imperfeito)
+# 1.8 Repair Types Comparison (Perfect, Minimal, Imperfect)
 labs_reparos <- c("Time", "Degradation", "(a)", "(b)", "(c)")
 p_reparos <- plot_repair_types(labs_reparos = labs_reparos)
 save_plot(p_reparos, "PLOT_REPARO", width = 9, height = 6, formats = c("svg", "pdf", "eps"))
 
-# 1.9 Esquema de Observação com Manutenções Imperfeitas
+# 1.9 Observation Scheme with Imperfect Maintenance
 labs_scheme <- c("Time", "Degradation")
 p_scheme <- plot_maintenance_scheme(labs_scheme = labs_scheme)
 save_plot(p_scheme, "PLOT_SCHEMA", width = 8, height = 4, formats = c("svg", "pdf", "eps"))
 save_plot(p_scheme, "PLOT_SCHEMA_R1", width = 8, height = 4, formats = c("svg", "pdf", "eps"))
 
-# 1.10 Degradação Exponencial
+# 1.10 Exponential Degradation Paths
 p_degrada01 <- plot_exponential_degradation(labs_degrada01 = c("Time", "Degradation"))
 save_plot(p_degrada01, "PLOT_DEGRADA01", width = 8, height = 4, formats = c("svg", "pdf"))
 
-# 1.11 Confiabilidade Exponencial com Tempo Mediano
-p_conf_exp <- plot_exponential_reliability(x_label = "Tempo", y_label = "R(t)")
+# 1.11 Exponential Reliability with Median Lifetime
+p_conf_exp <- plot_exponential_reliability(x_label = "Time", y_label = "R(t)")
 save_plot(p_conf_exp, "CONFIABILIDADE_001", width = 6, height = 3.5, formats = c("svg", "pdf"))
 
 # ==============================================================================
-# PARTE 2: Estudo de Simulação Monte Carlo (SimDesign4.rds)
+# PART 2: Monte Carlo Simulation Study (SimDesign4.rds)
 # ==============================================================================
 
-message("\n[2/4] Gerando figuras do estudo de simulação...")
+message("\n[2/4] Generating simulation study figures...")
 
 sim_file <- if (file.exists("simulations/SimDesign4.rds")) {
   "simulations/SimDesign4.rds"
@@ -140,38 +171,54 @@ sim_file <- if (file.exists("simulations/SimDesign4.rds")) {
 if (!is.null(sim_file)) {
   resultados_sim <- readRDS(sim_file)
 
-  # 2.1 Raiz do Erro Quadrático Médio (RMSE)
-  p_rmse <- plot_simulation_rmse(data = resultados_sim, labs_rmse = c("Number of Systems", "RMSE"))
+  # 2.1 Root Mean Squared Error (RMSE)
+  p_rmse <- plot_simulation_rmse(
+    data      = resultados_sim,
+    labs_rmse = c("Number of Systems", "RMSE")
+  )
   save_plot(p_rmse, "PLOT_RMSE", width = 11, height = 6, formats = c("svg", "pdf", "eps"))
 
-  # 2.2 Viés de Estimação (Bias)
-  p_bias <- plot_simulation_bias(data = resultados_sim, labs_bias = c("Number of Systems", "Bias"))
+  # 2.2 Parameter Estimation Bias
+  p_bias <- plot_simulation_bias(
+    data      = resultados_sim,
+    labs_bias = c("Number of Systems", "Bias")
+  )
   save_plot(p_bias, "PLOT_BIAS", width = 11, height = 6, formats = c("svg", "pdf", "eps"))
 
-  # 2.3 Probabilidade de Cobertura (CP 95%)
-  p_cp <- plot_simulation_coverage(data = resultados_sim, labs_coverage = c("N\u00famero de Sistemas", "Probabilidade de Cobertura (95%)"))
+  # 2.3 Coverage Probability (CP 95%)
+  p_cp <- plot_simulation_coverage(
+    data          = resultados_sim,
+    labs_coverage = c("Number of Systems", "Coverage Probability (95%)")
+  )
   save_plot(p_cp, "PLOT_CP", width = 11, height = 6, formats = c("svg", "pdf"))
 
-  # 2.4 Razão de Variâncias (Modelo / Empírica)
-  p_ratiovar <- plot_simulation_variance_ratio(data = resultados_sim, labs_ratiovar = c("N\u00famero de Sistemas", "Raz\u00e3o de Vari\u00e2ncias"))
+  # 2.4 Variance Ratio (Model / Empirical)
+  p_ratiovar <- plot_simulation_variance_ratio(
+    data          = resultados_sim,
+    labs_ratiovar = c("Number of Systems", "Variance Ratio")
+  )
   save_plot(p_ratiovar, "PLOT_RATIOVAR", width = 11, height = 6, formats = c("svg", "pdf"))
 } else {
-  warning("Arquivo 'simulations/SimDesign4.rds' não encontrado. Figuras de simulação ignoradas.")
+  warning("File 'simulations/SimDesign4.rds' not found. Skipping simulation plots.")
 }
 
 # ==============================================================================
-# PARTE 3: Análise Empírica - Filtro de Mangas (Dataset 'bagfilter')
+# PART 3: Empirical Application - Bag Filter (Dataset 'bagfilter')
 # ==============================================================================
 
-message("\n[3/4] Gerando figuras da aplicação empírica (Filtro de Mangas)...")
+message("\n[3/4] Generating empirical application figures (Bag Filter)...")
 
-# Carregar dados empíricos do pacote WienerRS
-data(bagfilter, package = "WienerRS", envir = environment())
+# Load empirical dataset from WienerRS package
+if (requireNamespace("WienerRS", quietly = TRUE)) {
+  data("bagfilter", package = "WienerRS", envir = environment())
+}
 if (!exists("bagfilter")) {
-  load("data/bagfilter.rda")
+  if (file.exists("data/bagfilter.rda")) {
+    load("data/bagfilter.rda")
+  }
 }
 
-# Estimação dos parâmetros do processo empírico
+# Parameter estimation for empirical process
 mu_est     <- mle_drift_maintenance(bagfilter)
 sigma2_est <- mle_sigma2_maintenance(bagfilter)
 rho_est    <- calc_rho(bagfilter)
@@ -179,26 +226,26 @@ rho_est    <- calc_rho(bagfilter)
 t0_eval <- 39
 x0_eval <- min(bagfilter$Y[bagfilter$Time == t0_eval])
 
-# 3.1 Trajetória Empírica de Degradação do Filtro de Mangas
+# 3.1 Empirical Degradation Trajectory of the Bag Filter
 p_result001 <- plot_maintenance(
-  data                   = bagfilter,
-  y_label                = "Differential [mmWC] ",
-  x_label                = "Time",
-  show_maintenance_times = TRUE
+  data      = bagfilter,
+  ylab      = "Differential [mmWC]",
+  xlab      = "Time",
+  show_time = TRUE
 )
 save_plot(p_result001, "RESULT_001", width = 8, height = 4, formats = c("svg", "pdf", "eps"))
 
-# 3.2 Comparação entre Processo Observado Y(t) e Trajetória Teórica Natural X(t)
+# 3.2 Comparison between Observed Process Y(t) and Natural Trajectory X(t)
 labs_xtyt <- c(
-  "Y(t) - Processo de degrada\u00e7\u00e3o com a\u00e7\u00f5es de manuten\u00e7\u00e3o",
-  "X(t) - Processo de degrada\u00e7\u00e3o natural",
-  "Tempo",
-  "Degrada\u00e7\u00e3o"
+  "Y(t) - Degradation process with maintenance actions",
+  "X(t) - Natural degradation process",
+  "Time",
+  "Degradation"
 )
 p_xtyt <- plot_wiener_maintenance_comparison(labs_xtyt = labs_xtyt)
 save_plot(p_xtyt, "PLOT_XTYT", width = 8, height = 4, formats = c("svg", "pdf"))
 
-# 3.3 Funções de Mérito: PDF e CDF do Primeiro Tempo de Atingimento (FHT)
+# 3.3 Merit Functions: First Hitting Time (FHT) Inverse Gaussian PDF and CDF
 p_merito <- plot_merit_functions(
   drift         = mu_est,
   sigma2        = sigma2_est,
@@ -206,12 +253,12 @@ p_merito <- plot_merit_functions(
   t0            = t0_eval,
   x0            = x0_eval,
   t_max         = 155,
-  labs_merito01 = c("Densidade", "Tempo", "f(t)"),
-  labs_merito02 = c("Acumulada", "Tempo", "F(t)")
+  labs_merito01 = c("Density", "Time", "f(t)"),
+  labs_merito02 = c("Cumulative Distribution", "Time", "F(t)")
 )
 save_plot(p_merito, "PLOT_MERITO", width = 8, height = 4, formats = c("svg", "pdf"))
 
-# 3.4 Diagnóstico de Aderência P-P Plot e Q-Q Plot com Teste Anderson-Darling
+# 3.4 Goodness-of-Fit Diagnostic: P-P Plot and Q-Q Plot with Anderson-Darling Test
 labs_qq01 <- c("Theoretical Cumulative Distribution", "Empirical Cumulative Distribution", "P-P Plot")
 labs_qq02 <- c("Theoretical Quantiles", "Empirical Quantiles", "Q-Q Plot")
 p_qqplot <- plot_diagnostic_qq(
@@ -221,21 +268,21 @@ p_qqplot <- plot_diagnostic_qq(
 )
 save_plot(p_qqplot, "PLOT_QQPLOT", width = 8, height = 4, formats = c("svg", "pdf", "eps"))
 
-# 3.5 Curva Teórica de Confiabilidade Gaussiana Inversa
+# 3.5 Theoretical Inverse Gaussian Reliability Curve
 p_result002 <- plot_reliability(
-  drift     = mu_est,
+  mu        = mu_est,
   sigma2    = sigma2_est,
-  threshold = 150,
+  alpha     = 150,
   t0        = t0_eval,
   x0        = x0_eval,
   t_max     = 155,
-  x_label   = "Tempo",
-  y_label   = "Confiabilidade (%)",
+  xlab      = "Time",
+  ylab      = "Reliability (%)",
   palette   = "taylor1989"
 )
 save_plot(p_result002, "RESULT_002", width = 11, height = 5, formats = c("svg", "pdf"))
 
-# 3.6 Curva de Confiabilidade com Intervalo de Confiança assintótico (Delta Method)
+# 3.6 Reliability Curve with Asymptotic Confidence Interval (Delta Method)
 df_est      <- 38 + 3 + 1 - 1
 var_mu_est  <- (sqrt(sigma2_est) / sqrt(42))^2
 var_sig_est <- (sqrt((sigma2_est^2) * 2 / df_est))^2
@@ -255,4 +302,4 @@ res_ci <- plot_reliability_ci(
 )
 save_plot(res_ci$plot, "RELIABILITY_IC_001", width = 6, height = 3, formats = c("svg", "pdf", "eps"))
 
-message("\n[4/4] Todas as figuras foram geradas e salvas com sucesso em 'figures/'!")
+message("\n[4/4] All figures successfully generated and saved to 'figures/'!")

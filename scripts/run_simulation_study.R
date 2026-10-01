@@ -9,7 +9,14 @@
 # ==============================================================================
 
 # Required libraries
-library(WienerRS)
+if (requireNamespace("WienerRS", quietly = TRUE)) {
+  library(WienerRS)
+} else if (requireNamespace("devtools", quietly = TRUE)) {
+  devtools::load_all(".", quiet = TRUE)
+} else {
+  source("R/utils.R")
+}
+
 if (!requireNamespace("SimDesign", quietly = TRUE)) {
   stop("Package 'SimDesign' is required to execute or analyze this simulation.")
 }

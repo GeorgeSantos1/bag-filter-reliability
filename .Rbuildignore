@@ -1,6 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^run_tests\.R$
 ^figures$
 ^.*\.xlsx$
 ^.*\.dat$

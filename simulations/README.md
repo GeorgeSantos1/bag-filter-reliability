@@ -4,9 +4,9 @@ Este diretório contém os scripts e os resultados pré-computados do estudo de 
 
 ## Conteúdo do Diretório
 
-- **`run_simulation_study.R`**: Script R contendo a definição do desenho fatorial (`Design`), as funções de geração (`Generate`), análise (`Analyse`) e consolidação (`Summarise`), além das chamadas para geração dos gráficos de mérito utilizando o pacote `WienerRS`.
 - **`SimDesign4.rds`**: Resultados consolidados da simulação principal utilizada nos gráficos do artigo e dissertação (1000 replicações Monte Carlo).
 - **`SimDesign.rds`**, **`SimDesign2.rds`**, **`SimDesign3.rds`**: Rodadas intermediárias e configurações complementares do estudo de simulação.
+- *(Nota: O código-fonte de execução e geração dos gráficos da simulação está centralizado em [`scripts/run_simulation_study.R`](../scripts/run_simulation_study.R)).*
 
 ## Parâmetros do Estudo de Simulação
 
