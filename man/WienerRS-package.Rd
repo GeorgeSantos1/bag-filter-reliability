@@ -8,12 +8,20 @@
 \description{
 Provides tools for simulating, estimating, and analyzing degradation processes modeled by Wiener processes (Brownian motion with drift) under imperfect maintenance actions, restoration states, and degradation reductions. Features include maximum likelihood parameter estimation, Monte Carlo simulation studies, diagnostic plots (P-P, Q-Q, Anderson-Darling tests), and reliability/hazard merit functions.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/GeorgeSantos1/Wiener_RS}
+  \item Report bugs at \url{https://github.com/GeorgeSantos1/Wiener_RS/issues}
+}
+
+}
 \author{
-\strong{Maintainer}: George Anderson A. dos Santos \email{george_13031995@hotmail.com}
+\strong{Maintainer}: George Anderson Alves dos Santos \email{george_13031995@hotmail.com}
 
 Authors:
 \itemize{
-  \item George Anderson A. dos Santos \email{george_13031995@hotmail.com}
+  \item George Anderson Alves dos Santos \email{george_13031995@hotmail.com}
 }
 
 }

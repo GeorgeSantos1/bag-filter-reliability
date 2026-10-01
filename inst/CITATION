@@ -1,0 +1,28 @@
+bibentry(
+  bibtype = "Manual",
+  title = "WienerRS: Wiener Process Degradation Models with Imperfect Maintenance Effects",
+  author = person(given = c("George", "Anderson"), family = "Alves dos Santos", email = "george_13031995@hotmail.com"),
+  year = "2025",
+  note = "R package version 0.1.0",
+  url = "https://github.com/GeorgeSantos1/Wiener_RS",
+  textVersion = "Santos, G. A. A. (2025). WienerRS: Wiener Process Degradation Models with Imperfect Maintenance Effects. R package version 0.1.0, https://github.com/GeorgeSantos1/Wiener_RS.",
+  header = "To cite the 'WienerRS' package in publications, please use:"
+)
+
+bibentry(
+  bibtype = "Article",
+  title = "Reliability Analysis of Repairable Systems Using the Arithmetic Reduction of Degradation with Memory One (ARD1) Model: An Application to Industrial Bag Filter Data",
+  author = c(
+    person(given = c("George", "Anderson"), family = "Alves dos Santos"),
+    person(given = c("Paulo", "Henrique"), family = "Ferreira da Silva"),
+    person(given = c("Adriane", "Caroline", "Teixeira"), family = "Portela"),
+    person(given = c("Maria", "Luiza"), family = "Toledo"),
+    person(given = c("Lia", "Hanna", "Martins"), family = "Morita"),
+    person(given = c("Vera", "Lucia", "Damasceno"), family = "Tomazella"),
+    person(given = c("Enrique", "Lopez"), family = "Droguett")
+  ),
+  journal = "Under Review",
+  year = "2026",
+  textVersion = "Santos, G. A. A., Ferreira da Silva, P. H., Portela, A. C. T., Toledo, M. L., Morita, L. H. M., Tomazella, V. L. D., & Droguett, E. L. (2026). Reliability Analysis of Repairable Systems Using the Arithmetic Reduction of Degradation with Memory One (ARD1) Model: An Application to Industrial Bag Filter Data. Under Review.",
+  header = "To cite the underlying research paper and methodology, please use:"
+)

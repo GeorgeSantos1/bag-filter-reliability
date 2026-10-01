@@ -289,37 +289,46 @@ All empirical results, simulation tables, and publication figures can be reprodu
    ```
 ---
 
-## Authors
+## Author
 
-- **George Anderson Alves dos Santos** (Author, Maintainer)  
-  *Federal University of Bahia (UFBA)* — [g.anderson.stat@gmail.com](mailto:g.anderson.stat@gmail.com)
-- **Paulo Henrique Ferreira da Silva** (Advisor, Co-author)  
-  *Federal University of Bahia (UFBA)*
-- **Adriane Caroline Teixeira Portela** (Co-author)  
-  *University of São Paulo (ICMC-USP)*
-- **Maria Luíza Toledo** (Co-author)  
-  *National School of Statistical Sciences (ENCE-IBGE)*
-- **Lia Hanna Martins Morita** (Co-author)  
-  *Federal University of Mato Grosso (UFMT)*
-- **Vera Lúcia Damasceno Tomazella** (Co-author)  
-  *Federal University of São Carlos (UFSCar)*
-- **Enrique López Droguett** (Co-author)  
-  *University of California, Los Angeles (UCLA)*
+- **George Anderson Alves dos Santos** (Package Developer & Maintainer)  
+  *Federal University of Bahia (UFBA)* — [george_13031995@hotmail.com](mailto:george_13031995@hotmail.com) | [g.anderson.stat@gmail.com](mailto:g.anderson.stat@gmail.com)
 
 ---
 
 ## Citation
 
-If you use **WienerRS** or the associated methodology in your research, please cite:
+To cite the **WienerRS** package or the underlying research methodology in publications, please use:
+
+### Package Reference
+> Santos, G. A. A. (2025). *WienerRS: Wiener Process Degradation Models with Imperfect Maintenance Effects*. R package version 0.1.0, https://github.com/GeorgeSantos1/Wiener_RS.
+
+```bibtex
+@manual{santos2025wienerrs,
+  title = {WienerRS: Wiener Process Degradation Models with Imperfect Maintenance Effects},
+  author = {Santos, George Anderson Alves dos},
+  year = {2025},
+  note = {R package version 0.1.0},
+  url = {https://github.com/GeorgeSantos1/Wiener_RS}
+}
+```
+
+### Research Paper Reference (Methodology & Case Study)
+> Santos, G. A. A., Ferreira da Silva, P. H., Portela, A. C. T., Toledo, M. L., Morita, L. H. M., Tomazella, V. L. D., & Droguett, E. L. (2026). *Reliability Analysis of Repairable Systems Using the Arithmetic Reduction of Degradation with Memory One (ARD₁) Model: An Application to Industrial Bag Filter Data*. (Under Review).
 
 ```bibtex
 @article{santos2026reliability,
   title={Reliability Analysis of Repairable Systems Using the Arithmetic Reduction of Degradation with Memory One ($\text{ARD}_1$) Model: An Application to Industrial Bag Filter Data},
-  author={Santos, George Anderson Alves dos and Ferreira, Paulo Henrique and Portela, Adriane Caroline Teixeira and Toledo, Maria Lu{\'\i}za and Morita, Lia Hanna Martins and Tomazella, Vera and Droguett, Enrique Lopez},
+  author={Santos, George Anderson Alves dos and Ferreira da Silva, Paulo Henrique and Portela, Adriane Caroline Teixeira and Toledo, Maria Lu{\'\i}za and Morita, Lia Hanna Martins and Tomazella, Vera L{\'u}cia Damasceno and Droguett, Enrique Lopez},
   journal={Journal Title (Under Review)},
   year={2026}
 }
+```
 
+### Master's Dissertation Reference
+> Santos, G. A. A. (2025). *Desenvolvimento de Metodologias Estatísticas para Modelagem da Degradação da Performance de Sistemas Reparáveis*. Dissertação de Mestrado, Programa de Pós-Graduação em Matemática (PGMAT), Universidade Federal da Bahia (UFBA), Salvador, Bahia, Brasil.
+
+```bibtex
 @mastersthesis{santos2025desenvolvimento,
   title={Desenvolvimento de Metodologias Estat{\'\i}sticas para Modelagem da Degrada{\c{c}}{\~a}o da Performance de Sistemas Repar{\'a}veis},
   author={Santos, George Anderson Alves dos},
