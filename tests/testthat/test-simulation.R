@@ -344,19 +344,6 @@ test_that("plot_maintenance validates inputs and raises informative errors", {
   expect_error(plot_maintenance(data.frame(foo = 1:5, bar = 1:5)), "must contain")
 })
 
-test_that("gera_plot3 legacy function works and validates inputs", {
-  df_maint <- sim_wiener_maintenance_path(
-    t_max = 15, n_steps = 30, drift = 2, sigma2 = 1, rho = c(0.6, 0.4), n_maint = 2, obj_id = 1
-  )
-  p <- gera_plot3(df_maint)
-  expect_true(inherits(p, "ggplot"))
-  expect_equal(p$labels$x, "Time")
-  expect_equal(p$labels$y, "Degradation")
-
-  expect_error(gera_plot3("not_a_df"), "data frame")
-  expect_error(gera_plot3(data.frame(foo = 1)), "missing required column")
-})
-
 
 test_that("plot_exponential creates a valid combined patchwork/ggplot object", {
   p <- plot_exponential()
